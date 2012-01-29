@@ -1,0 +1,24 @@
+<node name="/org/freedesktop/hostname1">
+    <interface name="org.freedesktop.hostname1">
+        <method name="SetHostname">
+            <arg direction="in" type="s" name="name"/>
+            <arg direction="in" type="b" name="user_interaction"/>
+        </method>
+        <method name="SetStaticHostname">
+            <arg direction="in" type="s" name="name"/>
+            <arg direction="in" type="b" name="user_interaction"/>
+        </method>
+        <method name="SetPrettyHostname">
+            <arg direction="in" type="s" name="name"/>
+            <arg direction="in" type="b" name="user_interaction"/>
+        </method>
+        <method name="SetIconName">
+            <arg direction="in" type="s" name="name"/>
+            <arg direction="in" type="b" name="user_interaction"/>
+        </method>
+        <property name="Hostname" type="s" access="read"/>
+        <property name="StaticHostname" type="s" access="read"/>
+        <property name="PrettyHostname" type="s" access="read"/>
+        <property name="IconName" type="s" access="read"/>
+    </interface>
+</node>

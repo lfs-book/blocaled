@@ -1,0 +1,28 @@
+openrc-settingsd provides an implementation of the the hostnamed, localed,
+and timedated DBus services for OpenRC-based systems - in particular, for
+typical installations of Gentoo Linux.
+
+Bugs should be reported (for the moment) to gnome@gentoo.org
+
+Hostnamed:
+
+ See http://www.freedesktop.org/wiki/Software/systemd/hostnamed for the DBus
+ protocol description.
+
+ The static hostname is stored in /etc/conf.d/hostname as
+ hostname="foo"
+
+ The pretty hostname and icon name are stored in /etc/machine-info as
+ PRETTY_HOSTNAME="Foo !"
+ ICON_NAME="computer-desktop"
+
+Note that openrc-settingsd expects any shell-syntax settings files that it
+modifies to be in UTF-8 encoding, and to consist only of comments and simple
+scalar assignments, i.e. something like
+
+# a comment
+foo="bar"
+baz='Let'\''s go!'
+
+If openrc-settingsd fails to parse a settings file, it will refuse to modify
+it.
