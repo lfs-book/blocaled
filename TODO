@@ -1,5 +1,16 @@
 Refactor on_handle_set_* callbacks (lots of code duplication currently).
 
+Source /etc/rc.conf after /etc/conf.d/$service; do something intelligent
+if the relevant variable is set in /etc/rc.conf (go to read-only mode?)
+
+What happens if e.g. /etc/conf.d/hostname.{runlevel} files exist? Just
+document that this case is not supported?
+
+Write an init.d file to read RC_SYS so that we can piggyback on openrc's
+built-in virtualization detection.
+
+Add command-line arguments (e.g. --no-hostnamed --readonly-localed).
+
 Implement localed and timedated.
 
 Do something about runtime dependency on systemd's org.freedesktop.hostname1.policy,
