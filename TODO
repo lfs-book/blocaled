@@ -1,3 +1,5 @@
+Use GFile for file I/O to take advantage of built-in temporary handling.
+
 Refactor on_handle_set_* callbacks (lots of code duplication currently).
 
 Source /etc/rc.conf after /etc/conf.d/$service; do something intelligent
