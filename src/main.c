@@ -16,6 +16,9 @@
   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
+#include <stdlib.h>
+#include <string.h>
+
 #include <glib.h>
 #include <gio/gio.h>
 
@@ -24,16 +27,45 @@
 
 #include "config.h"
 
+#define DEFAULT_LEVELS (G_LOG_LEVEL_ERROR | G_LOG_LEVEL_CRITICAL | G_LOG_LEVEL_WARNING | G_LOG_LEVEL_MESSAGE)
+
+static gboolean debug = FALSE;
+
+static GOptionEntry entries[] =
+{
+    { "debug", 0, 0, G_OPTION_ARG_NONE, &debug, "Enable debugging messages", NULL },
+    { NULL }
+};
+
+static void
+log_handler (const gchar *log_domain,
+             GLogLevelFlags log_level,
+             const gchar *message,
+             gpointer user_data)
+{
+    if (debug || log_level & DEFAULT_LEVELS)
+        g_log_default_handler (log_domain, log_level, message, user_data);
+}
+
 gint
 main (gint argc, gchar *argv[])
 {
+    GError *error = NULL;
+    GOptionContext *context;
     GMainLoop *loop = NULL;
 
     g_type_init ();
+    g_log_set_default_handler (log_handler, NULL);
+
+    context = g_option_context_new ("- system settings D-Bus service for OpenRC");
+    g_option_context_add_main_entries (context, entries, NULL);
+    if (!g_option_context_parse (context, &argc, &argv, &error)) {
+        g_printerr ("Failed to parse options: %s\n", error->message);
+        exit (1);
+    }
 
     shell_utils_init ();
     hostnamed_init (FALSE);
-
     loop = g_main_loop_new (NULL, FALSE);
     g_main_loop_run (loop);
 

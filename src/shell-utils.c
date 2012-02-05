@@ -160,9 +160,7 @@ shell_utils_trivial_new (GFile *file,
     gboolean want_separator = FALSE; /* Do we expect the next entry to be a separator or comment? */
     s = filebuf;
     while (*s != 0) {
-#ifdef OPENRC_SETTINGSD_DEBUG
         g_debug ("Scanning string: ``%s''", s);
-#endif
         gboolean matched = FALSE;
         GMatchInfo *match_info = NULL;
         struct ShellEntry *entry = NULL;
@@ -174,9 +172,7 @@ shell_utils_trivial_new (GFile *file,
             entry->string = g_match_info_fetch (match_info, 0);
             ret->entry_list = g_list_prepend (ret->entry_list, entry);
             s += strlen (entry->string);
-#ifdef OPENRC_SETTINGSD_DEBUG
             g_debug ("Scanned comment: ``%s''", entry->string);
-#endif
             g_match_info_free (match_info);
             match_info = NULL;
             want_separator = FALSE;
@@ -192,9 +188,7 @@ shell_utils_trivial_new (GFile *file,
             entry->string = g_match_info_fetch (match_info, 0);
             ret->entry_list = g_list_prepend (ret->entry_list, entry);
             s += strlen (entry->string);
-#ifdef OPENRC_SETTINGSD_DEBUG
             g_debug ("Scanned separator: ``%s''", entry->string);
-#endif
             g_match_info_free (match_info);
             match_info = NULL;
             want_separator = FALSE;
@@ -210,9 +204,7 @@ shell_utils_trivial_new (GFile *file,
             entry->string = g_match_info_fetch (match_info, 0);
             ret->entry_list = g_list_prepend (ret->entry_list, entry);
             s += strlen (entry->string);
-#ifdef OPENRC_SETTINGSD_DEBUG
             g_debug ("Scanned indent: ``%s''", entry->string);
-#endif
             g_match_info_free (match_info);
             match_info = NULL;
             continue;
@@ -231,17 +223,13 @@ shell_utils_trivial_new (GFile *file,
             entry->string = g_match_info_fetch (match_info, 0);
             entry->variable = g_match_info_fetch (match_info, 1);
             s += strlen (entry->string);
-#ifdef OPENRC_SETTINGSD_DEBUG
             g_debug ("Scanned variable: ``%s''", entry->string);
-#endif
             g_match_info_free (match_info);
             match_info = NULL;
             want_separator = TRUE;
 
             while (*s != 0) {
-#ifdef OPENRC_SETTINGSD_DEBUG
                 g_debug ("Scanning string for values: ``%s''", s);
-#endif
                 gboolean matched2 = FALSE;
                 gchar *temp1 = NULL, *temp2 = NULL;
 
@@ -272,9 +260,7 @@ append_value:
                 temp2 = g_match_info_fetch (match_info, 0);
                 entry->string = g_strconcat (temp1, temp2, NULL);
                 s += strlen (temp2);
-#ifdef OPENRC_SETTINGSD_DEBUG
                 g_debug ("Scanned value: ``%s''", temp2);
-#endif
                 g_free (temp1);
                 g_free (temp2);
                 g_match_info_free (match_info);

@@ -19,15 +19,6 @@ if test "x$GDBUS_CODEGEN" = x; then
     AC_MSG_ERROR([Failed to find gdbus-codegen])
 fi
 
-AC_ARG_ENABLE([debug],
-    [AS_HELP_STRING([--enable-debug],
-                    [enable extra debugging messages])],
-    [], [enable_debug=no])
-if test "x$enable_debug" = "xyes" ; then
-        AC_MSG_RESULT([enabling extra debugging messages])
-        AC_DEFINE(OPENRC_SETTINGSD_DEBUG,1,[Enable extra debugging messages.])
-fi
-
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([
     Makefile

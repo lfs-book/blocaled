@@ -261,9 +261,7 @@ on_bus_acquired (GDBusConnection *connection,
     gchar *name;
     GError *err = NULL;
 
-#ifdef OPENRC_SETTINGSD_DEBUG
     g_debug ("Acquired a message bus connection");
-#endif
 
     hostname1 = openrc_settingsd_hostnamed_hostname1_skeleton_new ();
 
@@ -293,9 +291,7 @@ on_name_acquired (GDBusConnection *connection,
                   const gchar     *bus_name,
                   gpointer         user_data)
 {
-#ifdef OPENRC_SETTINGSD_DEBUG
     g_debug ("Acquired the name %s", bus_name);
-#endif
 }
 
 static void
