@@ -20,17 +20,19 @@
 #define _SHELL_UTILS_H_
 
 #include <glib.h>
+#include <gio/gio.h>
 
 typedef struct _ShellUtilsTrivial        ShellUtilsTrivial;
 
 struct _ShellUtilsTrivial
 {
+  GFile *file;
   gchar *filename;
   GList *entry_list;
 };
 
 gchar *
-shell_utils_source_var (const gchar *filename,
+shell_utils_source_var (GFile *file,
                         const gchar *variable,
                         GError **error);
 
@@ -41,7 +43,7 @@ void
 shell_utils_destroy (void);
 
 ShellUtilsTrivial *
-shell_utils_trivial_new (const gchar *filename,
+shell_utils_trivial_new (GFile *file,
                          GError **error);
 
 void
@@ -57,4 +59,11 @@ gboolean
 shell_utils_trivial_save (ShellUtilsTrivial *trivial,
                           GError **error);
 
+gboolean
+shell_utils_trivial_set_and_save (GFile *file,
+                                  GError **error,
+                                  const gchar *first_var_name,
+                                  const gchar *first_alt_var_name,
+                                  const gchar *first_value,
+                                  ...);
 #endif

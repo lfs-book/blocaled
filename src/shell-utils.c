@@ -16,15 +16,10 @@
   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#include <errno.h>
-#include <fcntl.h>
-#include <stdio.h>
+#include <stdarg.h>
 #include <string.h>
-#include <unistd.h>
-#include <sys/stat.h>
 
 #include <glib.h>
-#include <glib/gstdio.h>
 #include <gio/gio.h>
 
 #include "shell-utils.h"
@@ -53,23 +48,53 @@ struct ShellEntry {
 };
 
 gchar *
-shell_utils_source_var (const gchar *filename,
+shell_utils_source_var (GFile *file,
                         const gchar *variable,
                         GError **error)
 {
     gchar *argv[4] = { "sh", "-c", NULL, NULL };
-    gchar *quoted_filename = NULL;
+    gchar *filename, *quoted_filename;
     gchar *output = NULL;
+    GFileInfo *info;
+    const GFileAttributeInfo *attribute_info;
+
+    filename = g_file_get_path (file);
+    if ((info = g_file_query_info (file, G_FILE_ATTRIBUTE_STANDARD_TYPE "," G_FILE_ATTRIBUTE_ACCESS_CAN_READ, G_FILE_QUERY_INFO_NONE, NULL, error)) == NULL) {
+        g_prefix_error (error, "Unable to source '%s': ", filename);
+        goto out;
+    }
+
+    if (g_file_info_get_file_type (info) != G_FILE_TYPE_REGULAR &&
+        g_file_info_get_file_type (info) != G_FILE_TYPE_SYMBOLIC_LINK) {
+        g_propagate_error (error,
+                           g_error_new (G_FILE_ERROR, G_FILE_ERROR_FAILED,
+                                        "Unable to source '%s': not a regular file", filename));
+        goto out;
+    }
+
+    if (!g_file_info_get_attribute_boolean (info, G_FILE_ATTRIBUTE_ACCESS_CAN_READ)) {
+        g_propagate_error (error,
+                           g_error_new (G_FILE_ERROR, G_FILE_ERROR_ACCES,
+                                        "Unable to source '%s': permission denied", filename));
+        goto out;
+    }
 
     quoted_filename = g_shell_quote (filename);
     argv[2] = g_strdup_printf (". %s; echo -n %s", quoted_filename, variable);
-    g_free (quoted_filename);
 
-    if (g_file_test (filename, G_FILE_TEST_IS_REGULAR))
-        if (!g_spawn_sync (NULL, argv, NULL, G_SPAWN_SEARCH_PATH, NULL, NULL, &output, NULL, NULL, error)) {
-            g_prefix_error (error, "Unable to source '%s': ", filename);
-        }
-    g_free (argv[2]);
+    if (!g_spawn_sync (NULL, argv, NULL, G_SPAWN_SEARCH_PATH, NULL, NULL, &output, NULL, NULL, error)) {
+        g_prefix_error (error, "Unable to source '%s': ", filename);
+    }
+
+  out:
+    if (filename != NULL)
+        g_free (filename);
+    if (quoted_filename != NULL)
+        g_free (quoted_filename);
+    if (info != NULL)
+        g_object_unref (info);
+    if (argv[2] != NULL)
+        g_free (argv[2]);
     return output;
 }
 
@@ -92,6 +117,8 @@ shell_utils_trivial_free (ShellUtilsTrivial *trivial)
     if (trivial == NULL)
         return;
 
+    if (trivial->file != NULL)
+        g_object_unref (trivial->file);
     if (trivial->filename != NULL)
         g_free (trivial->filename);
     if (trivial->entry_list != NULL)
@@ -100,7 +127,7 @@ shell_utils_trivial_free (ShellUtilsTrivial *trivial)
 }
 
 ShellUtilsTrivial *
-shell_utils_trivial_new (const gchar *filename,
+shell_utils_trivial_new (GFile *file,
                          GError **error)
 {
     gchar *filebuf = NULL;
@@ -108,20 +135,23 @@ shell_utils_trivial_new (const gchar *filename,
     GError *local_err;
     gchar *s;
 
-    g_assert (filename != NULL);
+    if (file == NULL)
+        return NULL;
 
     ret = g_new0 (ShellUtilsTrivial, 1);
-    ret->filename = g_strdup (filename);
+    g_object_ref (file);
+    ret->file = file;
+    ret->filename = g_file_get_path (file);
 
-    if (!g_file_get_contents (filename, &filebuf, NULL, &local_err)) {
+    if (!g_file_load_contents (file, NULL, &filebuf, NULL, NULL, &local_err)) {
         if (local_err != NULL) {
             /* Inability to parse or open is a failure; file not existing at all is *not* a failure */
-            if (local_err->code == G_FILE_ERROR_NOENT) {
+            if (local_err->code == G_IO_ERROR_NOT_FOUND) {
                 g_error_free (local_err);
                 return ret;
             }
 
-            g_propagate_prefixed_error (error, local_err, "Unable to read '%s':", filename);
+            g_propagate_prefixed_error (error, local_err, "Unable to read '%s':", ret->filename);
         }
         shell_utils_trivial_free (ret);
         return NULL;
@@ -261,7 +291,7 @@ no_match:
         match_info = NULL;
         g_propagate_error (error,
                            g_error_new (G_FILE_ERROR, G_FILE_ERROR_FAILED,
-                                        "Unable to parse '%s'", filename));
+                                        "Unable to parse '%s'", ret->filename));
         shell_utils_trivial_free (ret);
         return NULL;
     }
@@ -317,86 +347,91 @@ gboolean
 shell_utils_trivial_save (ShellUtilsTrivial *trivial,
                           GError **error)
 {
+    gboolean ret = FALSE;
     GList *curr = NULL;
-    gchar *temp_filename = NULL;
-    gint fd;
-    gboolean retval = FALSE;
-    GStatBuf stat_buf;
-    gint mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH; /* 644 by default */
+    GFileOutputStream *os;
 
-    g_assert (trivial != NULL);
-    g_assert (trivial->filename != NULL);
-
-    /* If the file exists, preserve its mode */
-    if (!g_lstat (trivial->filename, &stat_buf))
-        mode = stat_buf.st_mode;
-
-    temp_filename = g_strdup_printf ("%s.XXXXXX", trivial->filename);
-
-    if ((fd = g_mkstemp_full (temp_filename, O_WRONLY, mode)) < 0) {
-        int errsv = errno;
-        GFileError file_err;
-        file_err = g_file_error_from_errno (errsv);
-        g_propagate_prefixed_error (error,
-                                    g_error_copy ((GError*)&file_err),
-                                    "Unable to write '%s': Unable to create temp file: ",
-                                    trivial->filename);
+    g_assert (trivial != NULL && trivial->file != NULL && trivial->filename != NULL);
+    if ((os = g_file_replace (trivial->file, NULL, FALSE, G_FILE_CREATE_NONE, NULL, error)) == NULL) {
+        g_prefix_error (error, "Unable to save '%s': ", trivial->filename);
         goto out;
     }
 
     for (curr = trivial->entry_list; curr != NULL; curr = curr->next) {
         struct ShellEntry *entry;
-        ssize_t written;
+        gsize written;
 
         entry = (struct ShellEntry *)(curr->data);
-        written = write (fd, entry->string, strlen (entry->string));
-        int errsv = errno;
-        if (written < strlen (entry->string)) {
-            if (written < 0) {
-                int errsv = errno;
-                GFileError file_err;
-                file_err = g_file_error_from_errno (errsv);
-                g_propagate_prefixed_error (error,
-                                            g_error_copy ((GError*)&file_err),
-                                            "Unable to write temp file '%s': ",
-                                            temp_filename);
-            } else {
-                g_propagate_error (error,
-                                   g_error_new (G_FILE_ERROR, G_FILE_ERROR_FAILED,
-                                                "Unable to write temp file '%s'", temp_filename));
-            }
-            close (fd);
+        if (!g_output_stream_write_all (G_OUTPUT_STREAM (os), entry->string, strlen (entry->string), &written, NULL, error)) {
+            g_prefix_error (error, "Unable to save '%s': ", trivial->filename);
             goto out;
         }
     }
-    if (fsync (fd) || close (fd)) {
-        int errsv = errno;
-        GFileError file_err;
-        file_err = g_file_error_from_errno (errsv);
-        g_propagate_prefixed_error (error,
-                                    g_error_copy ((GError*)&file_err),
-                                    "Unable to sync or close temp file '%s': ",
-                                    temp_filename);
-        close (fd);
+    
+    if (!g_output_stream_close (G_OUTPUT_STREAM (os), NULL, error)) {
+        g_prefix_error (error, "Unable to save '%s': ", trivial->filename);
+        g_output_stream_close (G_OUTPUT_STREAM (os), NULL, NULL);
         goto out;
     }
-
-    if (g_rename (temp_filename, trivial->filename) < 0) {
-        int errsv = errno;
-        GFileError file_err;
-        file_err = g_file_error_from_errno (errsv);
-        g_propagate_prefixed_error (error,
-                                    g_error_copy ((GError*)&file_err),
-                                    "Unable to copy '%s' to '%s': ",
-                                    temp_filename, trivial->filename);
-        goto out;
-    }
-    retval = TRUE;
+    ret = TRUE;
 
   out:
-    g_free (temp_filename);
-    g_unlink (temp_filename);
-    return retval;
+    if (os)
+        g_object_unref (os);
+    return ret;
+}
+
+gboolean
+shell_utils_trivial_set_and_save (GFile *file,
+                                  GError **error,
+                                  const gchar *first_var_name,
+                                  const gchar *first_alt_var_name,
+                                  const gchar *first_value,
+                                  ...)
+{
+    va_list ap;
+    ShellUtilsTrivial *trivial;
+    gboolean ret = FALSE;
+    const gchar *var_name, *alt_var_name, *value;
+
+    va_start (ap, first_value);
+    if ((trivial = shell_utils_trivial_new (file, error)) == NULL)
+        goto out;
+
+    var_name = first_var_name;
+    alt_var_name = first_alt_var_name;
+    value = first_value;
+    do {
+        if (alt_var_name == NULL) {
+            if (!shell_utils_trivial_set_variable (trivial, var_name, value, TRUE)) {
+                g_propagate_error (error,
+                        g_error_new (G_FILE_ERROR, G_FILE_ERROR_FAILED,
+                                    "Unable to set %s in '%s'", var_name, trivial->filename));
+                goto out;
+            }
+        } else {
+            if (!shell_utils_trivial_set_variable (trivial, var_name, value, FALSE) &&
+                !shell_utils_trivial_set_variable (trivial, alt_var_name, value, FALSE) &&
+                !shell_utils_trivial_set_variable (trivial, var_name, value, TRUE)) {
+                    g_propagate_error (error,
+                            g_error_new (G_FILE_ERROR, G_FILE_ERROR_FAILED,
+                                        "Unable to set %s or %s in '%s'", var_name, alt_var_name, trivial->filename));
+                    goto out;
+            }
+        }
+    } while ((var_name = va_arg (ap, const gchar*)) != NULL ?
+                 alt_var_name = va_arg (ap, const gchar*), value = va_arg (ap, const gchar*), 1 : 0);
+
+    if (!shell_utils_trivial_save (trivial, error))
+        goto out;
+
+    ret = TRUE;
+
+  out:
+    va_end (ap);
+    if (trivial != NULL)
+        shell_utils_trivial_free (trivial);
+    return ret;
 }
 
 void

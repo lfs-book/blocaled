@@ -20,7 +20,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
 
 #include <dbus/dbus-protocol.h>
 #include <glib.h>
@@ -45,9 +44,11 @@ static OpenrcSettingsdHostnamedHostname1 *hostname1 = NULL;
 static gchar hostname[HOST_NAME_MAX + 1];
 G_LOCK_DEFINE_STATIC (hostname);
 static gchar *static_hostname = NULL;
+static GFile *static_hostname_file = NULL;
 G_LOCK_DEFINE_STATIC (static_hostname);
 static gchar *pretty_hostname = NULL;
 static gchar *icon_name = NULL;
+static GFile *machine_info_file = NULL;
 G_LOCK_DEFINE_STATIC (machine_info);
 
 static gboolean
@@ -174,25 +175,7 @@ on_handle_set_static_hostname (OpenrcSettingsdHostnamedHostname1 *hostname1,
     if (!hostname_is_valid (name))
         name = "localhost";
 
-    confd_file = shell_utils_trivial_new (SYSCONFDIR "/conf.d/hostname", &err);
-    if (confd_file == NULL) {
-        g_dbus_method_invocation_return_gerror (invocation, err);
-        G_UNLOCK (static_hostname);
-        goto end;
-    }
-
-    if (!shell_utils_trivial_set_variable (confd_file, "hostname", name, FALSE) &&
-        !shell_utils_trivial_set_variable (confd_file, "HOSTNAME", name, FALSE) &&
-        !shell_utils_trivial_set_variable (confd_file, "hostname", name, TRUE))
-    {
-        g_dbus_method_invocation_return_dbus_error (invocation,
-                                                    DBUS_ERROR_FAILED,
-                                                    "Failed to set static hostname in " SYSCONFDIR "/conf.d/hostname");
-        G_UNLOCK (static_hostname);
-        goto end;
-    }
-
-    if (!shell_utils_trivial_save (confd_file, &err)) {
+    if (!shell_utils_trivial_set_and_save (static_hostname_file, &err, "hostname", "HOSTNAME", name, NULL)) {
         g_dbus_method_invocation_return_gerror (invocation, err);
         G_UNLOCK (static_hostname);
         goto end;
@@ -240,24 +223,10 @@ on_handle_set_machine_info (OpenrcSettingsdHostnamedHostname1 *hostname1,
     if (name == NULL)
         name = "";
 
-    confd_file = shell_utils_trivial_new (SYSCONFDIR "/machine-info", &err);
-    if (confd_file == NULL) {
-        g_dbus_method_invocation_return_gerror (invocation, err);
-        G_UNLOCK (machine_info);
-        goto end;
-    }
-
-    if ((is_pretty_hostname && !shell_utils_trivial_set_variable (confd_file, "PRETTY_HOSTNAME", name, TRUE)) ||
-        (!is_pretty_hostname && !shell_utils_trivial_set_variable (confd_file, "ICON_NAME", name, TRUE)))
-    {
-        g_dbus_method_invocation_return_dbus_error (invocation,
-                                                    DBUS_ERROR_FAILED,
-                                                    "Failed to value in " SYSCONFDIR "/machine-info");
-        G_UNLOCK (machine_info);
-        goto end;
-    }
-
-    if (!shell_utils_trivial_save (confd_file, &err)) {
+    if ((is_pretty_hostname &&
+            !shell_utils_trivial_set_and_save (machine_info_file, &err, "PRETTY_HOSTNAME", NULL, name, NULL)) ||
+        (!is_pretty_hostname &&
+            !shell_utils_trivial_set_and_save (machine_info_file, &err, "ICON_NAME", NULL, name, NULL))) {
         g_dbus_method_invocation_return_gerror (invocation, err);
         G_UNLOCK (machine_info);
         goto end;
@@ -354,13 +323,16 @@ hostnamed_init (gboolean _read_only)
         hostname[0] = 0;
     }
 
-    static_hostname = shell_utils_source_var (SYSCONFDIR "/conf.d/hostname", "${hostname-${HOSTNAME-localhost}}", &err);
+    static_hostname_file = g_file_new_for_path (SYSCONFDIR "/conf.d/hostname");
+    machine_info_file = g_file_new_for_path (SYSCONFDIR "/machine-info");
+
+    static_hostname = shell_utils_source_var (static_hostname_file, "${hostname-${HOSTNAME-localhost}}", &err);
     if (err != NULL) {
         g_debug ("%s", err->message);
         g_error_free (err);
         err = NULL;
     }
-    pretty_hostname = shell_utils_source_var (SYSCONFDIR "/machine-info", "${PRETTY_HOSTNAME}", &err);
+    pretty_hostname = shell_utils_source_var (machine_info_file, "${PRETTY_HOSTNAME}", &err);
     if (pretty_hostname == NULL)
         pretty_hostname = g_strdup ("");
     if (err != NULL) {
@@ -368,7 +340,7 @@ hostnamed_init (gboolean _read_only)
         g_error_free (err);
         err = NULL;
     }
-    icon_name = shell_utils_source_var (SYSCONFDIR "/machine-info", "${ICON_NAME}", &err);
+    icon_name = shell_utils_source_var (machine_info_file, "${ICON_NAME}", &err);
     if (icon_name == NULL)
         icon_name = g_strdup ("");
     if (err != NULL) {
@@ -402,4 +374,7 @@ hostnamed_destroy (void)
     g_free (static_hostname);
     g_free (pretty_hostname);
     g_free (icon_name);
+
+    g_object_unref (static_hostname_file);
+    g_object_unref (machine_info_file);
 }
