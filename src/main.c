@@ -31,7 +31,7 @@
 
 static gboolean debug = FALSE;
 
-static GOptionEntry entries[] =
+static GOptionEntry option_entries[] =
 {
     { "debug", 0, 0, G_OPTION_ARG_NONE, &debug, "Enable debugging messages", NULL },
     { NULL }
@@ -51,15 +51,15 @@ gint
 main (gint argc, gchar *argv[])
 {
     GError *error = NULL;
-    GOptionContext *context;
+    GOptionContext *option_context;
     GMainLoop *loop = NULL;
 
     g_type_init ();
     g_log_set_default_handler (log_handler, NULL);
 
-    context = g_option_context_new ("- system settings D-Bus service for OpenRC");
-    g_option_context_add_main_entries (context, entries, NULL);
-    if (!g_option_context_parse (context, &argc, &argv, &error)) {
+    option_context = g_option_context_new ("- system settings D-Bus service for OpenRC");
+    g_option_context_add_main_entries (option_context, option_entries, NULL);
+    if (!g_option_context_parse (option_context, &argc, &argv, &error)) {
         g_printerr ("Failed to parse options: %s\n", error->message);
         exit (1);
     }
