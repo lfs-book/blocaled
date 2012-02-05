@@ -1,3 +1,5 @@
+Add nss-myhostname detection (and add nss-myhostnane to portage)
+
 Source /etc/rc.conf after /etc/conf.d/$service; do something intelligent
 if the relevant variable is set in /etc/rc.conf (go to read-only mode?)
 
