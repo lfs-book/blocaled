@@ -43,12 +43,12 @@ gboolean read_only = FALSE;
 static OpenrcSettingsdHostnamedHostname1 *hostname1 = NULL;
 
 static gchar hostname[HOST_NAME_MAX + 1];
-static GStaticMutex hostname_mutex = G_STATIC_MUTEX_INIT;
+G_LOCK_DEFINE_STATIC (hostname);
 static gchar *static_hostname = NULL;
-static GStaticMutex static_hostname_mutex = G_STATIC_MUTEX_INIT;
+G_LOCK_DEFINE_STATIC (static_hostname);
 static gchar *pretty_hostname = NULL;
 static gchar *icon_name = NULL;
-static GStaticMutex machine_info_mutex = G_STATIC_MUTEX_INIT;
+G_LOCK_DEFINE_STATIC (machine_info);
 
 static gboolean
 hostname_is_valid (const gchar *name)
@@ -123,7 +123,7 @@ on_handle_set_hostname (OpenrcSettingsdHostnamedHostname1 *hostname1,
         goto end;
     }
 
-    g_static_mutex_lock (&hostname_mutex);
+    G_LOCK (hostname);
     /* Don't allow an empty or invalid hostname */
     if (!hostname_is_valid (name)) {
         name = hostname;
@@ -135,13 +135,13 @@ on_handle_set_hostname (OpenrcSettingsdHostnamedHostname1 *hostname1,
         g_dbus_method_invocation_return_dbus_error (invocation,
                                                     DBUS_ERROR_FAILED,
                                                     strerror (errsv));
-        g_static_mutex_unlock (&hostname_mutex);
+        G_UNLOCK (hostname);
         goto end;
     }
     g_strlcpy (hostname, name, HOST_NAME_MAX + 1);
     openrc_settingsd_hostnamed_hostname1_complete_set_hostname (hostname1, invocation);
     openrc_settingsd_hostnamed_hostname1_set_hostname (hostname1, hostname);
-    g_static_mutex_unlock (&hostname_mutex);
+    G_UNLOCK (hostname);
 
   end:
     return TRUE;
@@ -169,7 +169,7 @@ on_handle_set_static_hostname (OpenrcSettingsdHostnamedHostname1 *hostname1,
         goto end;
     }
 
-    g_static_mutex_lock (&static_hostname_mutex);
+    G_LOCK (static_hostname);
     /* Don't allow an empty or invalid hostname */
     if (!hostname_is_valid (name))
         name = "localhost";
@@ -177,7 +177,7 @@ on_handle_set_static_hostname (OpenrcSettingsdHostnamedHostname1 *hostname1,
     confd_file = shell_utils_trivial_new (SYSCONFDIR "/conf.d/hostname", &err);
     if (confd_file == NULL) {
         g_dbus_method_invocation_return_gerror (invocation, err);
-        g_static_mutex_unlock (&static_hostname_mutex);
+        G_UNLOCK (static_hostname);
         goto end;
     }
 
@@ -188,13 +188,13 @@ on_handle_set_static_hostname (OpenrcSettingsdHostnamedHostname1 *hostname1,
         g_dbus_method_invocation_return_dbus_error (invocation,
                                                     DBUS_ERROR_FAILED,
                                                     "Failed to set static hostname in " SYSCONFDIR "/conf.d/hostname");
-        g_static_mutex_unlock (&static_hostname_mutex);
+        G_UNLOCK (static_hostname);
         goto end;
     }
 
     if (!shell_utils_trivial_save (confd_file, &err)) {
         g_dbus_method_invocation_return_gerror (invocation, err);
-        g_static_mutex_unlock (&static_hostname_mutex);
+        G_UNLOCK (static_hostname);
         goto end;
     }
 
@@ -202,7 +202,7 @@ on_handle_set_static_hostname (OpenrcSettingsdHostnamedHostname1 *hostname1,
     static_hostname = g_strdup (name);
     openrc_settingsd_hostnamed_hostname1_complete_set_static_hostname (hostname1, invocation);
     openrc_settingsd_hostnamed_hostname1_set_static_hostname (hostname1, static_hostname);
-    g_static_mutex_unlock (&static_hostname_mutex);
+    G_UNLOCK (static_hostname);
 
   end:
     shell_utils_trivial_free (confd_file);
@@ -235,7 +235,7 @@ on_handle_set_machine_info (OpenrcSettingsdHostnamedHostname1 *hostname1,
         goto end;
     }
 
-    g_static_mutex_lock (&machine_info_mutex);
+    G_LOCK (machine_info);
     /* Don't allow a null pretty hostname */
     if (name == NULL)
         name = "";
@@ -243,7 +243,7 @@ on_handle_set_machine_info (OpenrcSettingsdHostnamedHostname1 *hostname1,
     confd_file = shell_utils_trivial_new (SYSCONFDIR "/machine-info", &err);
     if (confd_file == NULL) {
         g_dbus_method_invocation_return_gerror (invocation, err);
-        g_static_mutex_unlock (&machine_info_mutex);
+        G_UNLOCK (machine_info);
         goto end;
     }
 
@@ -253,13 +253,13 @@ on_handle_set_machine_info (OpenrcSettingsdHostnamedHostname1 *hostname1,
         g_dbus_method_invocation_return_dbus_error (invocation,
                                                     DBUS_ERROR_FAILED,
                                                     "Failed to value in " SYSCONFDIR "/machine-info");
-        g_static_mutex_unlock (&machine_info_mutex);
+        G_UNLOCK (machine_info);
         goto end;
     }
 
     if (!shell_utils_trivial_save (confd_file, &err)) {
         g_dbus_method_invocation_return_gerror (invocation, err);
-        g_static_mutex_unlock (&machine_info_mutex);
+        G_UNLOCK (machine_info);
         goto end;
     }
 
@@ -274,7 +274,7 @@ on_handle_set_machine_info (OpenrcSettingsdHostnamedHostname1 *hostname1,
         openrc_settingsd_hostnamed_hostname1_complete_set_icon_name (hostname1, invocation);
         openrc_settingsd_hostnamed_hostname1_set_icon_name (hostname1, icon_name);
     }
-    g_static_mutex_unlock (&machine_info_mutex);
+    G_UNLOCK (machine_info);
 
   end:
     shell_utils_trivial_free (confd_file);
