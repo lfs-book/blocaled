@@ -30,10 +30,12 @@
 #define DEFAULT_LEVELS (G_LOG_LEVEL_ERROR | G_LOG_LEVEL_CRITICAL | G_LOG_LEVEL_WARNING | G_LOG_LEVEL_MESSAGE)
 
 static gboolean debug = FALSE;
+static gboolean read_only = FALSE;
 
 static GOptionEntry option_entries[] =
 {
     { "debug", 0, 0, G_OPTION_ARG_NONE, &debug, "Enable debugging messages", NULL },
+    { "read-only", 0, 0, G_OPTION_ARG_NONE, &read_only, "Run in read-only mode", NULL },
     { NULL }
 };
 
@@ -65,7 +67,7 @@ main (gint argc, gchar *argv[])
     }
 
     shell_utils_init ();
-    hostnamed_init (FALSE);
+    hostnamed_init (read_only);
     loop = g_main_loop_new (NULL, FALSE);
     g_main_loop_run (loop);
 
