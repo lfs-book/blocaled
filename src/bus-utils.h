@@ -21,10 +21,15 @@
 
 #include <glib.h>
 
+void
+check_polkit_async (const gchar *unique_name,
+                    const gchar *action_id,
+                    const gboolean user_interaction,
+                    GAsyncReadyCallback callback,
+                    gpointer user_data);
+
 gboolean
-check_polkit (const gchar *unique_name,
-              const gchar *action_id,
-              const gboolean user_interaction,
-              GError **error);
+check_polkit_finish (GAsyncResult *res,
+                     GError **error);
 
 #endif

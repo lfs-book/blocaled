@@ -36,6 +36,11 @@
 #define QUOTE(macro) #macro
 #define STR(macro) QUOTE(macro)
 
+struct invoked_name {
+    GDBusMethodInvocation *invocation;
+    gchar *name; /* newly allocated */
+};
+
 guint bus_id = 0;
 gboolean read_only = FALSE;
 
@@ -103,6 +108,51 @@ guess_icon_name ()
     icon_name = g_strdup ("computer");
 }
 
+static void
+on_handle_set_hostname_authorized_cb (GObject *source_object,
+                                      GAsyncResult *res,
+                                      gpointer user_data)
+{
+    GError *err = NULL;
+    struct invoked_name *data;
+    
+    data = (struct invoked_name *) user_data;
+    if (!check_polkit_finish (res, &err)) {
+        g_dbus_method_invocation_return_gerror (data->invocation, err);
+        goto out;
+    }
+
+    G_LOCK (hostname);
+    /* Don't allow an empty or invalid hostname */
+    if (!hostname_is_valid (data->name)) {
+        if (data->name != NULL)
+            g_free (data->name);
+
+        if (hostname_is_valid (hostname))
+            data->name = g_strdup (hostname);
+        else
+            data->name = g_strdup ("localhost");
+    }
+    if (sethostname (data->name, strlen(data->name))) {
+        int errsv = errno;
+        g_dbus_method_invocation_return_dbus_error (data->invocation,
+                                                    DBUS_ERROR_FAILED,
+                                                    strerror (errsv));
+        G_UNLOCK (hostname);
+        goto out;
+    }
+    g_strlcpy (hostname, data->name, HOST_NAME_MAX + 1);
+    openrc_settingsd_hostnamed_hostname1_complete_set_hostname (hostname1, data->invocation);
+    openrc_settingsd_hostnamed_hostname1_set_hostname (hostname1, hostname);
+    G_UNLOCK (hostname);
+
+  out:
+    g_free (data->name);
+    g_free (data);
+    if (err != NULL)
+        g_error_free (err);
+}
+
 static gboolean
 on_handle_set_hostname (OpenrcSettingsdHostnamedHostname1 *hostname1,
                         GDBusMethodInvocation *invocation,
@@ -110,42 +160,60 @@ on_handle_set_hostname (OpenrcSettingsdHostnamedHostname1 *hostname1,
                         const gboolean user_interaction,
                         gpointer user_data)
 {
-    GError *err = NULL;
-
-    if (read_only) {
+    if (read_only)
         g_dbus_method_invocation_return_dbus_error (invocation,
                                                     DBUS_ERROR_NOT_SUPPORTED,
                                                     "openrc-settingsd hostnamed is in read-only mode");
-        goto end;
+    else {
+        struct invoked_name *data;
+        data = g_new0 (struct invoked_name, 1);
+        data->invocation = invocation;
+        data->name = g_strdup (name);
+        check_polkit_async (g_dbus_method_invocation_get_sender (invocation), "org.freedesktop.hostname1.set-hostname", user_interaction, on_handle_set_hostname_authorized_cb, data);
     }
 
-    if (!check_polkit (g_dbus_method_invocation_get_sender (invocation), "org.freedesktop.hostname1.set-hostname", user_interaction, &err)) {
-        g_dbus_method_invocation_return_gerror (invocation, err);
-        goto end;
-    }
-
-    G_LOCK (hostname);
-    /* Don't allow an empty or invalid hostname */
-    if (!hostname_is_valid (name)) {
-        name = hostname;
-        if (!hostname_is_valid (name))
-            name = "localhost";
-    }
-    if (sethostname (name, strlen(name))) {
-        int errsv = errno;
-        g_dbus_method_invocation_return_dbus_error (invocation,
-                                                    DBUS_ERROR_FAILED,
-                                                    strerror (errsv));
-        G_UNLOCK (hostname);
-        goto end;
-    }
-    g_strlcpy (hostname, name, HOST_NAME_MAX + 1);
-    openrc_settingsd_hostnamed_hostname1_complete_set_hostname (hostname1, invocation);
-    openrc_settingsd_hostnamed_hostname1_set_hostname (hostname1, hostname);
-    G_UNLOCK (hostname);
-
-  end:
     return TRUE;
+}
+
+static void
+on_handle_set_static_hostname_authorized_cb (GObject *source_object,
+                                             GAsyncResult *res,
+                                             gpointer user_data)
+{
+    GError *err = NULL;
+    struct invoked_name *data;
+    
+    data = (struct invoked_name *) user_data;
+    if (!check_polkit_finish (res, &err)) {
+        g_dbus_method_invocation_return_gerror (data->invocation, err);
+        goto out;
+    }
+
+    G_LOCK (static_hostname);
+    /* Don't allow an empty or invalid hostname */
+    if (!hostname_is_valid (data->name)) {
+        if (data->name != NULL)
+            g_free (data->name);
+
+        data->name = g_strdup ("localhost");
+    }
+
+    if (!shell_utils_trivial_set_and_save (static_hostname_file, &err, "hostname", "HOSTNAME", data->name, NULL)) {
+        g_dbus_method_invocation_return_gerror (data->invocation, err);
+        G_UNLOCK (static_hostname);
+        goto out;
+    }
+
+    g_free (static_hostname);
+    static_hostname = data->name; /* data->name is g_strdup-ed already */;
+    openrc_settingsd_hostnamed_hostname1_complete_set_static_hostname (hostname1, data->invocation);
+    openrc_settingsd_hostnamed_hostname1_set_static_hostname (hostname1, static_hostname);
+    G_UNLOCK (static_hostname);
+
+  out:
+    g_free (data);
+    if (err != NULL)
+        g_error_free (err);
 }
 
 static gboolean
@@ -155,100 +223,135 @@ on_handle_set_static_hostname (OpenrcSettingsdHostnamedHostname1 *hostname1,
                                const gboolean user_interaction,
                                gpointer user_data)
 {
-    ShellUtilsTrivial *confd_file = NULL;
-    GError *err = NULL;
-
-    if (read_only) {
+    if (read_only)
         g_dbus_method_invocation_return_dbus_error (invocation,
                                                     DBUS_ERROR_NOT_SUPPORTED,
                                                     "openrc-settingsd hostnamed is in read-only mode");
-        goto end;
+    else {
+        struct invoked_name *data;
+        data = g_new0 (struct invoked_name, 1);
+        data->invocation = invocation;
+        data->name = g_strdup (name);
+        check_polkit_async (g_dbus_method_invocation_get_sender (invocation), "org.freedesktop.hostname1.set-static-hostname", user_interaction, on_handle_set_static_hostname_authorized_cb, data);
     }
-
-    if (!check_polkit (g_dbus_method_invocation_get_sender (invocation), "org.freedesktop.hostname1.set-static-hostname", user_interaction, &err)) {
-        g_dbus_method_invocation_return_gerror (invocation, err);
-        goto end;
-    }
-
-    G_LOCK (static_hostname);
-    /* Don't allow an empty or invalid hostname */
-    if (!hostname_is_valid (name))
-        name = "localhost";
-
-    if (!shell_utils_trivial_set_and_save (static_hostname_file, &err, "hostname", "HOSTNAME", name, NULL)) {
-        g_dbus_method_invocation_return_gerror (invocation, err);
-        G_UNLOCK (static_hostname);
-        goto end;
-    }
-
-    g_free (static_hostname);
-    static_hostname = g_strdup (name);
-    openrc_settingsd_hostnamed_hostname1_complete_set_static_hostname (hostname1, invocation);
-    openrc_settingsd_hostnamed_hostname1_set_static_hostname (hostname1, static_hostname);
-    G_UNLOCK (static_hostname);
-
-  end:
-    shell_utils_trivial_free (confd_file);
-    if (err != NULL)
-        g_error_free (err);
 
     return TRUE; /* Always return TRUE to indicate signal has been handled */
 }
 
-static gboolean
-on_handle_set_machine_info (OpenrcSettingsdHostnamedHostname1 *hostname1,
-                            GDBusMethodInvocation *invocation,
-                            const gchar *name,
-                            const gboolean user_interaction,
-                            gpointer user_data)
+static void
+on_handle_set_pretty_hostname_authorized_cb (GObject *source_object,
+                                             GAsyncResult *res,
+                                             gpointer user_data)
 {
-    ShellUtilsTrivial *confd_file = NULL;
     GError *err = NULL;
-    gboolean is_pretty_hostname = GPOINTER_TO_INT(user_data);
-
-    if (read_only) {
-        g_dbus_method_invocation_return_dbus_error (invocation,
-                                                    DBUS_ERROR_NOT_SUPPORTED,
-                                                    "openrc-settingsd hostnamed is in read-only mode");
-        goto end;
-    }
-
-    if (!check_polkit (g_dbus_method_invocation_get_sender (invocation), "org.freedesktop.hostname1.set-machine-info", user_interaction, &err)) {
-        g_dbus_method_invocation_return_gerror (invocation, err);
-        goto end;
+    struct invoked_name *data;
+    
+    data = (struct invoked_name *) user_data;
+    if (!check_polkit_finish (res, &err)) {
+        g_dbus_method_invocation_return_gerror (data->invocation, err);
+        goto out;
     }
 
     G_LOCK (machine_info);
     /* Don't allow a null pretty hostname */
-    if (name == NULL)
-        name = "";
+    if (data->name == NULL)
+        data->name = g_strdup ("");
 
-    if ((is_pretty_hostname &&
-            !shell_utils_trivial_set_and_save (machine_info_file, &err, "PRETTY_HOSTNAME", NULL, name, NULL)) ||
-        (!is_pretty_hostname &&
-            !shell_utils_trivial_set_and_save (machine_info_file, &err, "ICON_NAME", NULL, name, NULL))) {
-        g_dbus_method_invocation_return_gerror (invocation, err);
+    if (!shell_utils_trivial_set_and_save (machine_info_file, &err, "PRETTY_HOSTNAME", NULL, data->name, NULL)) {
+        g_dbus_method_invocation_return_gerror (data->invocation, err);
         G_UNLOCK (machine_info);
-        goto end;
+        goto out;
     }
 
-    if (is_pretty_hostname) {
-        g_free (pretty_hostname);
-        pretty_hostname = g_strdup (name);
-        openrc_settingsd_hostnamed_hostname1_complete_set_pretty_hostname (hostname1, invocation);
-        openrc_settingsd_hostnamed_hostname1_set_pretty_hostname (hostname1, pretty_hostname);
-    } else {
-        g_free (icon_name);
-        icon_name = g_strdup (name);
-        openrc_settingsd_hostnamed_hostname1_complete_set_icon_name (hostname1, invocation);
-        openrc_settingsd_hostnamed_hostname1_set_icon_name (hostname1, icon_name);
-    }
+    g_free (pretty_hostname);
+    pretty_hostname = data->name; /* data->name is g_strdup-ed already */
+    openrc_settingsd_hostnamed_hostname1_complete_set_pretty_hostname (hostname1, data->invocation);
+    openrc_settingsd_hostnamed_hostname1_set_pretty_hostname (hostname1, pretty_hostname);
     G_UNLOCK (machine_info);
 
-  end:
-    shell_utils_trivial_free (confd_file);
+  out:
+    g_free (data);
     if (err != NULL)
         g_error_free (err);
+}
+
+static gboolean
+on_handle_set_pretty_hostname (OpenrcSettingsdHostnamedHostname1 *hostname1,
+                               GDBusMethodInvocation *invocation,
+                               const gchar *name,
+                               const gboolean user_interaction,
+                               gpointer user_data)
+{
+    if (read_only)
+        g_dbus_method_invocation_return_dbus_error (invocation,
+                                                    DBUS_ERROR_NOT_SUPPORTED,
+                                                    "openrc-settingsd hostnamed is in read-only mode");
+    else {
+        struct invoked_name *data;
+        data = g_new0 (struct invoked_name, 1);
+        data->invocation = invocation;
+        data->name = g_strdup (name);
+        check_polkit_async (g_dbus_method_invocation_get_sender (invocation), "org.freedesktop.hostname1.set-machine-info", user_interaction, on_handle_set_pretty_hostname_authorized_cb, data);
+    }
+
+    return TRUE; /* Always return TRUE to indicate signal has been handled */
+}
+
+static void
+on_handle_set_icon_name_authorized_cb (GObject *source_object,
+                                       GAsyncResult *res,
+                                       gpointer user_data)
+{
+    GError *err = NULL;
+    struct invoked_name *data;
+    
+    data = (struct invoked_name *) user_data;
+    if (!check_polkit_finish (res, &err)) {
+        g_dbus_method_invocation_return_gerror (data->invocation, err);
+        goto out;
+    }
+
+    G_LOCK (machine_info);
+    /* Don't allow a null pretty hostname */
+    if (data->name == NULL)
+        data->name = g_strdup ("");
+
+    if (!shell_utils_trivial_set_and_save (machine_info_file, &err, "ICON_NAME", NULL, data->name, NULL)) {
+        g_dbus_method_invocation_return_gerror (data->invocation, err);
+        G_UNLOCK (machine_info);
+        goto out;
+    }
+
+    g_free (icon_name);
+    icon_name = data->name; /* data->name is g_strdup-ed already */
+    openrc_settingsd_hostnamed_hostname1_complete_set_icon_name (hostname1, data->invocation);
+    openrc_settingsd_hostnamed_hostname1_set_icon_name (hostname1, icon_name);
+    G_UNLOCK (machine_info);
+
+  out:
+    g_free (data);
+    if (err != NULL)
+        g_error_free (err);
+}
+
+static gboolean
+on_handle_set_icon_name (OpenrcSettingsdHostnamedHostname1 *hostname1,
+                         GDBusMethodInvocation *invocation,
+                         const gchar *name,
+                         const gboolean user_interaction,
+                         gpointer user_data)
+{
+    if (read_only)
+        g_dbus_method_invocation_return_dbus_error (invocation,
+                                                    DBUS_ERROR_NOT_SUPPORTED,
+                                                    "openrc-settingsd hostnamed is in read-only mode");
+    else {
+        struct invoked_name *data;
+        data = g_new0 (struct invoked_name, 1);
+        data->invocation = invocation;
+        data->name = g_strdup (name);
+        check_polkit_async (g_dbus_method_invocation_get_sender (invocation), "org.freedesktop.hostname1.set-machine-info", user_interaction, on_handle_set_icon_name_authorized_cb, data);
+    }
 
     return TRUE; /* Always return TRUE to indicate signal has been handled */
 }
@@ -272,8 +375,8 @@ on_bus_acquired (GDBusConnection *connection,
 
     g_signal_connect (hostname1, "handle-set-hostname", G_CALLBACK (on_handle_set_hostname), NULL);
     g_signal_connect (hostname1, "handle-set-static-hostname", G_CALLBACK (on_handle_set_static_hostname), NULL);
-    g_signal_connect (hostname1, "handle-set-pretty-hostname", G_CALLBACK (on_handle_set_machine_info), GINT_TO_POINTER(TRUE));
-    g_signal_connect (hostname1, "handle-set-icon-name", G_CALLBACK (on_handle_set_machine_info), GINT_TO_POINTER(FALSE));
+    g_signal_connect (hostname1, "handle-set-pretty-hostname", G_CALLBACK (on_handle_set_pretty_hostname), NULL);
+    g_signal_connect (hostname1, "handle-set-icon-name", G_CALLBACK (on_handle_set_icon_name), NULL);
 
     if (!g_dbus_interface_skeleton_export (G_DBUS_INTERFACE_SKELETON (hostname1),
                                            connection,
