@@ -19,7 +19,7 @@
 /missing
 /openrc-settingsd
 /stamp-h1
-/src/hostnamed-generated.[ch]
+/src/hostname1-generated.[ch]
 
 # Relative rules
 *.o
