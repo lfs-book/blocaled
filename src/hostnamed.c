@@ -469,7 +469,6 @@ hostnamed_destroy (void)
     g_bus_unown_name (bus_id);
     bus_id = 0;
     read_only = FALSE;
-    memset (hostname, 0, HOST_NAME_MAX + 1);
     g_free (hostname);
     g_free (static_hostname);
     g_free (pretty_hostname);
