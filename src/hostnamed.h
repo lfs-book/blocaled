@@ -21,7 +21,6 @@
 
 #include <glib.h>
 #include <gio/gio.h>
-#include <polkit/polkit.h>
 
 void
 hostnamed_on_bus_acquired (GDBusConnection *connection,
