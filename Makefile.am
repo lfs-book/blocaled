@@ -18,8 +18,8 @@ LDADD = $(OPENRC_SETTINGSD_LIBS)
 libexec_PROGRAMS = openrc-settingsd
 
 hostnamed_built_sources = \
-	src/hostnamed-generated.c \
-	src/hostnamed-generated.h \
+	src/hostname1-generated.c \
+	src/hostname1-generated.h \
 	$(NULL)
 
 openrc_settingsd_SOURCES = \
@@ -37,9 +37,9 @@ $(hostnamed_built_sources) : data/hostname1.xml
 	( $(GDBUS_CODEGEN) \
 	--interface-prefix org.freedesktop. \
 	--c-namespace OpenrcSettingsdHostnamed \
-	--generate-c-code hostnamed-generated \
+	--generate-c-code hostname1-generated \
 	$(srcdir)/data/hostname1.xml; \
-	mv hostnamed-generated.{c,h} $(top_srcdir)/src/ )
+	mv hostname1-generated.{c,h} $(top_srcdir)/src/ )
 
 BUILT_SOURCES = $(hostnamed_built_sources)
 CLEANFILES = $(hostnamed_built_sources)

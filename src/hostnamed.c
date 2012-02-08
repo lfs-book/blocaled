@@ -27,7 +27,7 @@
 #include <polkit/polkit.h>
 
 #include "hostnamed.h"
-#include "hostnamed-generated.h"
+#include "hostname1-generated.h"
 #include "bus-utils.h"
 #include "shell-utils.h"
 
