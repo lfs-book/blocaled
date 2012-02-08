@@ -1,7 +1,7 @@
 ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 
 EXTRA_DIST = \
-	data/hostnamed.xml \
+	data/hostname1.xml \
 	$(NULL)
 
 AM_CPPFLAGS = \
@@ -33,12 +33,12 @@ openrc_settingsd_SOURCES = \
 	src/main.c \
 	$(NULL)
 
-$(hostnamed_built_sources) : data/hostnamed.xml
+$(hostnamed_built_sources) : data/hostname1.xml
 	( $(GDBUS_CODEGEN) \
 	--interface-prefix org.freedesktop. \
 	--c-namespace OpenrcSettingsdHostnamed \
 	--generate-c-code hostnamed-generated \
-	$(srcdir)/data/hostnamed.xml; \
+	$(srcdir)/data/hostname1.xml; \
 	mv hostnamed-generated.{c,h} $(top_srcdir)/src/ )
 
 BUILT_SOURCES = $(hostnamed_built_sources)
