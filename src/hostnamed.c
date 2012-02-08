@@ -46,7 +46,7 @@ gboolean read_only = FALSE;
 
 static OpenrcSettingsdHostnamedHostname1 *hostname1 = NULL;
 
-static gchar hostname[HOST_NAME_MAX + 1];
+static gchar *hostname = NULL;
 G_LOCK_DEFINE_STATIC (hostname);
 static gchar *static_hostname = NULL;
 static GFile *static_hostname_file = NULL;
@@ -128,8 +128,8 @@ on_handle_set_hostname_authorized_cb (GObject *source_object,
         if (data->name != NULL)
             g_free (data->name);
 
-        if (hostname_is_valid (hostname))
-            data->name = g_strdup (hostname);
+        if (hostname_is_valid (static_hostname))
+            data->name = g_strdup (static_hostname);
         else
             data->name = g_strdup ("localhost");
     }
@@ -141,13 +141,13 @@ on_handle_set_hostname_authorized_cb (GObject *source_object,
         G_UNLOCK (hostname);
         goto out;
     }
-    g_strlcpy (hostname, data->name, HOST_NAME_MAX + 1);
+    g_free (hostname);
+    hostname = data->name; /* data->name is g_strdup-ed already */;
     openrc_settingsd_hostnamed_hostname1_complete_set_hostname (hostname1, data->invocation);
     openrc_settingsd_hostnamed_hostname1_set_hostname (hostname1, hostname);
     G_UNLOCK (hostname);
 
   out:
-    g_free (data->name);
     g_free (data);
     if (err != NULL)
         g_error_free (err);
@@ -416,10 +416,10 @@ hostnamed_init (gboolean _read_only)
 {
     GError *err = NULL;
 
-    memset (hostname, 0, HOST_NAME_MAX + 1);
+    hostname = g_malloc0 (HOST_NAME_MAX + 1);
     if (gethostname (hostname, HOST_NAME_MAX)) {
         perror (NULL);
-        hostname[0] = 0;
+        g_strlcpy (hostname, "localhost", HOST_NAME_MAX + 1);
     }
 
     static_hostname_file = g_file_new_for_path (SYSCONFDIR "/conf.d/hostname");
@@ -470,6 +470,7 @@ hostnamed_destroy (void)
     bus_id = 0;
     read_only = FALSE;
     memset (hostname, 0, HOST_NAME_MAX + 1);
+    g_free (hostname);
     g_free (static_hostname);
     g_free (pretty_hostname);
     g_free (icon_name);
