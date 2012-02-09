@@ -45,6 +45,7 @@ struct ShellEntry {
     enum ShellEntryType type;
     gchar *string;
     gchar *variable; /* only relevant for assignments */
+    gchar *unquoted_value; /* only relevant for assignments */
 };
 
 gchar *
@@ -104,10 +105,9 @@ shell_entry_free (struct ShellEntry *entry)
     if (entry == NULL)
         return;
 
-    if (entry->string != NULL)
-        g_free (entry->string);
-    if (entry->variable != NULL)
-        g_free (entry->variable);
+    g_free (entry->string);
+    g_free (entry->variable);
+    g_free (entry->unquoted_value);
     g_free (entry);
 }
 
@@ -132,7 +132,7 @@ shell_utils_trivial_new (GFile *file,
 {
     gchar *filebuf = NULL;
     ShellUtilsTrivial *ret = NULL;
-    GError *local_err;
+    GError *local_err = NULL;
     gchar *s;
 
     if (file == NULL)
@@ -214,6 +214,7 @@ shell_utils_trivial_new (GFile *file,
 
         matched = g_regex_match (var_equals_regex, s, 0, &match_info);
         if (matched) {
+            gchar *raw_value = NULL, *temp1 = NULL, *temp2 = NULL;
             /* If we expect a separator and get an assignment instead, fail */
             if (want_separator)
                 goto no_match;
@@ -231,7 +232,6 @@ shell_utils_trivial_new (GFile *file,
             while (*s != 0) {
                 g_debug ("Scanning string for values: ``%s''", s);
                 gboolean matched2 = FALSE;
-                gchar *temp1 = NULL, *temp2 = NULL;
 
                 matched2 = g_regex_match (single_quoted_regex, s, 0, &match_info);
                 if (matched2)
@@ -256,18 +256,36 @@ shell_utils_trivial_new (GFile *file,
 
                 break;
 append_value:
-                temp1 = entry->string;
-                temp2 = g_match_info_fetch (match_info, 0);
-                entry->string = g_strconcat (temp1, temp2, NULL);
-                s += strlen (temp2);
-                g_debug ("Scanned value: ``%s''", temp2);
-                g_free (temp1);
-                g_free (temp2);
+
+                if (raw_value == NULL) {
+                    raw_value = g_match_info_fetch (match_info, 0);
+                    s += strlen (raw_value);
+                    g_debug ("Scanned value: ``%s''", raw_value);
+                } else {
+                    temp1 = raw_value;
+                    temp2 = g_match_info_fetch (match_info, 0);
+                    raw_value = g_strconcat (temp1, temp2, NULL);
+                    s += strlen (temp2);
+                    g_debug ("Scanned value: ``%s''", temp2);
+                    g_free (temp1);
+                    g_free (temp2);
+                }
                 g_match_info_free (match_info);
                 match_info = NULL;
             }
 
-            ret->entry_list = g_list_prepend (ret->entry_list, entry);
+            if (raw_value != NULL) {
+                entry->unquoted_value = g_shell_unquote (raw_value, &local_err);
+                g_debug  ("Unquoted value: ``%s''", entry->unquoted_value);
+                temp1 = entry->string;
+                temp2 = raw_value;
+                entry->string = g_strconcat (temp1, temp2, NULL);
+                g_free (temp1);
+                g_free (temp2);
+                ret->entry_list = g_list_prepend (ret->entry_list, entry);
+                if (local_err != NULL)
+                    goto no_match;
+            }
             continue;
         }
 
@@ -275,9 +293,12 @@ no_match:
         /* Nothing matches, parsing has failed! */
         g_match_info_free (match_info);
         match_info = NULL;
-        g_propagate_error (error,
-                           g_error_new (G_FILE_ERROR, G_FILE_ERROR_FAILED,
-                                        "Unable to parse '%s'", ret->filename));
+        if (local_err != NULL)
+            g_propagate_prefixed_error (error, local_err, "Unable to parse '%s':", ret->filename);
+        else
+            g_propagate_error (error,
+                               g_error_new (G_FILE_ERROR, G_FILE_ERROR_FAILED,
+                                            "Unable to parse '%s'", ret->filename));
         shell_utils_trivial_free (ret);
         return NULL;
     }
@@ -417,6 +438,36 @@ shell_utils_trivial_set_and_save (GFile *file,
     va_end (ap);
     if (trivial != NULL)
         shell_utils_trivial_free (trivial);
+    return ret;
+}
+
+gchar **
+shell_utils_trivial_source_var_list (GFile *file,
+                                     const gchar * const *var_names,
+                                     GError **error)
+{
+    ShellUtilsTrivial *trivial;
+    gchar **ret = NULL, **value;
+    const gchar* const* var_name;
+
+    if (var_names == NULL)
+        return NULL;
+
+    if ((trivial = shell_utils_trivial_new (file, error)) == NULL)
+        return NULL;
+
+    ret = g_new0 (gchar *, g_strv_length ((gchar **)var_names) + 1);
+    for (var_name = var_names, value = ret; *var_name != NULL; var_name++, value++) {
+        GList *curr;
+        for (curr = trivial->entry_list; curr != NULL; curr = curr->next) {
+            struct ShellEntry *entry;
+
+            entry = (struct ShellEntry *)(curr->data);
+            if (entry->type == SHELL_ENTRY_TYPE_ASSIGNMENT && g_strcmp0 (*var_name, entry->variable) == 0)
+                *value = g_strdup (entry->unquoted_value);
+        }
+    }
+    shell_utils_trivial_free (trivial);
     return ret;
 }
 

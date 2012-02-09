@@ -16,6 +16,28 @@ Hostnamed:
  PRETTY_HOSTNAME="Foo !"
  ICON_NAME="computer-desktop"
 
+Localed:
+
+ See http://www.freedesktop.org/wiki/Software/systemd/localed for the DBus
+ protocol description.
+
+ The system locale variables are set in /etc/env.d/02locale.
+
+ Virtual console keymap is set in /etc/conf.d/keymaps as
+ keymap="foo"
+ The virtual console keymap toggle is not supported.
+
+/*
+ Not implemented yet.
+
+ X11 keyboard options are set in /etc/X11/xorg.conf.d/30-keyboard.conf
+ (falling back to 00-keyboard.conf if it exists and 30-keyboard.conf does
+ not) in an InputClass section.
+ Localed will attempt to detect if multiple InputClass sections with
+ keyboard options exist in /etc/X11/xorg.conf and /etc/X11/xorg.conf.d/,
+ and if that is the case, will refuse to modify X11 keyboard settings.
+*/
+
 Note that openrc-settingsd expects any shell-syntax settings files that it
 modifies to be in UTF-8 encoding, and to consist only of comments and simple
 scalar assignments, i.e. something like

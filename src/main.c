@@ -23,6 +23,7 @@
 #include <gio/gio.h>
 
 #include "hostnamed.h"
+#include "localed.h"
 #include "shell-utils.h"
 
 #include "config.h"
@@ -68,10 +69,12 @@ main (gint argc, gchar *argv[])
 
     shell_utils_init ();
     hostnamed_init (read_only);
+    localed_init (read_only);
     loop = g_main_loop_new (NULL, FALSE);
     g_main_loop_run (loop);
 
     g_main_loop_unref (loop);
+    localed_destroy ();
     hostnamed_destroy ();
     shell_utils_destroy ();
     return 0;

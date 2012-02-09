@@ -20,6 +20,7 @@
 /openrc-settingsd
 /stamp-h1
 /src/hostname1-generated.[ch]
+/src/locale1-generated.[ch]
 
 # Relative rules
 *.o

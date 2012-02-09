@@ -66,4 +66,9 @@ shell_utils_trivial_set_and_save (GFile *file,
                                   const gchar *first_alt_var_name,
                                   const gchar *first_value,
                                   ...);
+
+gchar **
+shell_utils_trivial_source_var_list (GFile *file,
+                                     const gchar * const *var_names,
+                                     GError **error);
 #endif
