@@ -40,6 +40,7 @@ static GOptionEntry option_entries[] =
     { NULL }
 };
 
+/* Emulates the new behavior of g_log_default_handler introduced in glib-2.31.2 */
 static void
 log_handler (const gchar *log_domain,
              GLogLevelFlags log_level,
@@ -58,7 +59,6 @@ main (gint argc, gchar *argv[])
     GMainLoop *loop = NULL;
 
     g_type_init ();
-    g_log_set_default_handler (log_handler, NULL);
 
     option_context = g_option_context_new ("- system settings D-Bus service for OpenRC");
     g_option_context_add_main_entries (option_context, option_entries, NULL);
@@ -66,6 +66,12 @@ main (gint argc, gchar *argv[])
         g_printerr ("Failed to parse options: %s\n", error->message);
         exit (1);
     }
+
+    if (glib_check_version (2, 31, 2) == NULL) {
+        if (debug)
+            g_setenv("G_MESSAGES_DEBUG", "all", TRUE);
+    } else
+        g_log_set_default_handler (log_handler, NULL);
 
     shell_utils_init ();
     hostnamed_init (read_only);
