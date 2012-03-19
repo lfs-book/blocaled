@@ -190,6 +190,20 @@ xorg_confd_line_entry_free (struct xorg_confd_line_entry *entry)
     g_free (entry);
 }
 
+/* Note that string and value are not duplicated */
+static struct xorg_confd_line_entry *
+xorg_confd_line_entry_new (const gchar *string,
+                           const gchar *value,
+                           enum XORG_CONFD_LINE_TYPE type)
+{
+    struct xorg_confd_line_entry *entry;
+
+    entry = g_new0 (struct xorg_confd_line_entry, 1);
+    entry->string = g_strdup (string);
+    entry->value = g_strdup (value);
+    entry->type = type;
+}
+
 static void
 xorg_confd_parser_free (struct xorg_confd_parser *parser)
 {
@@ -239,9 +253,7 @@ xorg_confd_parser_new (GFile *xorg_confd_file,
         GMatchInfo *match_info = NULL;
         gboolean matched = FALSE;
 
-        entry = g_new0 (struct xorg_confd_line_entry, 1);
-        entry->string = *linebuf;
-        entry->type = XORG_CONFD_LINE_TYPE_UNKNOWN;
+        entry = xorg_confd_line_entry_new (*linebuf, NULL, XORG_CONFD_LINE_TYPE_UNKNOWN);
 
         if (g_regex_match (xorg_confd_line_comment_re, *linebuf, 0, &match_info)) {
             g_debug ("Parsed line '%s' as comment", *linebuf);
@@ -330,6 +342,7 @@ xorg_confd_parser_new (GFile *xorg_confd_file,
 
   out:
     g_free (filebuf);
+    g_strfreev (lines);
     return parser;
 
   parse_fail:
@@ -414,7 +427,7 @@ xorg_confd_parser_set_xkb (struct xorg_confd_parser *parser,
                            const gchar *variant,
                            const gchar *options)
 {
-    GList *curr = NULL;
+    GList *curr = NULL, *end = NULL;
     gboolean layout_found = FALSE, model_found = FALSE, variant_found = FALSE, options_found = FALSE;
 
     if (parser == NULL)
@@ -424,19 +437,16 @@ xorg_confd_parser_set_xkb (struct xorg_confd_parser *parser,
         struct xorg_confd_line_entry *entry = NULL;
         GList *section = NULL;
 
-        entry = g_new0 (struct xorg_confd_line_entry, 1);
-        entry->string = g_strdup("Section \"InputClass\"\n");
-        entry->type = XORG_CONFD_LINE_TYPE_SECTION_INPUT_CLASS;
+        entry = xorg_confd_line_entry_new ("Section \"InputClass\"\n", NULL, XORG_CONFD_LINE_TYPE_SECTION_INPUT_CLASS);
         section = g_list_prepend (section, entry);
 
-        entry = g_new0 (struct xorg_confd_line_entry, 1);
-        entry->string = g_strdup("MatchIsKeyboard \"on\"\n");
-        entry->type = XORG_CONFD_LINE_TYPE_MATCH_IS_KEYBOARD;
+        entry = xorg_confd_line_entry_new ("        Identifier \"keyboard-all\"\n", NULL, XORG_CONFD_LINE_TYPE_UNKNOWN);
         section = g_list_prepend (section, entry);
 
-        entry = g_new0 (struct xorg_confd_line_entry, 1);
-        entry->string = g_strdup("EndSection\n");
-        entry->type = XORG_CONFD_LINE_TYPE_END_SECTION;
+        entry = entry = xorg_confd_line_entry_new ("        MatchIsKeyboard \"on\"\n", NULL, XORG_CONFD_LINE_TYPE_MATCH_IS_KEYBOARD);
+        section = g_list_prepend (section, entry);
+
+        entry = entry = xorg_confd_line_entry_new ("EndSection\n", NULL, XORG_CONFD_LINE_TYPE_END_SECTION);
         section = g_list_prepend (section, entry);
 
         section = g_list_reverse (section);
@@ -447,16 +457,58 @@ xorg_confd_parser_set_xkb (struct xorg_confd_parser *parser,
     for (curr = parser->section; curr != NULL; curr = curr->next) {
         struct xorg_confd_line_entry *entry = (struct xorg_confd_line_entry *) curr->data;
 
-        if (entry->type == XORG_CONFD_LINE_TYPE_END_SECTION)
+        if (entry->type == XORG_CONFD_LINE_TYPE_END_SECTION) {
+            end = curr;
             break;
-        else if (entry->type == XORG_CONFD_LINE_TYPE_XKB_LAYOUT)
+        } else if (entry->type == XORG_CONFD_LINE_TYPE_XKB_LAYOUT) {
+            layout_found = TRUE;
             curr = xorg_confd_parser_line_set_or_delete (curr, layout, xorg_confd_line_xkb_layout_re);
-        else if (entry->type == XORG_CONFD_LINE_TYPE_XKB_MODEL)
+        } else if (entry->type == XORG_CONFD_LINE_TYPE_XKB_MODEL) {
+            model_found = TRUE;
             curr = xorg_confd_parser_line_set_or_delete (curr, model, xorg_confd_line_xkb_model_re);
-        else if (entry->type == XORG_CONFD_LINE_TYPE_XKB_VARIANT)
+        } else if (entry->type == XORG_CONFD_LINE_TYPE_XKB_VARIANT) {
+            variant_found = TRUE;
             curr = xorg_confd_parser_line_set_or_delete (curr, variant, xorg_confd_line_xkb_variant_re);
-        else if (entry->type == XORG_CONFD_LINE_TYPE_XKB_OPTIONS)
+        } else if (entry->type == XORG_CONFD_LINE_TYPE_XKB_OPTIONS) {
+            options_found = TRUE;
             curr = xorg_confd_parser_line_set_or_delete (curr, options, xorg_confd_line_xkb_options_re);
+        }
+    }
+    if (!layout_found && layout != NULL && g_strcmp0 (layout, "")) {
+        struct xorg_confd_line_entry *entry;
+        gchar *string;
+
+        string = g_strdup_printf ("        Option \"XkbLayout\" \"%s\"", layout);
+        entry = xorg_confd_line_entry_new (string, layout, XORG_CONFD_LINE_TYPE_XKB_LAYOUT);
+        parser->line_list = g_list_insert_before (parser->line_list, end, entry);
+        g_free (string);
+    }
+    if (!model_found && model != NULL && g_strcmp0 (model, "")) {
+        struct xorg_confd_line_entry *entry;
+        gchar *string;
+
+        string = g_strdup_printf ("        Option \"XkbModel\" \"%s\"", model);
+        entry = xorg_confd_line_entry_new (string, model, XORG_CONFD_LINE_TYPE_XKB_MODEL);
+        parser->line_list = g_list_insert_before (parser->line_list, end, entry);
+        g_free (string);
+    }
+    if (!variant_found && variant != NULL && g_strcmp0 (variant, "")) {
+        struct xorg_confd_line_entry *entry;
+        gchar *string;
+
+        string = g_strdup_printf ("        Option \"XkbVariant\" \"%s\"", variant);
+        entry = xorg_confd_line_entry_new (string, variant, XORG_CONFD_LINE_TYPE_XKB_VARIANT);
+        parser->line_list = g_list_insert_before (parser->line_list, end, entry);
+        g_free (string);
+    }
+    if (!options_found && options != NULL && g_strcmp0 (options, "")) {
+        struct xorg_confd_line_entry *entry;
+        gchar *string;
+
+        string = g_strdup_printf ("        Option \"XkbOptions\" \"%s\"", options);
+        entry = xorg_confd_line_entry_new (string, options, XORG_CONFD_LINE_TYPE_XKB_OPTIONS);
+        parser->line_list = g_list_insert_before (parser->line_list, end, entry);
+        g_free (string);
     }
 }
 
