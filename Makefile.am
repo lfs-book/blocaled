@@ -5,10 +5,15 @@ EXTRA_DIST = \
 	data/locale1.xml \
 	$(NULL)
 
+pkgdata_DATA = \
+	data/kbd-model-map \
+	$(NULL)
+
 AM_CPPFLAGS = \
 	-include $(top_builddir)/config.h \
 	-DSYSCONFDIR=\""$(sysconfdir)"\" \
 	-DLIBEXECDIR=\""$(libexecdir)"\" \
+	-DPKGDATADIR=\""$(pkgdatadir)"\" \
 	$(OPENRC_SETTINGSD_CFLAGS) \
 	-I$(top_srcdir)/src \
 	-I$(top_builddir)/src \

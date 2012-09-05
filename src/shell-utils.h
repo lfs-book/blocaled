@@ -22,7 +22,7 @@
 #include <glib.h>
 #include <gio/gio.h>
 
-typedef struct _ShellUtilsTrivial        ShellUtilsTrivial;
+typedef struct _ShellUtilsTrivial ShellUtilsTrivial;
 
 struct _ShellUtilsTrivial
 {
@@ -46,14 +46,26 @@ ShellUtilsTrivial *
 shell_utils_trivial_new (GFile *file,
                          GError **error);
 
+ShellUtilsTrivial *
+shell_utils_trivial_new_from_string (GFile *file,
+                                     gchar *filebuf,
+                                     GError **error);
+
 void
 shell_utils_trivial_free (ShellUtilsTrivial *trivial);
+
+gboolean
+shell_utils_trivial_is_empty (ShellUtilsTrivial *trivial);
 
 gboolean
 shell_utils_trivial_set_variable (ShellUtilsTrivial *trivial,
                                   const gchar *variable,
                                   const gchar *value,
                                   gboolean add_if_unset);
+
+void
+shell_utils_trivial_clear_variable (ShellUtilsTrivial *trivial,
+                                    const gchar *variable);
 
 gboolean
 shell_utils_trivial_save (ShellUtilsTrivial *trivial,

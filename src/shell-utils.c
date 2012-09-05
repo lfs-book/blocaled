@@ -131,31 +131,51 @@ shell_utils_trivial_new (GFile *file,
                          GError **error)
 {
     gchar *filebuf = NULL;
+    GError *local_err = NULL;
+
+    if (file == NULL)
+        return NULL;
+
+    if (!g_file_load_contents (file, NULL, &filebuf, NULL, NULL, &local_err)) {
+        if (local_err != NULL) {
+            /* Inability to parse or open is a failure; file not existing at all is *not* a failure */
+            if (local_err->code == G_IO_ERROR_NOT_FOUND) {
+                ShellUtilsTrivial *ret = NULL;
+
+                g_error_free (local_err);
+                ret = g_new0 (ShellUtilsTrivial, 1);
+                g_object_ref (file);
+                ret->file = file;
+                ret->filename = g_file_get_path (file);
+                return ret;
+            } else {
+                gchar *filename;
+                filename = g_file_get_path (file);
+                g_propagate_prefixed_error (error, local_err, "Unable to read '%s':", filename);
+                g_free (filename);
+            }
+        }
+        return NULL;
+    }
+    return shell_utils_trivial_new_from_string (file, filebuf, error);
+}
+
+ShellUtilsTrivial *
+shell_utils_trivial_new_from_string (GFile *file,
+                                     gchar *filebuf,
+                                     GError **error)
+{
     ShellUtilsTrivial *ret = NULL;
     GError *local_err = NULL;
     gchar *s;
 
-    if (file == NULL)
+    if (file == NULL || filebuf == NULL)
         return NULL;
 
     ret = g_new0 (ShellUtilsTrivial, 1);
     g_object_ref (file);
     ret->file = file;
     ret->filename = g_file_get_path (file);
-
-    if (!g_file_load_contents (file, NULL, &filebuf, NULL, NULL, &local_err)) {
-        if (local_err != NULL) {
-            /* Inability to parse or open is a failure; file not existing at all is *not* a failure */
-            if (local_err->code == G_IO_ERROR_NOT_FOUND) {
-                g_error_free (local_err);
-                return ret;
-            }
-
-            g_propagate_prefixed_error (error, local_err, "Unable to read '%s':", ret->filename);
-        }
-        shell_utils_trivial_free (ret);
-        return NULL;
-    }
 
     gboolean want_separator = FALSE; /* Do we expect the next entry to be a separator or comment? */
     s = filebuf;
@@ -308,6 +328,14 @@ no_match:
 }
 
 gboolean
+shell_utils_trivial_is_empty (ShellUtilsTrivial *trivial)
+{
+    if (trivial == NULL || trivial->entry_list == NULL)
+        return TRUE;
+    return FALSE;
+}
+
+gboolean
 shell_utils_trivial_set_variable (ShellUtilsTrivial *trivial,
                                   const gchar *variable,
                                   const gchar *value,
@@ -348,6 +376,38 @@ shell_utils_trivial_set_variable (ShellUtilsTrivial *trivial,
 
     g_free (quoted_value);
     return ret;
+}
+
+void
+shell_utils_trivial_clear_variable (ShellUtilsTrivial *trivial,
+                                    const gchar *variable)
+{
+    GList *curr = NULL;
+    gboolean ret = FALSE;
+
+    g_assert (trivial != NULL);
+    g_assert (variable != NULL);
+
+    for (curr = trivial->entry_list; curr != NULL; ) {
+        struct ShellEntry *entry;
+
+        entry = (struct ShellEntry *)(curr->data);
+        if (entry->type == SHELL_ENTRY_TYPE_ASSIGNMENT && g_strcmp0 (variable, entry->variable) == 0) {
+            GList *prev, *next;
+
+            prev = curr->prev;
+            next = curr->next;
+            curr->prev = NULL;
+            curr->next = NULL;
+            g_list_free_full (curr, (GDestroyNotify)shell_entry_free);
+            if (prev != NULL)
+                prev->next = next;
+            if (next != NULL)
+                next->prev = prev;
+            curr = next;
+        } else
+            curr = curr->next;
+    }
 }
 
 gboolean
