@@ -555,6 +555,7 @@ on_handle_set_local_rtc (OpenrcSettingsdTimedatedTimedate1 *timedate1,
     else {
         struct invoked_set_local_rtc *data;
         data = g_new0 (struct invoked_set_local_rtc, 1);
+        data->invocation = invocation;
         data->local_rtc = _local_rtc;
         data->fix_system = fix_system;
         check_polkit_async (g_dbus_method_invocation_get_sender (invocation), "org.freedesktop.timedate1.set-local-rtc", user_interaction, on_handle_set_local_rtc_authorized_cb, data);
@@ -617,6 +618,7 @@ on_handle_set_ntp (OpenrcSettingsdTimedatedTimedate1 *timedate1,
     else {
         struct invoked_set_ntp *data;
         data = g_new0 (struct invoked_set_ntp, 1);
+        data->invocation = invocation;
         data->use_ntp = _use_ntp;
         check_polkit_async (g_dbus_method_invocation_get_sender (invocation), "org.freedesktop.timedate1.set-ntp", user_interaction, on_handle_set_ntp_authorized_cb, data);
     }
