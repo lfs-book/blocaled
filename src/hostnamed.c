@@ -28,8 +28,7 @@
 
 #include "hostnamed.h"
 #include "hostname1-generated.h"
-#include "bus-utils.h"
-#include "shell-utils.h"
+#include "utils.h"
 
 #include "config.h"
 
@@ -66,10 +65,12 @@ hostname_is_valid (const gchar *name)
                                  name, G_REGEX_MULTILINE, 0);
 }
 
-static void
+static gchar *
 guess_icon_name ()
 {
     /* TODO: detect virtualization by reading rc_sys */
+    gchar *filebuf = NULL;
+    gchar *ret = NULL;
 
 #if defined(__i386__) || defined(__x86_64__)
     /* 
@@ -80,32 +81,34 @@ guess_icon_name ()
 
        http://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
     */
-    gchar *contents;
 
-    if (g_file_get_contents ("/sys/class/dmi/id/chassis_type", &contents, NULL, NULL)) {
-        switch (g_ascii_strtoull (contents, NULL, 10)) {
+    if (g_file_get_contents ("/sys/class/dmi/id/chassis_type", &filebuf, NULL, NULL)) {
+        switch (g_ascii_strtoull (filebuf, NULL, 10)) {
         case 0x3:
         case 0x4:
         case 0x5:
         case 0x6:
         case 0x7:
-            icon_name = g_strdup ("computer-desktop");
-            return;
+            ret = g_strdup ("computer-desktop");
+            goto out;
         case 0x9:
         case 0xA:
         case 0xE:
-            icon_name = g_strdup ("computer-laptop");
-            return;
+            ret = g_strdup ("computer-laptop");
+            goto out;
         case 0x11:
         case 0x17:
         case 0x1C:
         case 0x1D:
-            icon_name = g_strdup ("computer-server");
-            return;
+            ret = g_strdup ("computer-server");
+            goto out;
         }
     }
 #endif
-    icon_name = g_strdup ("computer");
+    ret = g_strdup ("computer");
+  out:
+    g_free (filebuf);
+    return ret;
 }
 
 static void
@@ -198,7 +201,7 @@ on_handle_set_static_hostname_authorized_cb (GObject *source_object,
         data->name = g_strdup ("localhost");
     }
 
-    if (!shell_utils_trivial_set_and_save (static_hostname_file, &err, "hostname", "HOSTNAME", data->name, NULL)) {
+    if (!shell_parser_set_and_save (static_hostname_file, &err, "hostname", "HOSTNAME", data->name, NULL)) {
         g_dbus_method_invocation_return_gerror (data->invocation, err);
         G_UNLOCK (static_hostname);
         goto out;
@@ -257,7 +260,7 @@ on_handle_set_pretty_hostname_authorized_cb (GObject *source_object,
     if (data->name == NULL)
         data->name = g_strdup ("");
 
-    if (!shell_utils_trivial_set_and_save (machine_info_file, &err, "PRETTY_HOSTNAME", NULL, data->name, NULL)) {
+    if (!shell_parser_set_and_save (machine_info_file, &err, "PRETTY_HOSTNAME", NULL, data->name, NULL)) {
         g_dbus_method_invocation_return_gerror (data->invocation, err);
         G_UNLOCK (machine_info);
         goto out;
@@ -316,7 +319,7 @@ on_handle_set_icon_name_authorized_cb (GObject *source_object,
     if (data->name == NULL)
         data->name = g_strdup ("");
 
-    if (!shell_utils_trivial_set_and_save (machine_info_file, &err, "ICON_NAME", NULL, data->name, NULL)) {
+    if (!shell_parser_set_and_save (machine_info_file, &err, "ICON_NAME", NULL, data->name, NULL)) {
         g_dbus_method_invocation_return_gerror (data->invocation, err);
         G_UNLOCK (machine_info);
         goto out;
@@ -425,13 +428,13 @@ hostnamed_init (gboolean _read_only)
     static_hostname_file = g_file_new_for_path (SYSCONFDIR "/conf.d/hostname");
     machine_info_file = g_file_new_for_path (SYSCONFDIR "/machine-info");
 
-    static_hostname = shell_utils_source_var (static_hostname_file, "${hostname-${HOSTNAME-localhost}}", &err);
+    static_hostname = shell_source_var (static_hostname_file, "${hostname-${HOSTNAME-localhost}}", &err);
     if (err != NULL) {
         g_debug ("%s", err->message);
         g_error_free (err);
         err = NULL;
     }
-    pretty_hostname = shell_utils_source_var (machine_info_file, "${PRETTY_HOSTNAME}", &err);
+    pretty_hostname = shell_source_var (machine_info_file, "${PRETTY_HOSTNAME}", &err);
     if (pretty_hostname == NULL)
         pretty_hostname = g_strdup ("");
     if (err != NULL) {
@@ -439,7 +442,7 @@ hostnamed_init (gboolean _read_only)
         g_error_free (err);
         err = NULL;
     }
-    icon_name = shell_utils_source_var (machine_info_file, "${ICON_NAME}", &err);
+    icon_name = shell_source_var (machine_info_file, "${ICON_NAME}", &err);
     if (icon_name == NULL)
         icon_name = g_strdup ("");
     if (err != NULL) {
@@ -448,8 +451,10 @@ hostnamed_init (gboolean _read_only)
         err = NULL;
     }
 
-    if (icon_name == NULL || strlen (icon_name) == 0)
-        guess_icon_name ();
+    if (icon_name == NULL || *icon_name == 0) {
+        g_free (icon_name);
+        icon_name = guess_icon_name ();
+    }
 
     read_only = _read_only;
 

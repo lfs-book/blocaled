@@ -59,10 +59,8 @@ openrc_settingsd_SOURCES = \
 	src/localed.h \
 	src/timedated.c \
 	src/timedated.h \
-	src/bus-utils.c \
-	src/bus-utils.h \
-	src/shell-utils.c \
-	src/shell-utils.h \
+	src/utils.c \
+	src/utils.h \
 	src/main.c \
 	$(NULL)
 

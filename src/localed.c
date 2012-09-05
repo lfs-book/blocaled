@@ -26,8 +26,7 @@
 
 #include "localed.h"
 #include "locale1-generated.h"
-#include "bus-utils.h"
-#include "shell-utils.h"
+#include "utils.h"
 
 #include "config.h"
 
@@ -215,16 +214,17 @@ kbd_model_map_load (GError **error)
     for (line = filebuf; *line != 0; line = newline + 1) {
         struct kbd_model_map_entry *entry = NULL;
         GMatchInfo *match_info = NULL;
+        gboolean m = FALSE;
 
         if ((newline = strstr (line, "\n")) != NULL)
             *newline = 0;
         else
             newline = line + strlen (line) - 1;
 
-        if (g_regex_match (kbd_model_map_line_comment_re, line, 0, &match_info)) {
-            g_match_info_free (match_info);
+        m = g_regex_match (kbd_model_map_line_comment_re, line, 0, &match_info);
+        _g_match_info_clear (&match_info);
+        if (m)
             continue;
-        }
 
         if (!g_regex_match (kbd_model_map_line_re, line,  0, &match_info)) {
             g_propagate_error (error,
@@ -253,7 +253,7 @@ kbd_model_map_load (GError **error)
             entry->x11_options[0] = 0;
 
         ret = g_list_prepend (ret, entry);
-        g_match_info_free (match_info);
+        _g_match_info_clear (&match_info);
     }
   out:
     if (ret != NULL)
@@ -452,6 +452,7 @@ xorg_confd_parser_new (GFile *xorg_confd_file,
         struct xorg_confd_line_entry *entry = NULL;
         GMatchInfo *match_info = NULL;
         gboolean matched = FALSE;
+        gboolean m = FALSE;
 
         if ((newline = strstr (line, "\n")) != NULL)
             *newline = 0;
@@ -463,48 +464,48 @@ xorg_confd_parser_new (GFile *xorg_confd_file,
         if (g_regex_match (xorg_confd_line_comment_re, line, 0, &match_info)) {
             g_debug ("Parsed line '%s' as comment", line);
             entry->type = XORG_CONFD_LINE_TYPE_COMMENT;
-        } else if (g_regex_match (xorg_confd_line_section_input_class_re, line, 0, &match_info)) {
+        } else if (_g_match_info_clear (&match_info) && g_regex_match (xorg_confd_line_section_input_class_re, line, 0, &match_info)) {
             g_debug ("Parsed line '%s' as InputClass section", line);
             if (in_section)
                 goto no_match;
             in_section = TRUE;
             entry->type = XORG_CONFD_LINE_TYPE_SECTION_INPUT_CLASS;
-        } else if (g_regex_match (xorg_confd_line_section_re, line, 0, &match_info)) {
+        } else if (_g_match_info_clear (&match_info) && g_regex_match (xorg_confd_line_section_re, line, 0, &match_info)) {
             g_debug ("Parsed line '%s' as non-InputClass section", line);
             if (in_section)
                 goto no_match;
             in_section = TRUE;
             entry->type = XORG_CONFD_LINE_TYPE_SECTION_OTHER;
-        } else if (g_regex_match (xorg_confd_line_end_section_re, line, 0, &match_info)) {
+        } else if (_g_match_info_clear (&match_info) && g_regex_match (xorg_confd_line_end_section_re, line, 0, &match_info)) {
             g_debug ("Parsed line '%s' as end of section", line);
             if (!in_section)
                 goto no_match;
             entry->type = XORG_CONFD_LINE_TYPE_END_SECTION;
-        } else if (g_regex_match (xorg_confd_line_match_is_keyboard_re, line, 0, &match_info)) {
+        } else if (_g_match_info_clear (&match_info) && g_regex_match (xorg_confd_line_match_is_keyboard_re, line, 0, &match_info)) {
             g_debug ("Parsed line '%s' as MatchIsKeyboard declaration", line);
             if (!in_section)
                 goto no_match;
             entry->type = XORG_CONFD_LINE_TYPE_MATCH_IS_KEYBOARD;
             in_xkb_section = TRUE;
-        } else if (g_regex_match (xorg_confd_line_xkb_layout_re, line, 0, &match_info)) {
+        } else if (_g_match_info_clear (&match_info) && g_regex_match (xorg_confd_line_xkb_layout_re, line, 0, &match_info)) {
             g_debug ("Parsed line '%s' as XkbLayout option", line);
             if (!in_section)
                 goto no_match;
             entry->type = XORG_CONFD_LINE_TYPE_XKB_LAYOUT;
             entry->value = g_match_info_fetch (match_info, 2);
-        } else if (g_regex_match (xorg_confd_line_xkb_model_re, line, 0, &match_info)) {
+        } else if (_g_match_info_clear (&match_info) && g_regex_match (xorg_confd_line_xkb_model_re, line, 0, &match_info)) {
             g_debug ("Parsed line '%s' as XkbModel option", line);
             if (!in_section)
                 goto no_match;
             entry->type = XORG_CONFD_LINE_TYPE_XKB_MODEL;
             entry->value = g_match_info_fetch (match_info, 2);
-        } else if (g_regex_match (xorg_confd_line_xkb_variant_re, line, 0, &match_info)) {
+        } else if (_g_match_info_clear (&match_info) && g_regex_match (xorg_confd_line_xkb_variant_re, line, 0, &match_info)) {
             g_debug ("Parsed line '%s' as XkbVariant option", line);
             if (!in_section)
                 goto no_match;
             entry->type = XORG_CONFD_LINE_TYPE_XKB_VARIANT;
             entry->value = g_match_info_fetch (match_info, 2);
-        } else if (g_regex_match (xorg_confd_line_xkb_options_re, line, 0, &match_info)) {
+        } else if (_g_match_info_clear (&match_info) && g_regex_match (xorg_confd_line_xkb_options_re, line, 0, &match_info)) {
             g_debug ("Parsed line '%s' as XkbOptions option", line);
             if (!in_section)
                 goto no_match;
@@ -515,7 +516,7 @@ xorg_confd_parser_new (GFile *xorg_confd_file,
         if (entry->type == XORG_CONFD_LINE_TYPE_UNKNOWN)
             g_debug ("Parsing line '%s' as unknown", line);
 
-        g_match_info_free (match_info);
+        _g_match_info_clear (&match_info);
         parser->line_list = g_list_prepend (parser->line_list, entry);
         if (in_section) {
             if (entry->type == XORG_CONFD_LINE_TYPE_SECTION_INPUT_CLASS)
@@ -534,7 +535,7 @@ xorg_confd_parser_new (GFile *xorg_confd_file,
   no_match:
         /* Nothing matched... */
         g_free (entry);
-        g_match_info_free (match_info);
+        _g_match_info_clear (&match_info);
         goto parse_fail;
     }
 
@@ -787,7 +788,7 @@ on_handle_set_locale_authorized_cb (GObject *source_object,
     GError *err = NULL;
     struct invoked_locale *data;
     gchar **loc, **var, **val, **locale_values = NULL;
-    ShellUtilsTrivial *locale_file_parsed = NULL;
+    ShellParser *locale_file_parsed = NULL;
 
     data = (struct invoked_locale *) user_data;
     if (!check_polkit_finish (res, &err)) {
@@ -825,16 +826,16 @@ on_handle_set_locale_authorized_cb (GObject *source_object,
         }
     }
 
-    if ((locale_file_parsed = shell_utils_trivial_new (locale_file, &err)) == NULL) {
+    if ((locale_file_parsed = shell_parser_new (locale_file, &err)) == NULL) {
         g_dbus_method_invocation_return_gerror (data->invocation, err);
         G_UNLOCK (locale);
         goto out;
     }
 
-    if (shell_utils_trivial_is_empty (locale_file_parsed)) {
+    if (shell_parser_is_empty (locale_file_parsed)) {
         /* Simply write the new env file */
-        shell_utils_trivial_free (locale_file_parsed);
-        if ((locale_file_parsed = shell_utils_trivial_new_from_string (locale_file, "# Configuration file for eselect\n# This file has been automatically generated\n", &err)) == NULL) {
+        shell_parser_free (locale_file_parsed);
+        if ((locale_file_parsed = shell_parser_new_from_string (locale_file, "# Configuration file for eselect\n# This file has been automatically generated\n", &err)) == NULL) {
             g_dbus_method_invocation_return_gerror (data->invocation, err);
             G_UNLOCK (locale);
             goto out;
@@ -843,12 +844,12 @@ on_handle_set_locale_authorized_cb (GObject *source_object,
 
     for (val = locale_values, var = locale_variables; *var != NULL; val++, var++) {
         if (*val == NULL)
-            shell_utils_trivial_clear_variable (locale_file_parsed, *var);
+            shell_parser_clear_variable (locale_file_parsed, *var);
         else
-            shell_utils_trivial_set_variable (locale_file_parsed, *var, *val, TRUE);
+            shell_parser_set_variable (locale_file_parsed, *var, *val, TRUE);
     }
 
-    if (!shell_utils_trivial_save (locale_file_parsed, &err)) {
+    if (!shell_parser_save (locale_file_parsed, &err)) {
         g_dbus_method_invocation_return_gerror (data->invocation, err);
         G_UNLOCK (locale);
         goto out;
@@ -869,7 +870,7 @@ on_handle_set_locale_authorized_cb (GObject *source_object,
     G_UNLOCK (locale);
 
   out:
-    shell_utils_trivial_free (locale_file_parsed);
+    shell_parser_free (locale_file_parsed);
     g_strfreev (locale_values);
     invoked_locale_free (data);
     if (err != NULL)
@@ -954,7 +955,7 @@ on_handle_set_vconsole_keyboard_authorized_cb (GObject *source_object,
     }
 
     /* We do not set vconsole_keymap_toggle because there is no good equivalent for it in OpenRC */
-    if (!shell_utils_trivial_set_and_save (keymaps_file, &err, "keymap", NULL, data->vconsole_keymap, NULL)) {
+    if (!shell_parser_set_and_save (keymaps_file, &err, "keymap", NULL, data->vconsole_keymap, NULL)) {
         g_dbus_method_invocation_return_gerror (data->invocation, err);
         goto unlock;
     }
@@ -1145,7 +1146,7 @@ on_handle_set_x11_keyboard_authorized_cb (GObject *source_object,
             g_printerr ("Failed to find conversion entry for x11 layout '%s' in '%s'\n", data->x11_layout, filename);
             g_free (filename);
         } else {
-            if (!shell_utils_trivial_set_and_save (keymaps_file, &err, "keymap", NULL, best_entry->vconsole_keymap, NULL)) {
+            if (!shell_parser_set_and_save (keymaps_file, &err, "keymap", NULL, best_entry->vconsole_keymap, NULL)) {
                 g_dbus_method_invocation_return_gerror (data->invocation, err);
                 goto unlock;
             }
@@ -1273,7 +1274,7 @@ localed_init (gboolean _read_only)
     x11_systemd_file = g_file_new_for_path (SYSCONFDIR "/X11/xorg.conf.d/00-keyboard.conf");
 
     locale = g_new0 (gchar *, g_strv_length (locale_variables) + 1);
-    locale_values = shell_utils_trivial_source_var_list (locale_file, (const gchar * const *)locale_variables, &err);
+    locale_values = shell_parser_source_var_list (locale_file, (const gchar * const *)locale_variables, &err);
     if (locale_values != NULL) {
         gchar **variable, **value, **loc;
         loc = locale;
@@ -1291,7 +1292,7 @@ localed_init (gboolean _read_only)
         g_clear_error (&err);
     }
 
-    vconsole_keymap = shell_utils_source_var (keymaps_file, "${keymap}", &err);
+    vconsole_keymap = shell_source_var (keymaps_file, "${keymap}", &err);
     if (vconsole_keymap == NULL)
         vconsole_keymap = g_strdup ("");
     if (err != NULL) {

@@ -25,7 +25,7 @@
 #include "hostnamed.h"
 #include "localed.h"
 #include "timedated.h"
-#include "shell-utils.h"
+#include "utils.h"
 
 #include "config.h"
 
@@ -76,7 +76,7 @@ main (gint argc, gchar *argv[])
     } else
         g_log_set_default_handler (log_handler, NULL);
 
-    shell_utils_init ();
+    utils_init ();
     hostnamed_init (read_only);
     localed_init (read_only);
     timedated_init (read_only, ntp_preferred_service);
@@ -87,7 +87,7 @@ main (gint argc, gchar *argv[])
     timedated_destroy ();
     localed_destroy ();
     hostnamed_destroy ();
-    shell_utils_destroy ();
+    utils_destroy ();
     g_free (ntp_preferred_service);
     return 0;
 }

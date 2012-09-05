@@ -21,8 +21,9 @@
 
 #include <glib.h>
 #include <gio/gio.h>
+#include <polkit/polkit.h>
 
-#include "shell-utils.h"
+#include "utils.h"
 
 #include "config.h"
 
@@ -33,6 +34,128 @@ GRegex *var_equals_regex = NULL;
 GRegex *single_quoted_regex = NULL;
 GRegex *double_quoted_regex = NULL;
 GRegex *unquoted_regex = NULL;
+
+/* Always returns TRUE */
+gboolean
+_g_match_info_clear (GMatchInfo **match_info)
+{
+    if (match_info == NULL || *match_info == NULL)
+        return TRUE;
+    g_match_info_free (*match_info);
+    *match_info = NULL;
+    return TRUE;
+}
+
+struct check_polkit_data {
+    const gchar *unique_name;
+    const gchar *action_id;
+    gboolean user_interaction;
+    GAsyncReadyCallback callback;
+    gpointer user_data;
+
+    PolkitAuthority *authority;
+    PolkitSubject *subject;
+};
+
+void
+check_polkit_data_free (struct check_polkit_data *data)
+{
+    if (data == NULL)
+        return;
+
+    if (data->subject != NULL)
+        g_object_unref (data->subject);
+    if (data->authority != NULL)
+        g_object_unref (data->authority);
+    
+    g_free (data);
+}
+
+gboolean
+check_polkit_finish (GAsyncResult *res,
+                     GError **error)
+{
+    GSimpleAsyncResult *simple;
+
+    simple = G_SIMPLE_ASYNC_RESULT (res);
+    if (g_simple_async_result_propagate_error (simple, error))
+        return FALSE;
+
+    return g_simple_async_result_get_op_res_gboolean (simple);
+}
+
+static void
+check_polkit_authorization_cb (GObject *source_object,
+                               GAsyncResult *res,
+                               gpointer _data)
+{
+    struct check_polkit_data *data;
+    PolkitAuthorizationResult *result;
+    GSimpleAsyncResult *simple;
+    GError *err = NULL;
+
+    data = (struct check_polkit_data *) _data;
+    if ((result = polkit_authority_check_authorization_finish (data->authority, res, &err)) == NULL) {
+        g_simple_async_report_take_gerror_in_idle (NULL, data->callback, data->user_data, err);
+        goto out;
+    }
+ 
+    if (!polkit_authorization_result_get_is_authorized (result)) {
+        g_simple_async_report_error_in_idle (NULL, data->callback, data->user_data, POLKIT_ERROR, POLKIT_ERROR_NOT_AUTHORIZED, "Authorizing for '%s': not authorized", data->action_id);
+        goto out;
+    }
+    simple = g_simple_async_result_new (NULL, data->callback, data->user_data, check_polkit_async);
+    g_simple_async_result_set_op_res_gboolean (simple, TRUE);
+    g_simple_async_result_complete_in_idle (simple);
+    g_object_unref (simple);
+
+  out:
+    check_polkit_data_free (data);
+    if (result != NULL)
+        g_object_unref (result);
+}
+
+static void
+check_polkit_authority_cb (GObject *source_object,
+                           GAsyncResult *res,
+                           gpointer _data)
+{
+    struct check_polkit_data *data;
+    GError *err = NULL;
+
+    data = (struct check_polkit_data *) _data;
+    if ((data->authority = polkit_authority_get_finish (res, &err)) == NULL) {
+        g_simple_async_report_take_gerror_in_idle (NULL, data->callback, data->user_data, err);
+        check_polkit_data_free (data);
+        return;
+    }
+    if (data->unique_name == NULL || data->action_id == NULL || 
+        (data->subject = polkit_system_bus_name_new (data->unique_name)) == NULL) {
+        g_simple_async_report_error_in_idle (NULL, data->callback, data->user_data, POLKIT_ERROR, POLKIT_ERROR_FAILED, "Authorizing for '%s': failed sanity check", data->action_id);
+        check_polkit_data_free (data);
+        return;
+    }
+    polkit_authority_check_authorization (data->authority, data->subject, data->action_id, NULL, (PolkitCheckAuthorizationFlags) data->user_interaction, NULL, check_polkit_authorization_cb, data);
+}
+
+void
+check_polkit_async (const gchar *unique_name,
+                    const gchar *action_id,
+                    const gboolean user_interaction,
+                    GAsyncReadyCallback callback,
+                    gpointer user_data)
+{
+    struct check_polkit_data *data;
+
+    data = g_new0 (struct check_polkit_data, 1);
+    data->unique_name = unique_name;
+    data->action_id = action_id;
+    data->user_interaction = user_interaction;
+    data->callback = callback;
+    data->user_data = user_data;
+
+    polkit_authority_get_async (NULL, check_polkit_authority_cb, data);
+}
 
 enum ShellEntryType {
     SHELL_ENTRY_TYPE_INDENT,
@@ -49,9 +172,9 @@ struct ShellEntry {
 };
 
 gchar *
-shell_utils_source_var (GFile *file,
-                        const gchar *variable,
-                        GError **error)
+shell_source_var (GFile *file,
+                  const gchar *variable,
+                  GError **error)
 {
     gchar *argv[4] = { "sh", "-c", NULL, NULL };
     gchar *filename = NULL, *quoted_filename = NULL;
@@ -110,26 +233,27 @@ shell_entry_free (struct ShellEntry *entry)
 }
 
 void
-shell_utils_trivial_free (ShellUtilsTrivial *trivial)
+shell_parser_free (ShellParser *parser)
 {
-    if (trivial == NULL)
+    if (parser == NULL)
         return;
 
-    if (trivial->file != NULL)
-        g_object_unref (trivial->file);
-    if (trivial->filename != NULL)
-        g_free (trivial->filename);
-    if (trivial->entry_list != NULL)
-        g_list_free_full (trivial->entry_list, (GDestroyNotify)shell_entry_free);
-    g_free (trivial);
+    if (parser->file != NULL)
+        g_object_unref (parser->file);
+    if (parser->filename != NULL)
+        g_free (parser->filename);
+    if (parser->entry_list != NULL)
+        g_list_free_full (parser->entry_list, (GDestroyNotify)shell_entry_free);
+    g_free (parser);
 }
 
-ShellUtilsTrivial *
-shell_utils_trivial_new (GFile *file,
-                         GError **error)
+ShellParser *
+shell_parser_new (GFile *file,
+                  GError **error)
 {
     gchar *filebuf = NULL;
     GError *local_err = NULL;
+    ShellParser *ret = NULL;
 
     if (file == NULL)
         return NULL;
@@ -138,10 +262,8 @@ shell_utils_trivial_new (GFile *file,
         if (local_err != NULL) {
             /* Inability to parse or open is a failure; file not existing at all is *not* a failure */
             if (local_err->code == G_IO_ERROR_NOT_FOUND) {
-                ShellUtilsTrivial *ret = NULL;
-
                 g_error_free (local_err);
-                ret = g_new0 (ShellUtilsTrivial, 1);
+                ret = g_new0 (ShellParser, 1);
                 g_object_ref (file);
                 ret->file = file;
                 ret->filename = g_file_get_path (file);
@@ -155,22 +277,24 @@ shell_utils_trivial_new (GFile *file,
         }
         return NULL;
     }
-    return shell_utils_trivial_new_from_string (file, filebuf, error);
+    ret = shell_parser_new_from_string (file, filebuf, error);
+    g_free (filebuf);
+    return ret;
 }
 
-ShellUtilsTrivial *
-shell_utils_trivial_new_from_string (GFile *file,
+ShellParser *
+shell_parser_new_from_string (GFile *file,
                                      gchar *filebuf,
                                      GError **error)
 {
-    ShellUtilsTrivial *ret = NULL;
+    ShellParser *ret = NULL;
     GError *local_err = NULL;
     gchar *s;
 
     if (file == NULL || filebuf == NULL)
         return NULL;
 
-    ret = g_new0 (ShellUtilsTrivial, 1);
+    ret = g_new0 (ShellParser, 1);
     g_object_ref (file);
     ret->file = file;
     ret->filename = g_file_get_path (file);
@@ -191,13 +315,11 @@ shell_utils_trivial_new_from_string (GFile *file,
             ret->entry_list = g_list_prepend (ret->entry_list, entry);
             s += strlen (entry->string);
             g_debug ("Scanned comment: ``%s''", entry->string);
-            g_match_info_free (match_info);
-            match_info = NULL;
+            _g_match_info_clear (&match_info);
             want_separator = FALSE;
             continue;
         }
-        g_match_info_free (match_info);
-        match_info = NULL;
+        _g_match_info_clear (&match_info);
 
         matched = g_regex_match (separator_regex, s, 0, &match_info);
         if (matched) {
@@ -207,13 +329,11 @@ shell_utils_trivial_new_from_string (GFile *file,
             ret->entry_list = g_list_prepend (ret->entry_list, entry);
             s += strlen (entry->string);
             g_debug ("Scanned separator: ``%s''", entry->string);
-            g_match_info_free (match_info);
-            match_info = NULL;
+            _g_match_info_clear (&match_info);
             want_separator = FALSE;
             continue;
         }
-        g_match_info_free (match_info);
-        match_info = NULL;
+        _g_match_info_clear (&match_info);
 
         matched = g_regex_match (indent_regex, s, 0, &match_info);
         if (matched) {
@@ -223,12 +343,10 @@ shell_utils_trivial_new_from_string (GFile *file,
             ret->entry_list = g_list_prepend (ret->entry_list, entry);
             s += strlen (entry->string);
             g_debug ("Scanned indent: ``%s''", entry->string);
-            g_match_info_free (match_info);
-            match_info = NULL;
+            _g_match_info_clear (&match_info);
             continue;
         }
-        g_match_info_free (match_info);
-        match_info = NULL;
+        _g_match_info_clear (&match_info);
 
         matched = g_regex_match (var_equals_regex, s, 0, &match_info);
         if (matched) {
@@ -243,8 +361,7 @@ shell_utils_trivial_new_from_string (GFile *file,
             entry->variable = g_match_info_fetch (match_info, 1);
             s += strlen (entry->string);
             g_debug ("Scanned variable: ``%s''", entry->string);
-            g_match_info_free (match_info);
-            match_info = NULL;
+            _g_match_info_clear (&match_info);
             want_separator = TRUE;
 
             while (*s != 0) {
@@ -255,26 +372,23 @@ shell_utils_trivial_new_from_string (GFile *file,
                 if (matched2)
                     goto append_value;
 
-                g_match_info_free (match_info);
-                match_info = NULL;
+                _g_match_info_clear (&match_info);
 
                 matched2 = g_regex_match (double_quoted_regex, s, 0, &match_info);
                 if (matched2)
                     goto append_value;
 
-                g_match_info_free (match_info);
-                match_info = NULL;
+                _g_match_info_clear (&match_info);
 
                 matched2 = g_regex_match (unquoted_regex, s, 0, &match_info);
                 if (matched2)
                     goto append_value;
 
-                g_match_info_free (match_info);
-                match_info = NULL;
+                _g_match_info_clear (&match_info);
 
                 break;
-append_value:
 
+  append_value:
                 if (raw_value == NULL) {
                     raw_value = g_match_info_fetch (match_info, 0);
                     s += strlen (raw_value);
@@ -288,8 +402,7 @@ append_value:
                     g_free (temp1);
                     g_free (temp2);
                 }
-                g_match_info_free (match_info);
-                match_info = NULL;
+                _g_match_info_clear (&match_info);
             }
 
             if (raw_value != NULL) {
@@ -307,17 +420,16 @@ append_value:
             continue;
         }
 
-no_match:
+  no_match:
         /* Nothing matches, parsing has failed! */
-        g_match_info_free (match_info);
-        match_info = NULL;
+        _g_match_info_clear (&match_info);
         if (local_err != NULL)
             g_propagate_prefixed_error (error, local_err, "Unable to parse '%s':", ret->filename);
         else
             g_propagate_error (error,
                                g_error_new (G_FILE_ERROR, G_FILE_ERROR_FAILED,
                                             "Unable to parse '%s'", ret->filename));
-        shell_utils_trivial_free (ret);
+        shell_parser_free (ret);
         return NULL;
     }
 
@@ -326,28 +438,28 @@ no_match:
 }
 
 gboolean
-shell_utils_trivial_is_empty (ShellUtilsTrivial *trivial)
+shell_parser_is_empty (ShellParser *parser)
 {
-    if (trivial == NULL || trivial->entry_list == NULL)
+    if (parser == NULL || parser->entry_list == NULL)
         return TRUE;
     return FALSE;
 }
 
 gboolean
-shell_utils_trivial_set_variable (ShellUtilsTrivial *trivial,
-                                  const gchar *variable,
-                                  const gchar *value,
-                                  gboolean add_if_unset)
+shell_parser_set_variable (ShellParser *parser,
+                           const gchar *variable,
+                           const gchar *value,
+                           gboolean add_if_unset)
 {
     GList *curr = NULL;
     struct ShellEntry *found_entry = NULL;
     gchar *quoted_value = NULL;
     gboolean ret = FALSE;
 
-    g_assert (trivial != NULL);
+    g_assert (parser != NULL);
     g_assert (variable != NULL);
 
-    for (curr = trivial->entry_list; curr != NULL; curr = curr->next) {
+    for (curr = parser->entry_list; curr != NULL; curr = curr->next) {
         struct ShellEntry *entry;
 
         entry = (struct ShellEntry *)(curr->data);
@@ -367,7 +479,7 @@ shell_utils_trivial_set_variable (ShellUtilsTrivial *trivial,
             found_entry->type = SHELL_ENTRY_TYPE_ASSIGNMENT;
             found_entry->variable = g_strdup (variable);
             found_entry->string = g_strdup_printf ("%s=%s", variable, quoted_value);
-            trivial->entry_list = g_list_append (trivial->entry_list, found_entry);
+            parser->entry_list = g_list_append (parser->entry_list, found_entry);
             ret = TRUE;
         }
     }
@@ -377,16 +489,16 @@ shell_utils_trivial_set_variable (ShellUtilsTrivial *trivial,
 }
 
 void
-shell_utils_trivial_clear_variable (ShellUtilsTrivial *trivial,
-                                    const gchar *variable)
+shell_parser_clear_variable (ShellParser *parser,
+                             const gchar *variable)
 {
     GList *curr = NULL;
     gboolean ret = FALSE;
 
-    g_assert (trivial != NULL);
+    g_assert (parser != NULL);
     g_assert (variable != NULL);
 
-    for (curr = trivial->entry_list; curr != NULL; ) {
+    for (curr = parser->entry_list; curr != NULL; ) {
         struct ShellEntry *entry;
 
         entry = (struct ShellEntry *)(curr->data);
@@ -409,32 +521,32 @@ shell_utils_trivial_clear_variable (ShellUtilsTrivial *trivial,
 }
 
 gboolean
-shell_utils_trivial_save (ShellUtilsTrivial *trivial,
-                          GError **error)
+shell_parser_save (ShellParser *parser,
+                   GError **error)
 {
     gboolean ret = FALSE;
     GList *curr = NULL;
     GFileOutputStream *os;
 
-    g_assert (trivial != NULL && trivial->file != NULL && trivial->filename != NULL);
-    if ((os = g_file_replace (trivial->file, NULL, FALSE, G_FILE_CREATE_NONE, NULL, error)) == NULL) {
-        g_prefix_error (error, "Unable to save '%s': ", trivial->filename);
+    g_assert (parser != NULL && parser->file != NULL && parser->filename != NULL);
+    if ((os = g_file_replace (parser->file, NULL, FALSE, G_FILE_CREATE_NONE, NULL, error)) == NULL) {
+        g_prefix_error (error, "Unable to save '%s': ", parser->filename);
         goto out;
     }
 
-    for (curr = trivial->entry_list; curr != NULL; curr = curr->next) {
+    for (curr = parser->entry_list; curr != NULL; curr = curr->next) {
         struct ShellEntry *entry;
         gsize written;
 
         entry = (struct ShellEntry *)(curr->data);
         if (!g_output_stream_write_all (G_OUTPUT_STREAM (os), entry->string, strlen (entry->string), &written, NULL, error)) {
-            g_prefix_error (error, "Unable to save '%s': ", trivial->filename);
+            g_prefix_error (error, "Unable to save '%s': ", parser->filename);
             goto out;
         }
     }
     
     if (!g_output_stream_close (G_OUTPUT_STREAM (os), NULL, error)) {
-        g_prefix_error (error, "Unable to save '%s': ", trivial->filename);
+        g_prefix_error (error, "Unable to save '%s': ", parser->filename);
         g_output_stream_close (G_OUTPUT_STREAM (os), NULL, NULL);
         goto out;
     }
@@ -447,20 +559,20 @@ shell_utils_trivial_save (ShellUtilsTrivial *trivial,
 }
 
 gboolean
-shell_utils_trivial_set_and_save (GFile *file,
-                                  GError **error,
-                                  const gchar *first_var_name,
-                                  const gchar *first_alt_var_name,
-                                  const gchar *first_value,
-                                  ...)
+shell_parser_set_and_save (GFile *file,
+                           GError **error,
+                           const gchar *first_var_name,
+                           const gchar *first_alt_var_name,
+                           const gchar *first_value,
+                           ...)
 {
     va_list ap;
-    ShellUtilsTrivial *trivial;
+    ShellParser *parser;
     gboolean ret = FALSE;
     const gchar *var_name, *alt_var_name, *value;
 
     va_start (ap, first_value);
-    if ((trivial = shell_utils_trivial_new (file, error)) == NULL)
+    if ((parser = shell_parser_new (file, error)) == NULL)
         goto out;
 
     var_name = first_var_name;
@@ -468,56 +580,56 @@ shell_utils_trivial_set_and_save (GFile *file,
     value = first_value;
     do {
         if (alt_var_name == NULL) {
-            if (!shell_utils_trivial_set_variable (trivial, var_name, value, TRUE)) {
+            if (!shell_parser_set_variable (parser, var_name, value, TRUE)) {
                 g_propagate_error (error,
                         g_error_new (G_FILE_ERROR, G_FILE_ERROR_FAILED,
-                                    "Unable to set %s in '%s'", var_name, trivial->filename));
+                                    "Unable to set %s in '%s'", var_name, parser->filename));
                 goto out;
             }
         } else {
-            if (!shell_utils_trivial_set_variable (trivial, var_name, value, FALSE) &&
-                !shell_utils_trivial_set_variable (trivial, alt_var_name, value, FALSE) &&
-                !shell_utils_trivial_set_variable (trivial, var_name, value, TRUE)) {
+            if (!shell_parser_set_variable (parser, var_name, value, FALSE) &&
+                !shell_parser_set_variable (parser, alt_var_name, value, FALSE) &&
+                !shell_parser_set_variable (parser, var_name, value, TRUE)) {
                     g_propagate_error (error,
                             g_error_new (G_FILE_ERROR, G_FILE_ERROR_FAILED,
-                                        "Unable to set %s or %s in '%s'", var_name, alt_var_name, trivial->filename));
+                                        "Unable to set %s or %s in '%s'", var_name, alt_var_name, parser->filename));
                     goto out;
             }
         }
     } while ((var_name = va_arg (ap, const gchar*)) != NULL ?
                  alt_var_name = va_arg (ap, const gchar*), value = va_arg (ap, const gchar*), 1 : 0);
 
-    if (!shell_utils_trivial_save (trivial, error))
+    if (!shell_parser_save (parser, error))
         goto out;
 
     ret = TRUE;
 
   out:
     va_end (ap);
-    if (trivial != NULL)
-        shell_utils_trivial_free (trivial);
+    if (parser != NULL)
+        shell_parser_free (parser);
     return ret;
 }
 
 gchar **
-shell_utils_trivial_source_var_list (GFile *file,
-                                     const gchar * const *var_names,
-                                     GError **error)
+shell_parser_source_var_list (GFile *file,
+                              const gchar * const *var_names,
+                              GError **error)
 {
-    ShellUtilsTrivial *trivial;
+    ShellParser *parser;
     gchar **ret = NULL, **value;
     const gchar* const* var_name;
 
     if (var_names == NULL)
         return NULL;
 
-    if ((trivial = shell_utils_trivial_new (file, error)) == NULL)
+    if ((parser = shell_parser_new (file, error)) == NULL)
         return NULL;
 
     ret = g_new0 (gchar *, g_strv_length ((gchar **)var_names) + 1);
     for (var_name = var_names, value = ret; *var_name != NULL; var_name++, value++) {
         GList *curr;
-        for (curr = trivial->entry_list; curr != NULL; curr = curr->next) {
+        for (curr = parser->entry_list; curr != NULL; curr = curr->next) {
             struct ShellEntry *entry;
 
             entry = (struct ShellEntry *)(curr->data);
@@ -525,12 +637,12 @@ shell_utils_trivial_source_var_list (GFile *file,
                 *value = g_strdup (entry->unquoted_value);
         }
     }
-    shell_utils_trivial_free (trivial);
+    shell_parser_free (parser);
     return ret;
 }
 
 void
-shell_utils_destroy (void)
+utils_destroy (void)
 {
     if (indent_regex != NULL) {
         g_regex_unref (indent_regex);
@@ -563,7 +675,7 @@ shell_utils_destroy (void)
 }
 
 void
-shell_utils_init (void)
+utils_init (void)
 {
     if (indent_regex == NULL) {
         indent_regex = g_regex_new ("^[ \\t]+", G_REGEX_ANCHORED, 0, NULL);

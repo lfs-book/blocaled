@@ -30,8 +30,7 @@
 #include "copypaste/hwclock.h"
 #include "timedated.h"
 #include "timedate1-generated.h"
-#include "bus-utils.h"
-#include "shell-utils.h"
+#include "utils.h"
 
 #include "config.h"
 
@@ -61,7 +60,7 @@ get_local_rtc (GError **error)
     gchar *clock = NULL;
     gboolean ret = FALSE;
 
-    clock = shell_utils_source_var (hwclock_file, "${clock}", error);
+    clock = shell_source_var (hwclock_file, "${clock}", error);
     if (!g_strcmp0 (clock, "local"))
         ret = TRUE;
     return ret;
@@ -468,9 +467,9 @@ on_handle_set_local_rtc_authorized_cb (GObject *source_object,
     }
 
     G_LOCK (clock);
-    clock = shell_utils_source_var (hwclock_file, "${clock}", NULL);
+    clock = shell_source_var (hwclock_file, "${clock}", NULL);
     if (clock != NULL || data->local_rtc)
-        if (!shell_utils_trivial_set_and_save (hwclock_file, &err, "clock", NULL, clock_types[data->local_rtc], NULL)) {
+        if (!shell_parser_set_and_save (hwclock_file, &err, "clock", NULL, clock_types[data->local_rtc], NULL)) {
             g_dbus_method_invocation_return_gerror (data->invocation, err);
             goto unlock;
         }
