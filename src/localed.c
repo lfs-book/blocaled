@@ -620,6 +620,7 @@ xorg_confd_parser_line_set_or_delete (GList *line,
             next->prev = prev;
         return prev;
     }
+    g_free (entry->value);
     entry->value = g_strdup (value);
     replacement = g_strdup_printf ("\\1\"%s\"", value);
     replaced = g_regex_replace (re, entry->string, -1, 0, replacement, 0, NULL);
@@ -871,7 +872,10 @@ on_handle_set_locale_authorized_cb (GObject *source_object,
 
   out:
     shell_parser_free (locale_file_parsed);
-    g_strfreev (locale_values);
+    /* g_strfreev (locale_values) will leak, since it stops at first NULL value */
+    for (val = locale_values, var = locale_variables; *var != NULL; val++, var++)
+        g_free (*val);
+    g_free (locale_values);
     invoked_locale_free (data);
     if (err != NULL)
         g_error_free (err);
@@ -1281,11 +1285,12 @@ localed_init (gboolean _read_only)
         for (variable = locale_variables, value = locale_values; *variable != NULL; variable++, value++) {
             if (*value != NULL) {
                 *loc = g_strdup_printf ("%s=%s", *variable, *value);
+                g_free (*value);
                 loc++;
             }
         }
             
-        g_strfreev (locale_values);
+        g_free (locale_values);
     }
     if (err != NULL) {
         g_debug ("%s", err->message);

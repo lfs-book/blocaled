@@ -63,6 +63,7 @@ get_local_rtc (GError **error)
     clock = shell_source_var (hwclock_file, "${clock}", error);
     if (!g_strcmp0 (clock, "local"))
         ret = TRUE;
+    g_free (clock);
     return ret;
 }
 
