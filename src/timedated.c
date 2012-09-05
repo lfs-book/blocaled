@@ -526,7 +526,6 @@ on_handle_set_local_rtc_authorized_cb (GObject *source_object,
     }
 
     openrc_settingsd_timedated_timedate1_complete_set_timezone (timedate1, data->invocation);
-    g_free (timezone_name);
     local_rtc = data->local_rtc;
     openrc_settingsd_timedated_timedate1_set_local_rtc (timedate1, local_rtc);
 
