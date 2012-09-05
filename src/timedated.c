@@ -224,7 +224,7 @@ service_disable (const gchar *service,
     }
 
     g_debug ("Stopping %s rc service", service);
-    argv[0] = service;
+    argv[0] = service_script;
     if (!g_spawn_sync (NULL, (gchar **)argv, NULL, 0, NULL, NULL, NULL, NULL, &exit_status, error)) {
         g_prefix_error (error, "Failed to spawn %s rc service:", service);
         goto out;
@@ -271,7 +271,7 @@ service_enable (const gchar *service,
     }
 
     g_debug ("Starting %s rc service", service);
-    argv[0] = service;
+    argv[0] = service_script;
     if (!g_spawn_sync (NULL, (gchar **)argv, NULL, 0, NULL, NULL, NULL, NULL, &exit_status, error)) {
         g_prefix_error (error, "Failed to spawn %s rc service:", service);
         goto out;
