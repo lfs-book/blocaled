@@ -24,6 +24,7 @@
 
 #include "hostnamed.h"
 #include "localed.h"
+#include "timedated.h"
 #include "shell-utils.h"
 
 #include "config.h"
@@ -32,11 +33,13 @@
 
 static gboolean debug = FALSE;
 static gboolean read_only = FALSE;
+static gchar *ntp_preferred_service = NULL;
 
 static GOptionEntry option_entries[] =
 {
     { "debug", 0, 0, G_OPTION_ARG_NONE, &debug, "Enable debugging messages", NULL },
     { "read-only", 0, 0, G_OPTION_ARG_NONE, &read_only, "Run in read-only mode", NULL },
+    { "ntp-service", 0, 0, G_OPTION_ARG_STRING, &ntp_preferred_service, "Preferred rc NTP service for timedated", NULL },
     { NULL }
 };
 
@@ -76,12 +79,15 @@ main (gint argc, gchar *argv[])
     shell_utils_init ();
     hostnamed_init (read_only);
     localed_init (read_only);
+    timedated_init (read_only, ntp_preferred_service);
     loop = g_main_loop_new (NULL, FALSE);
     g_main_loop_run (loop);
 
     g_main_loop_unref (loop);
+    timedated_destroy ();
     localed_destroy ();
     hostnamed_destroy ();
     shell_utils_destroy ();
+    g_free (ntp_preferred_service);
     return 0;
 }

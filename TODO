@@ -9,7 +9,7 @@ document that this case is not supported?
 Write an init.d file to read RC_SYS so that we can piggyback on openrc's
 built-in virtualization detection.
 
-Implement timedated.
+De-systemd-ize hwclock.c
 
 Do something about runtime dependency on systemd's org.freedesktop.hostname1.policy,
 org.freedesktop.locale1.policy, and org.freedesktop.timedate1.policy files.
