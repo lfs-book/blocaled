@@ -54,7 +54,7 @@ shell_utils_source_var (GFile *file,
                         GError **error)
 {
     gchar *argv[4] = { "sh", "-c", NULL, NULL };
-    gchar *filename, *quoted_filename;
+    gchar *filename = NULL, *quoted_filename = NULL;
     gchar *output = NULL;
     GFileInfo *info;
     const GFileAttributeInfo *attribute_info;
@@ -88,10 +88,8 @@ shell_utils_source_var (GFile *file,
     }
 
   out:
-    if (filename != NULL)
-        g_free (filename);
-    if (quoted_filename != NULL)
-        g_free (quoted_filename);
+    g_free (filename);
+    g_free (quoted_filename);
     if (info != NULL)
         g_object_unref (info);
     if (argv[2] != NULL)
