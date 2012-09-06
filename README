@@ -16,6 +16,10 @@ Hostnamed:
  PRETTY_HOSTNAME="Foo !"
  ICON_NAME="computer-desktop"
 
+ It is strongly recommended that hostnamed be used with nss-myhostname
+ (http://0pointer.de/lennart/projects/nss-myhostname/) to ensure the local
+ host name always remains resolvable.
+
 Localed:
 
  See http://www.freedesktop.org/wiki/Software/systemd/localed for the DBus
@@ -27,16 +31,23 @@ Localed:
  keymap="foo"
  The virtual console keymap toggle is not supported.
 
-/*
- Not implemented yet.
-
  X11 keyboard options are set in /etc/X11/xorg.conf.d/30-keyboard.conf
  (falling back to 00-keyboard.conf if it exists and 30-keyboard.conf does
- not) in an InputClass section.
- Localed will attempt to detect if multiple InputClass sections with
- keyboard options exist in /etc/X11/xorg.conf and /etc/X11/xorg.conf.d/,
- and if that is the case, will refuse to modify X11 keyboard settings.
-*/
+ not). See http://www.gentoo.org/doc/en/xorg-config.xml for configuration
+ information.
+
+Timedated:
+
+  See http://www.freedesktop.org/wiki/Software/systemd/timedated for the DBus
+  protocol description.
+
+  The RTC UTC vs. local time setting is set in /etc/conf.d/hwclock as
+  clock="UTC" or clock="local".
+
+  The timezone is set in /etc/timezone and /etc/localtime.
+
+  openrc-settingsd attempts to auto-detect an appropriate ntp implementation.
+  To avoid auto-detection, use the --ntp-service command line option.
 
 Note that openrc-settingsd expects any shell-syntax settings files that it
 modifies to be in UTF-8 encoding, and to consist only of comments and simple
