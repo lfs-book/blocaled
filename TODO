@@ -6,9 +6,6 @@ if the relevant variable is set in /etc/rc.conf (go to read-only mode?)
 What happens if e.g. /etc/conf.d/hostname.{runlevel} files exist? Just
 document that this case is not supported?
 
-Write an init.d file to read RC_SYS so that we can piggyback on openrc's
-built-in virtualization detection.
-
 De-systemd-ize hwclock.c
 
 Do something about runtime dependency on systemd's org.freedesktop.hostname1.policy,

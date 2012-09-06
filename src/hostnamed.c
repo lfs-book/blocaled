@@ -26,6 +26,8 @@
 #include <gio/gio.h>
 #include <polkit/polkit.h>
 
+#include <rc.h>
+
 #include "hostnamed.h"
 #include "hostname1-generated.h"
 #include "utils.h"
@@ -68,9 +70,14 @@ hostname_is_valid (const gchar *name)
 static gchar *
 guess_icon_name ()
 {
-    /* TODO: detect virtualization by reading rc_sys */
     gchar *filebuf = NULL;
     gchar *ret = NULL;
+
+    /* Note that rc_sys() leaks memory :( */
+    if (rc_sys() != NULL) {
+        ret = g_strdup ("computer-vm");
+        goto out;
+    }
 
 #if defined(__i386__) || defined(__x86_64__)
     /* 
