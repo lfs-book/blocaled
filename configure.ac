@@ -10,9 +10,14 @@ LT_INIT([disable-static pic-only])
 AC_PREFIX_DEFAULT([/usr])
 
 AC_PROG_MKDIR_P
-AC_SEARCH_LIBS([rc_service_exists], [rc], [], [AC_MSG_ERROR([OpenRC's librc not found])])
 AC_SEARCH_LIBS([clock_gettime], [rt], [], [AC_MSG_ERROR([librt not found])])
-PKG_CHECK_MODULES(OPENRC_SETTINGSD, [gio-unix-2.0 >= 2.30 gio-2.0 >= 2.30 glib-2.0 >= 2.30 dbus-1 polkit-gobject-1])
+PKG_CHECK_MODULES(OPENRC_SETTINGSD,
+                  [gio-unix-2.0 >= 2.30
+                   gio-2.0 >= 2.30
+                   glib-2.0 >= 2.30
+                   dbus-1
+                   polkit-gobject-1
+                   openrc])
 AC_SUBST(OPENRC_SETTINGSD_CFLAGS)
 AC_SUBST(OPENRC_SETTINGSD_LIBS)
 
