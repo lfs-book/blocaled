@@ -1,14 +1,61 @@
 ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 
 EXTRA_DIST = \
-	data/hostname1.xml \
-	data/locale1.xml \
-	data/timedate1.xml \
+	data/org.freedesktop.hostname1.service.in \
+	data/org.freedesktop.locale1.service.in \
+	data/org.freedesktop.timedate1.service.in \
+	data/init.d/openrc-settingsd.in \
+	AUTHORS \
+	COPYING \
+	src/copypaste/COPYING.LGPL-2.1 \
+	README \
+	NEWS \
+	TODO \
 	$(NULL)
 
-pkgdata_DATA = \
+dist_pkgdata_DATA = \
 	data/kbd-model-map \
 	$(NULL)
+
+dbusinterfacesdir = @dbusinterfacesdir@
+dist_dbusinterfaces_DATA = \
+	data/org.freedesktop.hostname1.xml \
+	data/org.freedesktop.locale1.xml \
+	data/org.freedesktop.timedate1.xml \
+	$(NULL)
+
+dbusservicesdir = @dbussystemservicesdir@
+dbusservices_DATA = \
+	data/org.freedesktop.hostname1.service \
+	data/org.freedesktop.locale1.service \
+	data/org.freedesktop.timedate1.service \
+	$(NULL)
+
+polkitactiondir = @polkitactiondir@
+dist_polkitaction_DATA = \
+	data/org.freedesktop.hostname1.policy \
+	data/org.freedesktop.locale1.policy \
+	data/org.freedesktop.timedate1.policy \
+	$(NULL)
+
+initddir = $(sysconfdir)/init.d
+initd_SCRIPTS = data/init.d/openrc-settingsd
+
+confddir = $(sysconfdir)/conf.d
+dist_confd_DATA = data/conf.d/openrc-settingsd
+
+rootsbindir = @rootsbindir@
+
+do_subst = sed -e 's,[@]libexecdir[@],$(libexecdir),g' \
+	-e 's,[@]localstatedir[@],$(localstatedir),g' \
+	-e 's,[@]rootsbindir[@],$(rootsbindir),g' \
+	$(NULL)
+
+data/init.d/openrc-settingsd : data/init.d/openrc-settingsd.in
+	$(do_subst) < $(srcdir)/data/init.d/openrc-settingsd.in > $(top_srcdir)/data/init.d/openrc-settingsd
+
+%.service : %.service.in
+	$(do_subst) < $(srcdir)/$< > $(top_srcdir)/$@
 
 AM_CPPFLAGS = \
 	-include $(top_builddir)/config.h \
@@ -49,9 +96,6 @@ copypaste_sources = \
 	$(NULL)
 
 openrc_settingsd_SOURCES = \
-	$(hostnamed_built_sources) \
-	$(localed_built_sources) \
-	$(timedated_built_sources) \
 	$(copypaste_sources) \
 	src/hostnamed.c \
 	src/hostnamed.h \
@@ -64,29 +108,46 @@ openrc_settingsd_SOURCES = \
 	src/main.c \
 	$(NULL)
 
-$(hostnamed_built_sources) : data/hostname1.xml
+nodist_openrc_settingsd_SOURCES = \
+	$(hostnamed_built_sources) \
+	$(localed_built_sources) \
+	$(timedated_built_sources) \
+	$(NULL)
+
+$(hostnamed_built_sources) : data/org.freedesktop.hostname1.xml
 	( $(GDBUS_CODEGEN) \
 	--interface-prefix org.freedesktop. \
 	--c-namespace OpenrcSettingsdHostnamed \
 	--generate-c-code hostname1-generated \
-	$(srcdir)/data/hostname1.xml; \
+	$(srcdir)/data/org.freedesktop.hostname1.xml; \
 	mv hostname1-generated.{c,h} $(top_srcdir)/src/ )
 
-$(localed_built_sources) : data/locale1.xml
+$(localed_built_sources) : data/org.freedesktop.locale1.xml
 	( $(GDBUS_CODEGEN) \
 	--interface-prefix org.freedesktop. \
 	--c-namespace OpenrcSettingsdLocaled \
 	--generate-c-code locale1-generated \
-	$(srcdir)/data/locale1.xml; \
+	$(srcdir)/data/org.freedesktop.locale1.xml; \
 	mv locale1-generated.{c,h} $(top_srcdir)/src/ )
 
-$(timedated_built_sources) : data/timedate1.xml
+$(timedated_built_sources) : data/org.freedesktop.timedate1.xml
 	( $(GDBUS_CODEGEN) \
 	--interface-prefix org.freedesktop. \
 	--c-namespace OpenrcSettingsdTimedated \
 	--generate-c-code timedate1-generated \
-	$(srcdir)/data/timedate1.xml; \
+	$(srcdir)/data/org.freedesktop.timedate1.xml; \
 	mv timedate1-generated.{c,h} $(top_srcdir)/src/ )
 
-BUILT_SOURCES = $(hostnamed_built_sources) $(localed_built_sources) $(timedated_built_sources)
-CLEANFILES = $(hostnamed_built_sources) $(localed_built_sources) $(timedated_built_sources)
+BUILT_SOURCES = \
+	$(hostnamed_built_sources) \
+	$(localed_built_sources) \
+	$(timedated_built_sources) \
+	$(NULL)
+
+CLEANFILES = \
+	$(hostnamed_built_sources) \
+	$(localed_built_sources) \
+	$(timedated_built_sources) \
+	data/init.d/openrc-settingsd \
+	$(dbusservices_DATA) \
+	$(NULL)

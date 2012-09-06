@@ -1,0 +1,4 @@
+[D-BUS Service]
+Name=org.freedesktop.hostname1
+Exec=@rootsbindir@/rc-service openrc-settingsd start
+User=root

@@ -8,10 +8,4 @@ document that this case is not supported?
 
 De-systemd-ize hwclock.c
 
-Do something about runtime dependency on systemd's org.freedesktop.hostname1.policy,
-org.freedesktop.locale1.policy, and org.freedesktop.timedate1.policy files.
-
-Decide how openrc-settingsd should be started (/etc/init.d? dbus activation?
-might that conflict with systemd's services or files in some way?)
-
 Make an ebuild, and add it to portage!

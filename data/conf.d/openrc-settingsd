@@ -1,0 +1,8 @@
+# openrc-settingsd will attempt to auto-detect your ntp implementation
+# If you want to use a specific ntp rc service, set it here
+
+# NTP_SERVICE=""
+
+# Other options you want to pass to openrc-settingsd, e.g. --read-only
+
+OPENRC_SETTINGSD_OPTS=""

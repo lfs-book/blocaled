@@ -26,6 +26,36 @@ if test "x$GDBUS_CODEGEN" = x; then
     AC_MSG_ERROR([Failed to find gdbus-codegen])
 fi
 
+AC_ARG_WITH([rootsbindir], AS_HELP_STRING([--with-rootsbindir=DIR], [root /sbin directory @<:@default=/sbin@:>@]), [], [with_rootsbindir=/sbin])
+AC_SUBST([rootsbindir], [$with_rootsbindir])
+
+AC_MSG_CHECKING([dbus interfaces directory])
+dbusinterfacesdir=`$PKG_CONFIG --variable=interfaces_dir dbus-1`
+if test "x$dbusinterfacesdir" = "x"; then
+    AC_MSG_ERROR([not found])
+else
+    AC_MSG_RESULT([$dbusinterfacesdir])
+fi
+AC_SUBST([dbusinterfacesdir])
+
+AC_MSG_CHECKING([dbus system services directory])
+dbussystemservicesdir=`$PKG_CONFIG --variable=system_bus_services_dir dbus-1`
+if test "x$dbussystemservicesdir" = "x"; then
+    AC_MSG_ERROR([not found])
+else
+    AC_MSG_RESULT([$dbussystemservicesdir])
+fi
+AC_SUBST([dbussystemservicesdir])
+
+AC_MSG_CHECKING([polkit actions directory])
+polkitactiondir=`$PKG_CONFIG --variable=actiondir polkit-gobject-1`
+if test "x$polkitactiondir" = "x"; then
+    AC_MSG_ERROR([not found])
+else
+    AC_MSG_RESULT([$polkitactiondir])
+fi
+AC_SUBST([polkitactiondir])
+
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([
     Makefile
@@ -38,6 +68,7 @@ AC_MSG_RESULT([
 
         prefix:                 ${prefix}
         sysconfdir:             ${sysconfdir}
+        rootsbindir:            ${with_rootsbindir}
 
         compiler:               ${CC}
         cflags:                 ${CFLAGS}

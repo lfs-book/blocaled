@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE policyconfig PUBLIC "-//freedesktop//DTD PolicyKit Policy Configuration 1.0//EN" "http://www.freedesktop.org/standards/PolicyKit/1/policyconfig.dtd">
+
+<policyconfig>
+    <vendor>Gentoo Linux</vendor>
+    <vendor_url>http://git.overlays.gentoo.org/gitweb/?p=proj/openrc-settingsd.git</vendor_url>
+
+    <action id="org.freedesktop.timedate1.set-time">
+        <description>Set system time</description>
+        <message>System policy prevents modifying the system time.</message>
+        <defaults>
+            <allow_any>auth_admin_keep</allow_any>
+            <allow_inactive>auth_admin_keep</allow_inactive>
+            <allow_active>auth_admin_keep</allow_active>
+        </defaults>
+    </action>
+
+    <action id="org.freedesktop.timedate1.set-timezone">
+        <description>Set system timezone</description>
+        <message>System policy prevents modifying the system timezone.</message>
+        <defaults>
+            <allow_any>auth_admin_keep</allow_any>
+            <allow_inactive>auth_admin_keep</allow_inactive>
+            <allow_active>auth_admin_keep</allow_active>
+        </defaults>
+    </action>
+
+    <action id="org.freedesktop.timedate1.set-local-rtc">
+        <description>Set system hardware clock to UTC or to the local timezone</description>
+        <message>System policy prevents modifying the system hardware clock settings.</message>
+        <defaults>
+            <allow_any>auth_admin_keep</allow_any>
+            <allow_inactive>auth_admin_keep</allow_inactive>
+            <allow_active>auth_admin_keep</allow_active>
+        </defaults>
+    </action>
+
+    <action id="org.freedesktop.timedate1.set-ntp">
+        <description>Enable or disable network time synchronization</description>
+        <message>System policy prevents modifying network time synchronization settings.</message>
+        <defaults>
+            <allow_any>auth_admin_keep</allow_any>
+            <allow_inactive>auth_admin_keep</allow_inactive>
+            <allow_active>auth_admin_keep</allow_active>
+        </defaults>
+    </action>
+</policyconfig>

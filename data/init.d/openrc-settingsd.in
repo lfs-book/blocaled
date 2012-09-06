@@ -1,0 +1,27 @@
+#!/sbin/runscript
+# Copyright 2012 Alexandre Rostovtsev <tetromino@gentoo.org>
+# Distributed under the terms of the GNU General Public License v2
+
+description="hostnamed, localed, and timedated D-Bus services for OpenRC"
+
+depend() {
+	need dbus
+}
+
+start() {
+	[ -n "${NTP_SERVICE}" ] &&
+		OPENRC_SETTINGSD_OPTS="--ntp-service=${NTP_SERVICE} ${OPENRC_SETTINGSD_OPTS}"
+	ebegin "Starting openrc-settingsd"
+	start-stop-daemon --start --quiet --pidfile "@localstatedir@/run/openrc-settingsd.pid" \
+		--make-pidfile --background "@libexecdir@/openrc-settingsd" -- \
+		${OPENRC_SETTINGSD_OPTS}
+	eend $?
+}
+
+stop() {
+	ebegin "Stopping openrc-settingsd"
+	start-stop-daemon --stop --quiet --pidfile "@localstatedir@/run/openrc-settingsd.pid"
+	eend $?
+}
+
+# vim: set ft=gentoo-init-d ts=4 :

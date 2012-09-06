@@ -1,12 +1,16 @@
 openrc-settingsd provides an implementation of the the hostnamed, localed,
-and timedated DBus services for OpenRC-based systems - in particular, for
+and timedated D-Bus services for OpenRC-based systems - in particular, for
 typical installations of Gentoo Linux.
 
-Bugs should be reported (for the moment) to gnome@gentoo.org
+It is maintained by Gentoo's GNOME desktop team, which can be contacted
+via gnome@gentoo.org, or in #gentoo-desktop on Freenode IRC.
+
+Bugs should be reported to Gentoo Bugzilla (https://bugs.gentoo.org/)
+using "GNOME" as the component.
 
 Hostnamed:
 
- See http://www.freedesktop.org/wiki/Software/systemd/hostnamed for the DBus
+ See http://www.freedesktop.org/wiki/Software/systemd/hostnamed for the D-Bus
  protocol description.
 
  The static hostname is stored in /etc/conf.d/hostname as
@@ -22,7 +26,7 @@ Hostnamed:
 
 Localed:
 
- See http://www.freedesktop.org/wiki/Software/systemd/localed for the DBus
+ See http://www.freedesktop.org/wiki/Software/systemd/localed for the D-Bus
  protocol description.
 
  The system locale variables are set in /etc/env.d/02locale.
@@ -38,8 +42,8 @@ Localed:
 
 Timedated:
 
-  See http://www.freedesktop.org/wiki/Software/systemd/timedated for the DBus
-  protocol description.
+  See http://www.freedesktop.org/wiki/Software/systemd/timedated for the
+  D-Bus protocol description.
 
   The RTC UTC vs. local time setting is set in /etc/conf.d/hwclock as
   clock="UTC" or clock="local".
