@@ -7,5 +7,3 @@ What happens if e.g. /etc/conf.d/hostname.{runlevel} files exist? Just
 document that this case is not supported?
 
 De-systemd-ize hwclock.c
-
-Make an ebuild, and add it to portage!
