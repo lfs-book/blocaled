@@ -52,7 +52,8 @@ G_LOCK_DEFINE_STATIC (clock);
 
 gboolean use_ntp = FALSE;
 static const gchar *ntp_preferred_service = NULL;
-static const gchar *ntp_default_services[4] = { "ntpd", "chronyd", "busybox-ntpd", NULL };
+static const gchar *ntp_default_services[] = { "ntpd", "chronyd", "busybox-ntpd", NULL };
+#define NTP_DEFAULT_SERVICES_PACKAGES "ntp, openntpd, chrony, busybox-ntpd"
 G_LOCK_DEFINE_STATIC (ntp);
 
 static gboolean
@@ -177,8 +178,6 @@ ntp_service ()
     }
     free (runlevel);
 
-    if (service == NULL)
-        service = ntp_default_services[0];
     return service;
 }
 
@@ -187,6 +186,8 @@ service_started (const gchar *service,
                  GError **error)
 {
     RC_SERVICE state;
+
+    g_assert (service != NULL);
 
     if (!rc_service_exists (service)) {
         g_set_error (error, G_IO_ERROR, G_IO_ERROR_NOT_FOUND, "%s rc service not found", service);
@@ -206,6 +207,8 @@ service_disable (const gchar *service,
     const gchar *argv[3] = { NULL, "stop", NULL };
     gboolean ret = FALSE;
     gint exit_status = 0;
+
+    g_assert (service != NULL);
 
     if (!rc_service_exists (service)) {
         g_set_error (error, G_IO_ERROR, G_IO_ERROR_NOT_FOUND, "%s rc service not found", service);
@@ -253,6 +256,8 @@ service_enable (const gchar *service,
     const gchar *argv[3] = { NULL, "start", NULL };
     gboolean ret = FALSE;
     gint exit_status = 0;
+
+    g_assert (service != NULL);
 
     if (!rc_service_exists (service)) {
         g_set_error (error, G_IO_ERROR, G_IO_ERROR_NOT_FOUND, "%s rc service not found", service);
@@ -584,8 +589,14 @@ on_handle_set_ntp_authorized_cb (GObject *source_object,
     }
 
     G_LOCK (ntp);
-    if ((data->use_ntp && !service_enable (ntp_service(), &err)) ||
-        (!data->use_ntp && !service_disable (ntp_service(), &err)))
+    if (ntp_service () == NULL) {
+        g_dbus_method_invocation_return_dbus_error (data->invocation, DBUS_ERROR_FAILED,
+                                                    "No ntp implementation found. Please install one of the following packages: "
+                                                    NTP_DEFAULT_SERVICES_PACKAGES);
+        goto unlock;
+    }
+    if ((data->use_ntp && !service_enable (ntp_service (), &err)) ||
+        (!data->use_ntp && !service_disable (ntp_service (), &err)))
     {
         g_dbus_method_invocation_return_gerror (data->invocation, err);
         goto unlock;
@@ -702,10 +713,15 @@ timedated_init (gboolean _read_only,
         g_warning ("%s", err->message);
         g_clear_error (&err);
     }
-    use_ntp = service_started (ntp_service (), &err);
-    if (err != NULL) {
-        g_warning ("%s", err->message);
-        g_clear_error (&err);
+    if (ntp_service () == NULL) {
+        g_warning ("No ntp implementation found. Please install one of the following packages: " NTP_DEFAULT_SERVICES_PACKAGES);
+        use_ntp = FALSE;
+    } else {
+        use_ntp = service_started (ntp_service (), &err);
+        if (err != NULL) {
+            g_warning ("%s", err->message);
+            g_clear_error (&err);
+        }
     }
 
     bus_id = g_bus_own_name (G_BUS_TYPE_SYSTEM,
