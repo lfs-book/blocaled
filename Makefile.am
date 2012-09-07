@@ -50,7 +50,7 @@ confddir = $(sysconfdir)/conf.d
 dist_confd_DATA = data/conf.d/openrc-settingsd
 
 pidfile = @pidfile@
-do_subst = sed -e 's,[@]libexecdir[@],$(libexecdir),g' \
+do_subst = $(SED) -e 's,[@]libexecdir[@],$(libexecdir),g' \
 	-e 's,[@]pidfile[@],$(pidfile),g' \
 	$(NULL)
 
@@ -120,7 +120,7 @@ nodist_openrc_settingsd_SOURCES = \
 	$(NULL)
 
 $(hostnamed_built_sources) : data/org.freedesktop.hostname1.xml
-	( pushd "$(srcdir)/src" > /dev/null; \
+	$(AM_V_GEN)( pushd "$(srcdir)/src" > /dev/null; \
 	$(GDBUS_CODEGEN) \
 	--interface-prefix org.freedesktop. \
 	--c-namespace OpenrcSettingsdHostnamed \
@@ -129,7 +129,7 @@ $(hostnamed_built_sources) : data/org.freedesktop.hostname1.xml
 	popd > /dev/null )
 
 $(localed_built_sources) : data/org.freedesktop.locale1.xml
-	( pushd "$(srcdir)/src" > /dev/null; \
+	$(AM_V_GEN)( pushd "$(srcdir)/src" > /dev/null; \
 	$(GDBUS_CODEGEN) \
 	--interface-prefix org.freedesktop. \
 	--c-namespace OpenrcSettingsdLocaled \
@@ -138,7 +138,7 @@ $(localed_built_sources) : data/org.freedesktop.locale1.xml
 	popd > /dev/null )
 
 $(timedated_built_sources) : data/org.freedesktop.timedate1.xml
-	( pushd "$(srcdir)/src" > /dev/null; \
+	$(AM_V_GEN)( pushd "$(srcdir)/src" > /dev/null; \
 	$(GDBUS_CODEGEN) \
 	--interface-prefix org.freedesktop. \
 	--c-namespace OpenrcSettingsdTimedated \
