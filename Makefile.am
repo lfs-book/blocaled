@@ -31,6 +31,11 @@ dbusservices_DATA = \
 	data/org.freedesktop.timedate1.service \
 	$(NULL)
 
+dbusbusconfigdir = $(sysconfdir)/dbus-1/system.d
+dist_dbusbusconfig_DATA = \
+	data/openrc-settingsd.conf \
+	$(NULL)
+
 polkitactiondir = @polkitactiondir@
 dist_polkitaction_DATA = \
 	data/org.freedesktop.hostname1.policy \
