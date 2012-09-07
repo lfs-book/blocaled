@@ -791,6 +791,7 @@ on_handle_set_locale_authorized_cb (GObject *source_object,
     struct invoked_locale *data;
     gchar **loc, **var, **val, **locale_values = NULL;
     ShellParser *locale_file_parsed = NULL;
+    gint status = 0;
 
     data = (struct invoked_locale *) user_data;
     if (!check_polkit_finish (res, &err)) {
@@ -822,16 +823,14 @@ on_handle_set_locale_authorized_cb (GObject *source_object,
             if (!found) {
                 g_dbus_method_invocation_return_dbus_error (data->invocation, DBUS_ERROR_INVALID_ARGS,
                                                             "Invalid locale variable name or value");
-                G_UNLOCK (locale);
-                goto out;
+                goto unlock;
             }
         }
     }
 
     if ((locale_file_parsed = shell_parser_new (locale_file, &err)) == NULL) {
         g_dbus_method_invocation_return_gerror (data->invocation, err);
-        G_UNLOCK (locale);
-        goto out;
+        goto unlock;
     }
 
     if (shell_parser_is_empty (locale_file_parsed)) {
@@ -839,8 +838,7 @@ on_handle_set_locale_authorized_cb (GObject *source_object,
         shell_parser_free (locale_file_parsed);
         if ((locale_file_parsed = shell_parser_new_from_string (locale_file, "# Configuration file for eselect\n# This file has been automatically generated\n", &err)) == NULL) {
             g_dbus_method_invocation_return_gerror (data->invocation, err);
-            G_UNLOCK (locale);
-            goto out;
+            goto unlock;
         }
     }
 
@@ -853,8 +851,7 @@ on_handle_set_locale_authorized_cb (GObject *source_object,
 
     if (!shell_parser_save (locale_file_parsed, &err)) {
         g_dbus_method_invocation_return_gerror (data->invocation, err);
-        G_UNLOCK (locale);
-        goto out;
+        goto unlock;
     }
 
     g_strfreev (locale);
@@ -867,8 +864,20 @@ on_handle_set_locale_authorized_cb (GObject *source_object,
         }
     }
 
+    if (!g_spawn_command_line_sync (ENV_UPDATE " --no-ldconfig", NULL, NULL, &status, &err)) {
+        g_dbus_method_invocation_return_gerror (data->invocation, err);
+        goto unlock;
+    }
+    if (status) {
+        g_dbus_method_invocation_return_dbus_error (data->invocation, DBUS_ERROR_FAILED,
+                                                    "env-update failed");
+        goto unlock;
+    }
+
     openrc_settingsd_localed_locale1_complete_set_locale (locale1, data->invocation);
     openrc_settingsd_localed_locale1_set_locale (locale1, (const gchar * const *) locale);
+
+  unlock:
     G_UNLOCK (locale);
 
   out:

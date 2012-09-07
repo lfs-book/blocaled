@@ -69,6 +69,7 @@ AM_CPPFLAGS = \
 	-DLIBEXECDIR=\""$(libexecdir)"\" \
 	-DPKGDATADIR=\""$(pkgdatadir)"\" \
 	-DPIDFILE=\""$(pidfile)"\" \
+	-DENV_UPDATE=\""$(prefix)/sbin/env-update"\" \
 	$(OPENRC_SETTINGSD_CFLAGS) \
 	-I$(top_srcdir)/src \
 	-I$(top_builddir)/src \
