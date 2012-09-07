@@ -60,6 +60,8 @@ data/init.d/openrc-settingsd : data/init.d/openrc-settingsd.in
 %.service : %.service.in
 	$(do_subst) < $(srcdir)/$< > $(srcdir)/$@
 
+dist_man_MANS = data/openrc-settingsd.8
+
 AM_CPPFLAGS = \
 	-include $(top_builddir)/config.h \
 	-DSYSCONFDIR=\""$(sysconfdir)"\" \

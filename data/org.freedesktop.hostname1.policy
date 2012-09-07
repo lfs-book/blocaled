@@ -3,7 +3,7 @@
 
 <policyconfig>
     <vendor>Gentoo Linux</vendor>
-    <vendor_url>http://git.overlays.gentoo.org/gitweb/?p=proj/openrc-settingsd.git</vendor_url>
+    <vendor_url>http://www.gentoo.org/proj/en/desktop/gnome/openrc-settingsd.xml</vendor_url>
 
     <action id="org.freedesktop.hostname1.set-hostname">
         <description>Set local host name</description>

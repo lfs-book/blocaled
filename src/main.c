@@ -42,6 +42,7 @@ static gboolean foreground = FALSE;
 static gboolean use_syslog = FALSE;
 static gboolean read_only = FALSE;
 static gboolean update_rc_status = FALSE;
+static gboolean print_version = FALSE;
 static gchar *ntp_preferred_service = NULL;
 
 static guint components_started = 0;
@@ -56,6 +57,7 @@ static GOptionEntry option_entries[] =
     { "read-only", 0, 0, G_OPTION_ARG_NONE, &read_only, "Run in read-only mode", NULL },
     { "ntp-service", 0, 0, G_OPTION_ARG_STRING, &ntp_preferred_service, "Preferred rc NTP service for timedated", NULL },
     { "update-rc-status", 0, 0, G_OPTION_ARG_NONE, &update_rc_status, "Force openrc-settingsd rc service to be marked as started", NULL },
+    { "version", 0, 0, G_OPTION_ARG_NONE, &print_version, "Show version information", NULL },
     { NULL }
 };
 
@@ -207,6 +209,11 @@ main (gint argc, gchar *argv[])
     if (!g_option_context_parse (option_context, &argc, &argv, &error)) {
         g_critical ("Failed to parse options: %s", error->message);
         return 1;
+    }
+
+    if (print_version) {
+        g_print ("%s\n", PACKAGE_STRING);
+        return 0;
     }
 
     if (!foreground) {

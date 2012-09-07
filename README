@@ -1,9 +1,11 @@
-openrc-settingsd provides an implementation of the the hostnamed, localed,
+OpenRC-settingsd provides an implementation of the the hostnamed, localed,
 and timedated D-Bus services for OpenRC-based systems - in particular, for
 typical installations of Gentoo Linux.
 
 It is maintained by Gentoo's GNOME desktop team, which can be contacted
 via gnome@gentoo.org, or in #gentoo-desktop on Freenode IRC.
+
+Homepage: http://gnome.gentoo.org/openrc-settingsd.xml
 
 Bugs should be reported to Gentoo Bugzilla (https://bugs.gentoo.org/)
 using "GNOME" as the component.
@@ -50,10 +52,10 @@ Timedated:
 
   The timezone is set in /etc/timezone and /etc/localtime.
 
-  openrc-settingsd attempts to auto-detect an appropriate ntp implementation.
+  OpenRC-settingsd attempts to auto-detect an appropriate ntp implementation.
   To avoid auto-detection, use the --ntp-service command line option.
 
-Note that openrc-settingsd expects any shell-syntax settings files that it
+Note that OpenRC-settingsd expects any shell-syntax settings files that it
 modifies to be in UTF-8 encoding, and to consist only of comments and simple
 scalar assignments, i.e. something like
 
@@ -61,5 +63,5 @@ scalar assignments, i.e. something like
 foo="bar"
 baz='Let'\''s go!'
 
-If openrc-settingsd fails to parse a settings file, it will refuse to modify
+If OpenRC-settingsd fails to parse a settings file, it will refuse to modify
 it.
