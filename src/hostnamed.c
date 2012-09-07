@@ -30,6 +30,7 @@
 
 #include "hostnamed.h"
 #include "hostname1-generated.h"
+#include "main.h"
 #include "utils.h"
 
 #include "config.h"
@@ -393,8 +394,8 @@ on_bus_acquired (GDBusConnection *connection,
                                            "/org/freedesktop/hostname1",
                                            &err)) {
         if (err != NULL) {
-            g_printerr ("Failed to export interface on /org/freedesktop/hostname1: %s\n", err->message);
-            g_error_free (err);
+            g_critical ("Failed to export interface on /org/freedesktop/hostname1: %s", err->message);
+            openrc_settingsd_exit (1);
         }
     }
 }
@@ -405,6 +406,7 @@ on_name_acquired (GDBusConnection *connection,
                   gpointer         user_data)
 {
     g_debug ("Acquired the name %s", bus_name);
+    openrc_settingsd_component_started ();
 }
 
 static void
@@ -413,10 +415,10 @@ on_name_lost (GDBusConnection *connection,
               gpointer         user_data)
 {
     if (connection == NULL)
-        g_printerr ("Failed to acquire a dbus connection\n");
+        g_critical ("Failed to acquire a dbus connection");
     else
-        g_printerr ("Failed to acquire dbus name %s\n", bus_name);
-    exit(-1);
+        g_critical ("Failed to acquire dbus name %s", bus_name);
+    openrc_settingsd_exit (1);
 }
 
 /* Public functions */

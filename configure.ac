@@ -17,6 +17,7 @@ PKG_CHECK_MODULES(OPENRC_SETTINGSD,
                    glib-2.0 >= 2.30
                    dbus-1
                    polkit-gobject-1
+                   libdaemon
                    openrc])
 AC_SUBST(OPENRC_SETTINGSD_CFLAGS)
 AC_SUBST(OPENRC_SETTINGSD_LIBS)
@@ -26,8 +27,8 @@ if test "x$GDBUS_CODEGEN" = x; then
     AC_MSG_ERROR([Failed to find gdbus-codegen])
 fi
 
-AC_ARG_WITH([rootsbindir], AS_HELP_STRING([--with-rootsbindir=DIR], [root /sbin directory @<:@default=/sbin@:>@]), [], [with_rootsbindir=/sbin])
-AC_SUBST([rootsbindir], [$with_rootsbindir])
+AC_ARG_WITH([pidfile], AS_HELP_STRING([--with-pidfile=FILENAME], [pid filename @<:@default=/var/run/openrc-settingsd.pid@:>@]), [], [with_pidfile=/var/run/openrc-settingsd.pid])
+AC_SUBST([pidfile], [$with_pidfile])
 
 AC_MSG_CHECKING([dbus interfaces directory])
 dbusinterfacesdir=`$PKG_CONFIG --variable=interfaces_dir dbus-1`
@@ -68,7 +69,7 @@ AC_MSG_RESULT([
 
         prefix:                 ${prefix}
         sysconfdir:             ${sysconfdir}
-        rootsbindir:            ${with_rootsbindir}
+        pid file:               ${with_pidfile}
 
         compiler:               ${CC}
         cflags:                 ${CFLAGS}

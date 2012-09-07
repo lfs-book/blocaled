@@ -40,6 +40,9 @@ struct _ShellParser
 gboolean
 _g_match_info_clear (GMatchInfo **match_info);
 
+gchar *
+strstr0 (const char *haystack, const char *needle);
+
 void
 check_polkit_async (const gchar *unique_name,
                     const gchar *action_id,

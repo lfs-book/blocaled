@@ -12,15 +12,14 @@ start() {
 	[ -n "${NTP_SERVICE}" ] &&
 		OPENRC_SETTINGSD_OPTS="--ntp-service=${NTP_SERVICE} ${OPENRC_SETTINGSD_OPTS}"
 	ebegin "Starting openrc-settingsd"
-	start-stop-daemon --start --quiet --pidfile "@localstatedir@/run/openrc-settingsd.pid" \
-		--make-pidfile --background "@libexecdir@/openrc-settingsd" -- \
-		${OPENRC_SETTINGSD_OPTS}
+	start-stop-daemon --start --quiet --pidfile "@pidfile@" \
+		"@libexecdir@/openrc-settingsd" -- ${OPENRC_SETTINGSD_OPTS}
 	eend $?
 }
 
 stop() {
 	ebegin "Stopping openrc-settingsd"
-	start-stop-daemon --stop --quiet --pidfile "@localstatedir@/run/openrc-settingsd.pid"
+	start-stop-daemon --stop --quiet --pidfile "@pidfile@"
 	eend $?
 }
 

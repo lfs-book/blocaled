@@ -22,7 +22,11 @@
 */
 
 #include <stdarg.h>
+#include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+
+#include <libdaemon/dfork.h>
 
 #include <glib.h>
 #include <gio/gio.h>
@@ -32,13 +36,13 @@
 
 #include "config.h"
 
-GRegex *indent_regex = NULL;
-GRegex *comment_regex = NULL;
-GRegex *separator_regex = NULL;
-GRegex *var_equals_regex = NULL;
-GRegex *single_quoted_regex = NULL;
-GRegex *double_quoted_regex = NULL;
-GRegex *unquoted_regex = NULL;
+static GRegex *indent_regex = NULL;
+static GRegex *comment_regex = NULL;
+static GRegex *separator_regex = NULL;
+static GRegex *var_equals_regex = NULL;
+static GRegex *single_quoted_regex = NULL;
+static GRegex *double_quoted_regex = NULL;
+static GRegex *unquoted_regex = NULL;
 
 /* Always returns TRUE */
 gboolean
@@ -49,6 +53,14 @@ _g_match_info_clear (GMatchInfo **match_info)
     g_match_info_free (*match_info);
     *match_info = NULL;
     return TRUE;
+}
+
+gchar *
+strstr0 (const gchar *haystack, const gchar *needle)
+{
+    if (haystack == NULL || needle == NULL)
+        return NULL;
+    return strstr (haystack, needle);
 }
 
 struct check_polkit_data {

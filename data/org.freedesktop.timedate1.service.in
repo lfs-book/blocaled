@@ -1,4 +1,4 @@
 [D-BUS Service]
 Name=org.freedesktop.timedate1
-Exec=@rootsbindir@/rc-service openrc-settingsd start
+Exec=@libexecdir@/openrc-settingsd --update-rc-status
 User=root

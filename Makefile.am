@@ -44,11 +44,9 @@ initd_SCRIPTS = data/init.d/openrc-settingsd
 confddir = $(sysconfdir)/conf.d
 dist_confd_DATA = data/conf.d/openrc-settingsd
 
-rootsbindir = @rootsbindir@
-
+pidfile = @pidfile@
 do_subst = sed -e 's,[@]libexecdir[@],$(libexecdir),g' \
-	-e 's,[@]localstatedir[@],$(localstatedir),g' \
-	-e 's,[@]rootsbindir[@],$(rootsbindir),g' \
+	-e 's,[@]pidfile[@],$(pidfile),g' \
 	$(NULL)
 
 data/init.d/openrc-settingsd : data/init.d/openrc-settingsd.in
@@ -63,6 +61,7 @@ AM_CPPFLAGS = \
 	-DDATADIR=\""$(datadir)"\" \
 	-DLIBEXECDIR=\""$(libexecdir)"\" \
 	-DPKGDATADIR=\""$(pkgdatadir)"\" \
+	-DPIDFILE=\""$(pidfile)"\" \
 	$(OPENRC_SETTINGSD_CFLAGS) \
 	-I$(top_srcdir)/src \
 	-I$(top_builddir)/src \
@@ -105,6 +104,7 @@ openrc_settingsd_SOURCES = \
 	src/timedated.h \
 	src/utils.c \
 	src/utils.h \
+	src/main.h \
 	src/main.c \
 	$(NULL)
 

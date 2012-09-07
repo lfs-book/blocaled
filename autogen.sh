@@ -3,8 +3,7 @@
 autoreconf --install --symlink
 
 args="--prefix=/usr \
---sysconfdir=/etc \
---localstatedir=/var"
+--sysconfdir=/etc"
 
 echo
 echo "----------------------------------------------------------------"
