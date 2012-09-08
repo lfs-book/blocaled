@@ -1,5 +1,5 @@
 AC_PREREQ([2.60])
-AC_INIT([openrc-settingsd], [1.0], [https://bugs.gentoo.org/], [openrc-settingsd], [http://gnome.gentoo.org/openrc-settingsd.xml])
+AC_INIT([openrc-settingsd], [1.0.1], [https://bugs.gentoo.org/], [openrc-settingsd], [http://gnome.gentoo.org/openrc-settingsd.xml])
 AC_CONFIG_SRCDIR([src/main.c])
 AM_INIT_AUTOMAKE([check-news foreign 1.11 -Wall -Wno-portability silent-rules tar-pax no-dist-gzip dist-xz])
 AC_PROG_CC_STDC
