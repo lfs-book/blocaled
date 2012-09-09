@@ -1,6 +1,9 @@
 /*
   Copyright 2012 Alexandre Rostovtsev
 
+  Some parts are based on the code from the systemd project; these are
+  copyright 2011 Lennart Poettering and others.
+
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation; either version 2 of the License, or
@@ -82,7 +85,8 @@ guess_icon_name ()
 
 #if defined(__i386__) || defined(__x86_64__)
     /* 
-       Taken with a few minor changes from systemd's hostnamed
+       Taken with a few minor changes from systemd's hostnamed.c,
+       copyright 2011 Lennart Poettering.
 
        See the SMBIOS Specification 2.7.1 section 7.4.1 for
        details about the values listed here:
