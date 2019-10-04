@@ -3,12 +3,11 @@
 openrc\-settingsd \- system settings D\-Bus service for OpenRC
 .SH "SYNOPSIS"
 \fBopenrc\-settingsd\fR [\fB\-\-debug\fR] [\fB\-\-foreground\fR] [\fB\-\-read\-only\fR]
-[\fB\-\-ntp\-service\fR=\fISERVICE\fR] [\fB\-\-update\-rc\-status\fR]
+[\fB\-\-update\-rc\-status\fR]
 .SH "DESCRIPTION"
 .PP
-The \fBopenrc\-settingsd\fR daemon implements the standard hostnamed (i.e.
-\fIorg.freedesktop.hostname1\fR), localed (i.e. \fIorg.freedesktop.locale1\fR), and
-timedated (\fIorg.freedesktop.timedate1\fR) D\-Bus interfaces for OpenRC systems.
+The \fBopenrc\-settingsd\fR daemon implements the standard localed
+(i.e. \fIorg.freedesktop.locale1\fR) D\-Bus interface for OpenRC systems.
 Users and administrators should not need to launch the \fBopenrc\-settingsd\fR
 executable manually. Depending on the installation, it will either be launched
 automatically via D\-Bus activation when needed, or started by the administrator
@@ -40,12 +39,6 @@ instead of the system log.
 .RS 4
 Run daemon in read-only mode. It will read settings files, but will not
 modify them.
-.RE
-.PP
-\fB\-\-ntp\-service\fR=\fISERVICE\fR
-.RS 4
-Specify which OpenRC service to use as the NTP service. If this option is not used,
-\fBopenrc\-settingsd\fR will attempt to autodetect an appropriate NTP implementation.
 .RE
 .PP
 \fB\-\-update\-rc\-status\fR

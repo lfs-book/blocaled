@@ -28,9 +28,7 @@
 
 #include <rc.h>
 
-#include "hostnamed.h"
 #include "localed.h"
-#include "timedated.h"
 #include "utils.h"
 
 #include "config.h"
@@ -43,7 +41,6 @@ static gboolean use_syslog = FALSE;
 static gboolean read_only = FALSE;
 static gboolean update_rc_status = FALSE;
 static gboolean print_version = FALSE;
-static gchar *ntp_preferred_service = NULL;
 
 static guint components_started = 0;
 G_LOCK_DEFINE_STATIC (components_started);
@@ -55,7 +52,6 @@ static GOptionEntry option_entries[] =
     { "debug", 0, 0, G_OPTION_ARG_NONE, &debug, "Enable debugging messages", NULL },
     { "foreground", 0, 0, G_OPTION_ARG_NONE, &foreground, "Do not daemonize", NULL },
     { "read-only", 0, 0, G_OPTION_ARG_NONE, &read_only, "Run in read-only mode", NULL },
-    { "ntp-service", 0, 0, G_OPTION_ARG_STRING, &ntp_preferred_service, "Preferred rc NTP service for timedated", NULL },
     { "update-rc-status", 0, 0, G_OPTION_ARG_NONE, &update_rc_status, "Force openrc-settingsd rc service to be marked as started", NULL },
     { "version", 0, 0, G_OPTION_ARG_NONE, &print_version, "Show version information", NULL },
     { NULL }
@@ -169,10 +165,6 @@ openrc_settingsd_component_started ()
     G_LOCK (components_started);
 
     components_started++;
-    /* We want all 3 names (hostnamed, localed, timedated) to be grabbed */
-    if (components_started < 3)
-        goto out;
-
     pidfile = g_file_new_for_path (PIDFILE);
     pidstring = g_strdup_printf ("%lu", (gulong)getpid ());
     if (!g_file_replace_contents (pidfile, pidstring, strlen(pidstring), NULL, FALSE, G_FILE_CREATE_NONE, NULL, NULL, &err)) {
@@ -187,7 +179,6 @@ openrc_settingsd_component_started ()
         rc_service_mark ("openrc-settingsd", RC_SERVICE_STARTED);
     started = TRUE;
 
-  out:
     G_UNLOCK (components_started);
     g_clear_object (&pidfile);
     g_free (pidstring);
@@ -245,20 +236,15 @@ main (gint argc, gchar *argv[])
     }
 
     utils_init ();
-    hostnamed_init (read_only);
     localed_init (read_only);
-    timedated_init (read_only, ntp_preferred_service);
     loop = g_main_loop_new (NULL, FALSE);
     g_main_loop_run (loop);
 
     g_main_loop_unref (loop);
 
-    timedated_destroy ();
     localed_destroy ();
-    hostnamed_destroy ();
     utils_destroy ();
 
     g_clear_error (&error);
-    g_free (ntp_preferred_service);
     openrc_settingsd_exit (0);
 }

@@ -1,4 +1,0 @@
-[D-BUS Service]
-Name=org.freedesktop.hostname1
-Exec=@libexecdir@/openrc-settingsd --update-rc-status
-User=root

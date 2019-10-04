@@ -2,7 +2,7 @@
 # Copyright 2012 Alexandre Rostovtsev <tetromino@gentoo.org>
 # Distributed under the terms of the GNU General Public License v2
 
-description="hostnamed, localed, and timedated D-Bus services for OpenRC"
+description="localed D-Bus service for OpenRC"
 
 depend() {
 	need dbus

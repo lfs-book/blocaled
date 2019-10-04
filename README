@@ -1,5 +1,5 @@
-OpenRC-settingsd provides an implementation of the the hostnamed, localed,
-and timedated D-Bus services for OpenRC-based systems - in particular, for
+OpenRC-settingsd provides an implementation of the the localed
+D-Bus service for OpenRC-based systems - in particular, for
 typical installations of Gentoo Linux.
 
 It is maintained by Gentoo's GNOME desktop team, which can be contacted
@@ -9,22 +9,6 @@ Homepage: http://gnome.gentoo.org/openrc-settingsd.xml
 
 Bugs should be reported to Gentoo Bugzilla (https://bugs.gentoo.org/)
 using "GNOME" as the component.
-
-Hostnamed:
-
- See http://www.freedesktop.org/wiki/Software/systemd/hostnamed for the D-Bus
- protocol description.
-
- The static hostname is stored in /etc/conf.d/hostname as
- hostname="foo"
-
- The pretty hostname and icon name are stored in /etc/machine-info as
- PRETTY_HOSTNAME="Foo !"
- ICON_NAME="computer-desktop"
-
- It is strongly recommended that hostnamed be used with nss-myhostname
- (http://0pointer.de/lennart/projects/nss-myhostname/) to ensure the local
- host name always remains resolvable.
 
 Localed:
 
@@ -41,19 +25,6 @@ Localed:
  (falling back to 00-keyboard.conf if it exists and 30-keyboard.conf does
  not). See http://www.gentoo.org/doc/en/xorg-config.xml for configuration
  information.
-
-Timedated:
-
-  See http://www.freedesktop.org/wiki/Software/systemd/timedated for the
-  D-Bus protocol description.
-
-  The RTC UTC vs. local time setting is set in /etc/conf.d/hwclock as
-  clock="UTC" or clock="local".
-
-  The timezone is set in /etc/timezone and /etc/localtime.
-
-  OpenRC-settingsd attempts to auto-detect an appropriate ntp implementation.
-  To avoid auto-detection, use the --ntp-service command line option.
 
 Note that OpenRC-settingsd expects any shell-syntax settings files that it
 modifies to be in UTF-8 encoding, and to consist only of comments and simple

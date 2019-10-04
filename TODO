@@ -1,9 +1,3 @@
-Add nss-myhostname detection
-
 Source /etc/rc.conf after /etc/conf.d/$service; do something intelligent
 if the relevant variable is set in /etc/rc.conf (go to read-only mode?)
 
-What happens if e.g. /etc/conf.d/hostname.{runlevel} files exist? Just
-document that this case is not supported?
-
-De-systemd-ize hwclock.c
