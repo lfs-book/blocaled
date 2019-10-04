@@ -1,0 +1,3 @@
+# Options you want to pass to blocaled, e.g. --read-only
+
+BLOCALED_OPTS=""

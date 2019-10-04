@@ -25,9 +25,9 @@
 #define _MAIN_H_
 
 void
-openrc_settingsd_component_started ();
+localed_component_started ();
 
 void
-openrc_settingsd_exit (int status);
+localed_exit (int status);
 
 #endif

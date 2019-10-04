@@ -2,8 +2,8 @@
 <!DOCTYPE policyconfig PUBLIC "-//freedesktop//DTD PolicyKit Policy Configuration 1.0//EN" "http://www.freedesktop.org/standards/PolicyKit/1/policyconfig.dtd">
 
 <policyconfig>
-    <vendor>Gentoo Linux</vendor>
-    <vendor_url>http://www.gentoo.org/proj/en/desktop/gnome/openrc-settingsd.xml</vendor_url>
+    <vendor>blocaled</vendor>
+    <vendor_url>https://github.com/pierre-labastie/blocaled</vendor_url>
 
     <action id="org.freedesktop.locale1.set-locale">
         <description>Set system locale environment variables</description>

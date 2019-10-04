@@ -1,5 +1,5 @@
 AC_PREREQ([2.60])
-AC_INIT([openrc-settingsd], [1.0.1], [https://bugs.gentoo.org/], [openrc-settingsd], [http://gnome.gentoo.org/openrc-settingsd.xml])
+AC_INIT([blocaled], [0.1], [https://github.com/pierre-labastie/blocaled/issues], [blocaled], [https://github.com/pierre-labastie/blocaled])
 AC_CONFIG_SRCDIR([src/main.c])
 AM_INIT_AUTOMAKE([check-news foreign 1.11 -Wall -Wno-portability silent-rules tar-pax no-dist-gzip dist-xz])
 AC_PROG_CC_STDC
@@ -10,24 +10,22 @@ LT_INIT([disable-static pic-only])
 AC_PREFIX_DEFAULT([/usr])
 
 AC_PROG_MKDIR_P
-AC_SEARCH_LIBS([clock_gettime], [rt], [], [AC_MSG_ERROR([librt not found])])
-PKG_CHECK_MODULES(OPENRC_SETTINGSD,
+PKG_CHECK_MODULES(BLOCALED,
                   [gio-unix-2.0 >= 2.30
                    gio-2.0 >= 2.30
                    glib-2.0 >= 2.30
                    dbus-1
                    polkit-gobject-1
-                   libdaemon
-                   openrc])
-AC_SUBST(OPENRC_SETTINGSD_CFLAGS)
-AC_SUBST(OPENRC_SETTINGSD_LIBS)
+                   libdaemon])
+AC_SUBST(BLOCALED_CFLAGS)
+AC_SUBST(BLOCALED_LIBS)
 
 AC_PATH_PROG(GDBUS_CODEGEN, gdbus-codegen)
 if test "x$GDBUS_CODEGEN" = x; then
     AC_MSG_ERROR([Failed to find gdbus-codegen])
 fi
 
-AC_ARG_WITH([pidfile], AS_HELP_STRING([--with-pidfile=FILENAME], [pid filename @<:@default=/var/run/openrc-settingsd.pid@:>@]), [], [with_pidfile=/var/run/openrc-settingsd.pid])
+AC_ARG_WITH([pidfile], AS_HELP_STRING([--with-pidfile=FILENAME], [pid filename @<:@default=/var/run/blocaled.pid@:>@]), [], [with_pidfile=/var/run/blocaled.pid])
 AC_SUBST([pidfile], [$with_pidfile])
 
 AC_MSG_CHECKING([dbus interfaces directory])

@@ -16,8 +16,8 @@
   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#ifndef OPENRC_LOCALED_H
-#define OPENRC_LOCALED_H
+#ifndef B_LOCALED_H
+#define B_LOCALED_H
 
 #include <glib.h>
 #include <gio/gio.h>

@@ -31,12 +31,12 @@
 
 #include "config.h"
 
-#define SERVICE_NAME "openrc-settingsd localed"
+#define SERVICE_NAME "localed"
 
 static guint bus_id = 0;
 static gboolean read_only = FALSE;
 
-static OpenrcSettingsdLocaledLocale1 *locale1 = NULL;
+static BLocaledLocale1 *locale1 = NULL;
 
 static gchar *locale_variables[] = {
     "LANG", "LC_CTYPE", "LC_NUMERIC", "LC_TIME", "LC_COLLATE", "LC_MONETARY", "LC_MESSAGES", "LC_PAPER", "LC_NAME", "LC_ADDRESS", "LC_TELEPHONE", "LC_MEASUREMENT", "LC_IDENTIFICATION", NULL
@@ -874,8 +874,8 @@ on_handle_set_locale_authorized_cb (GObject *source_object,
         goto unlock;
     }
 
-    openrc_settingsd_localed_locale1_complete_set_locale (locale1, data->invocation);
-    openrc_settingsd_localed_locale1_set_locale (locale1, (const gchar * const *) locale);
+    blocaled_locale1_complete_set_locale (locale1, data->invocation);
+    blocaled_locale1_set_locale (locale1, (const gchar * const *) locale);
 
   unlock:
     G_UNLOCK (locale);
@@ -892,7 +892,7 @@ on_handle_set_locale_authorized_cb (GObject *source_object,
 }
 
 static gboolean
-on_handle_set_locale (OpenrcSettingsdLocaledLocale1 *locale1,
+on_handle_set_locale (BLocaledLocale1 *locale1,
                       GDBusMethodInvocation *invocation,
                       const gchar * const *_locale,
                       const gboolean user_interaction,
@@ -968,7 +968,7 @@ on_handle_set_vconsole_keyboard_authorized_cb (GObject *source_object,
         }
     }
 
-    /* We do not set vconsole_keymap_toggle because there is no good equivalent for it in OpenRC */
+    /* We do not set vconsole_keymap_toggle */
     if (!shell_parser_set_and_save (keymaps_file, &err, "keymap", NULL, data->vconsole_keymap, NULL)) {
         g_dbus_method_invocation_return_gerror (data->invocation, err);
         goto unlock;
@@ -976,7 +976,7 @@ on_handle_set_vconsole_keyboard_authorized_cb (GObject *source_object,
 
     g_free (vconsole_keymap);
     vconsole_keymap = g_strdup (data->vconsole_keymap);
-    openrc_settingsd_localed_locale1_set_vconsole_keymap (locale1, vconsole_keymap);
+    blocaled_locale1_set_vconsole_keymap (locale1, vconsole_keymap);
 
     if (data->convert) {
         if (best_entry == NULL) {
@@ -1013,15 +1013,15 @@ on_handle_set_vconsole_keyboard_authorized_cb (GObject *source_object,
                 x11_model = g_strdup (best_entry->x11_model);
                 x11_variant = g_strdup (best_entry->x11_variant);
                 x11_options = g_strdup (best_entry->x11_options);
-                openrc_settingsd_localed_locale1_set_x11_layout (locale1, x11_layout);
-                openrc_settingsd_localed_locale1_set_x11_model (locale1, x11_model);
-                openrc_settingsd_localed_locale1_set_x11_variant (locale1, x11_variant);
-                openrc_settingsd_localed_locale1_set_x11_options (locale1, x11_options);
+                blocaled_locale1_set_x11_layout (locale1, x11_layout);
+                blocaled_locale1_set_x11_model (locale1, x11_model);
+                blocaled_locale1_set_x11_variant (locale1, x11_variant);
+                blocaled_locale1_set_x11_options (locale1, x11_options);
             }
         }
     }
-    /* We do not modify vconsole_keymap_toggle because there is no good equivalent for it in OpenRC */
-    openrc_settingsd_localed_locale1_complete_set_vconsole_keyboard (locale1, data->invocation);
+    /* We do not modify vconsole_keymap_toggle */
+    blocaled_locale1_complete_set_vconsole_keyboard (locale1, data->invocation);
 
   unlock:
     if (data->convert)
@@ -1038,7 +1038,7 @@ on_handle_set_vconsole_keyboard_authorized_cb (GObject *source_object,
 }
 
 static gboolean
-on_handle_set_vconsole_keyboard (OpenrcSettingsdLocaledLocale1 *locale1,
+on_handle_set_vconsole_keyboard (BLocaledLocale1 *locale1,
                                  GDBusMethodInvocation *invocation,
                                  const gchar *keymap,
                                  const gchar *keymap_toggle,
@@ -1148,10 +1148,10 @@ on_handle_set_x11_keyboard_authorized_cb (GObject *source_object,
     x11_model = g_strdup (data->x11_model);
     x11_variant = g_strdup (data->x11_variant);
     x11_options = g_strdup (data->x11_options);
-    openrc_settingsd_localed_locale1_set_x11_layout (locale1, x11_layout);
-    openrc_settingsd_localed_locale1_set_x11_model (locale1, x11_model);
-    openrc_settingsd_localed_locale1_set_x11_variant (locale1, x11_variant);
-    openrc_settingsd_localed_locale1_set_x11_options (locale1, x11_options);
+    blocaled_locale1_set_x11_layout (locale1, x11_layout);
+    blocaled_locale1_set_x11_model (locale1, x11_model);
+    blocaled_locale1_set_x11_variant (locale1, x11_variant);
+    blocaled_locale1_set_x11_options (locale1, x11_options);
 
     if (data->convert) {
         if (best_entry == NULL) {
@@ -1166,11 +1166,11 @@ on_handle_set_x11_keyboard_authorized_cb (GObject *source_object,
             }
             g_free (vconsole_keymap);
             vconsole_keymap = g_strdup (best_entry->vconsole_keymap);
-            openrc_settingsd_localed_locale1_set_vconsole_keymap (locale1, vconsole_keymap);
+            blocaled_locale1_set_vconsole_keymap (locale1, vconsole_keymap);
         }
     }
 
-    openrc_settingsd_localed_locale1_complete_set_x11_keyboard (locale1, data->invocation);
+    blocaled_locale1_complete_set_x11_keyboard (locale1, data->invocation);
 
   unlock:
     if (data->convert)
@@ -1187,7 +1187,7 @@ on_handle_set_x11_keyboard_authorized_cb (GObject *source_object,
 }
 
 static gboolean
-on_handle_set_x11_keyboard (OpenrcSettingsdLocaledLocale1 *locale1,
+on_handle_set_x11_keyboard (BLocaledLocale1 *locale1,
                             GDBusMethodInvocation *invocation,
                             const gchar *layout,
                             const gchar *model,
@@ -1226,15 +1226,15 @@ on_bus_acquired (GDBusConnection *connection,
 
     g_debug ("Acquired a message bus connection");
 
-    locale1 = openrc_settingsd_localed_locale1_skeleton_new ();
+    locale1 = blocaled_locale1_skeleton_new ();
 
-    openrc_settingsd_localed_locale1_set_locale (locale1, (const gchar * const *) locale);
-    openrc_settingsd_localed_locale1_set_vconsole_keymap (locale1, vconsole_keymap);
-    openrc_settingsd_localed_locale1_set_vconsole_keymap_toggle (locale1, vconsole_keymap_toggle);
-    openrc_settingsd_localed_locale1_set_x11_layout (locale1, x11_layout);
-    openrc_settingsd_localed_locale1_set_x11_model (locale1, x11_model);
-    openrc_settingsd_localed_locale1_set_x11_variant (locale1, x11_variant);
-    openrc_settingsd_localed_locale1_set_x11_options (locale1, x11_options);
+    blocaled_locale1_set_locale (locale1, (const gchar * const *) locale);
+    blocaled_locale1_set_vconsole_keymap (locale1, vconsole_keymap);
+    blocaled_locale1_set_vconsole_keymap_toggle (locale1, vconsole_keymap_toggle);
+    blocaled_locale1_set_x11_layout (locale1, x11_layout);
+    blocaled_locale1_set_x11_model (locale1, x11_model);
+    blocaled_locale1_set_x11_variant (locale1, x11_variant);
+    blocaled_locale1_set_x11_options (locale1, x11_options);
 
     g_signal_connect (locale1, "handle-set-locale", G_CALLBACK (on_handle_set_locale), NULL);
     g_signal_connect (locale1, "handle-set-vconsole-keyboard", G_CALLBACK (on_handle_set_vconsole_keyboard), NULL);
@@ -1246,7 +1246,7 @@ on_bus_acquired (GDBusConnection *connection,
                                            &err)) {
         if (err != NULL) {
             g_critical ("Failed to export interface on /org/freedesktop/locale1: %s", err->message);
-            openrc_settingsd_exit (1);
+            localed_exit (1);
         }
     }
 }
@@ -1257,7 +1257,7 @@ on_name_acquired (GDBusConnection *connection,
                   gpointer         user_data)
 {
     g_debug ("Acquired the name %s", bus_name);
-    openrc_settingsd_component_started ();
+    localed_component_started ();
 }
 
 static void
@@ -1269,7 +1269,7 @@ on_name_lost (GDBusConnection *connection,
         g_critical ("Failed to acquire a dbus connection");
     else
         g_critical ("Failed to acquire dbus name %s", bus_name);
-    openrc_settingsd_exit (1);
+    localed_exit (1);
 }
 
 void
@@ -1316,7 +1316,7 @@ localed_init (gboolean _read_only)
         g_clear_error (&err);
     }
 
-    /* We don't have a good equivalent for this in openrc at the moment */
+    /* We don't have a good equivalent for this */
     vconsole_keymap_toggle = g_strdup ("");
 
     kbd_model_map_regex_init ();

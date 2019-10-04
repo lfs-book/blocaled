@@ -52,7 +52,6 @@ static GOptionEntry option_entries[] =
     { "debug", 0, 0, G_OPTION_ARG_NONE, &debug, "Enable debugging messages", NULL },
     { "foreground", 0, 0, G_OPTION_ARG_NONE, &foreground, "Do not daemonize", NULL },
     { "read-only", 0, 0, G_OPTION_ARG_NONE, &read_only, "Run in read-only mode", NULL },
-    { "update-rc-status", 0, 0, G_OPTION_ARG_NONE, &update_rc_status, "Force openrc-settingsd rc service to be marked as started", NULL },
     { "version", 0, 0, G_OPTION_ARG_NONE, &print_version, "Show version information", NULL },
     { NULL }
 };
@@ -92,7 +91,7 @@ log_handler (const gchar *log_domain,
 
     result = g_string_new (NULL);
     if (!use_syslog)
-        g_string_append_printf (result, "openrc-settingsd[%lu]: ", (gulong)getpid ());
+        g_string_append_printf (result, "blocaled[%lu]: ", (gulong)getpid ());
     if (log_domain != NULL)
         g_string_append_printf (result, "%s: ", log_domain);
 
@@ -124,7 +123,7 @@ log_handler (const gchar *log_domain,
     result_data = g_string_free (result, FALSE);
 
     if (use_syslog) {
-        openlog ("openrc-settingsd", LOG_PID, LOG_DAEMON);
+        openlog ("blocaled", LOG_PID, LOG_DAEMON);
         syslog (log_level_to_syslog (log_level), "%s", result_data);
     } else
         g_printerr ("%s\n", result_data);
@@ -133,7 +132,7 @@ log_handler (const gchar *log_domain,
 }
 
 void
-openrc_settingsd_exit (int status)
+localed_exit (int status)
 {
     GFile *pidfile = NULL;
 
@@ -143,20 +142,13 @@ openrc_settingsd_exit (int status)
     pidfile = g_file_new_for_path (PIDFILE);
     g_file_delete (pidfile, NULL, NULL);
 
-    if (update_rc_status && started) {
-        if (status)
-            rc_service_mark ("openrc-settingsd", RC_SERVICE_FAILED);
-        else
-            rc_service_mark ("openrc-settingsd", RC_SERVICE_STOPPED);
-    }
-
     g_clear_object (&pidfile);
     exit (status);
 }
 
 /* This is called each time we successfully grab a bus name when starting up */
 void
-openrc_settingsd_component_started ()
+localed_component_started ()
 {
     gchar *pidstring = NULL;
     GError *err = NULL;
@@ -169,14 +161,12 @@ openrc_settingsd_component_started ()
     pidstring = g_strdup_printf ("%lu", (gulong)getpid ());
     if (!g_file_replace_contents (pidfile, pidstring, strlen(pidstring), NULL, FALSE, G_FILE_CREATE_NONE, NULL, NULL, &err)) {
         g_critical ("Failed to write " PIDFILE ": %s", err->message);
-        openrc_settingsd_exit (1);
+        localed_exit (1);
     }
 
     if (!foreground)
         daemon_retval_send (0);
 
-    if (update_rc_status)
-        rc_service_mark ("openrc-settingsd", RC_SERVICE_STARTED);
     started = TRUE;
 
     G_UNLOCK (components_started);
@@ -195,7 +185,7 @@ main (gint argc, gchar *argv[])
     g_type_init ();
     g_log_set_default_handler (log_handler, NULL);
 
-    option_context = g_option_context_new ("- system settings D-Bus service for OpenRC");
+    option_context = g_option_context_new ("- locale settings D-Bus service");
     g_option_context_add_main_entries (option_context, option_entries, NULL);
     if (!g_option_context_parse (option_context, &argc, &argv, &error)) {
         g_critical ("Failed to parse options: %s", error->message);
@@ -246,5 +236,5 @@ main (gint argc, gchar *argv[])
     utils_destroy ();
 
     g_clear_error (&error);
-    openrc_settingsd_exit (0);
+    localed_exit (0);
 }

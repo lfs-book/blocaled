@@ -1,3 +1,0 @@
-# Other options you want to pass to openrc-settingsd, e.g. --read-only
-
-OPENRC_SETTINGSD_OPTS=""

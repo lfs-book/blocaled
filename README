@@ -1,32 +1,21 @@
-OpenRC-settingsd provides an implementation of the the localed
-D-Bus service for OpenRC-based systems - in particular, for
-typical installations of Gentoo Linux.
+Blocaled provides a stand-alone implementation of the localed D-Bus service.
 
-It is maintained by Gentoo's GNOME desktop team, which can be contacted
-via gnome@gentoo.org, or in #gentoo-desktop on Freenode IRC.
+It is maintained by BLFS editor Pierre Labastie, for the specific needs of
+the BLFS project, but may be used on any system implementing the libgio
+library.
 
-Homepage: http://gnome.gentoo.org/openrc-settingsd.xml
+The project is hosted on https://github.com/pierre-labastie/blocaled
 
-Bugs should be reported to Gentoo Bugzilla (https://bugs.gentoo.org/)
-using "GNOME" as the component.
+Use this project issue tracker for reporting bugs.
 
-Localed:
+See http://www.freedesktop.org/wiki/Software/systemd/localed for the D-Bus
+protocol description.
 
- See http://www.freedesktop.org/wiki/Software/systemd/localed for the D-Bus
- protocol description.
+The configuration files holding the locale settings may be choosen at compile
+time or through the /etc/localedrc file (TODO!). See the man page and the
+configure --help output.
 
- The system locale variables are set in /etc/env.d/02locale.
-
- Virtual console keymap is set in /etc/conf.d/keymaps as
- keymap="foo"
- The virtual console keymap toggle is not supported.
-
- X11 keyboard options are set in /etc/X11/xorg.conf.d/30-keyboard.conf
- (falling back to 00-keyboard.conf if it exists and 30-keyboard.conf does
- not). See http://www.gentoo.org/doc/en/xorg-config.xml for configuration
- information.
-
-Note that OpenRC-settingsd expects any shell-syntax settings files that it
+Note that blocaled expects any shell-syntax settings files that it
 modifies to be in UTF-8 encoding, and to consist only of comments and simple
 scalar assignments, i.e. something like
 
@@ -34,5 +23,4 @@ scalar assignments, i.e. something like
 foo="bar"
 baz='Let'\''s go!'
 
-If OpenRC-settingsd fails to parse a settings file, it will refuse to modify
-it.
+If blocaled fails to parse a settings file, it will refuse to modify it.
