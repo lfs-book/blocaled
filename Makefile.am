@@ -6,7 +6,6 @@ EXTRA_DIST = \
 	data/org.freedesktop.locale1.service.in \
 	AUTHORS \
 	COPYING \
-	src/copypaste/COPYING.LGPL-2.1 \
 	README \
 	NEWS \
 	TODO \
@@ -71,16 +70,7 @@ localed_built_sources = \
 	src/locale1-generated.h \
 	$(NULL)
 
-copypaste_sources = \
-	src/copypaste/hwclock.c \
-	src/copypaste/hwclock.h \
-	src/copypaste/macro.h \
-	src/copypaste/util.c \
-	src/copypaste/util.h \
-	$(NULL)
-
 blocaled_SOURCES = \
-	$(copypaste_sources) \
 	src/localed.c \
 	src/localed.h \
 	src/utils.c \
