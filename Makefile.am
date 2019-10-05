@@ -1,5 +1,7 @@
 ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 
+AUTOMAKE_OPTIONS = subdir-objects
+
 EXTRA_DIST = \
 	data/org.freedesktop.locale1.service.in \
 	AUTHORS \
