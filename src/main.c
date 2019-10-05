@@ -26,8 +26,6 @@
 #include <glib.h>
 #include <gio/gio.h>
 
-#include <rc.h>
-
 #include "localed.h"
 #include "utils.h"
 
@@ -39,7 +37,6 @@ static gboolean debug = FALSE;
 static gboolean foreground = FALSE;
 static gboolean use_syslog = FALSE;
 static gboolean read_only = FALSE;
-static gboolean update_rc_status = FALSE;
 static gboolean print_version = FALSE;
 
 static guint components_started = 0;
