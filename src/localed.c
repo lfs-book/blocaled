@@ -864,16 +864,6 @@ on_handle_set_locale_authorized_cb (GObject *source_object,
         }
     }
 
-    if (!g_spawn_command_line_sync (ENV_UPDATE " --no-ldconfig", NULL, NULL, &status, &err)) {
-        g_dbus_method_invocation_return_gerror (data->invocation, err);
-        goto unlock;
-    }
-    if (status) {
-        g_dbus_method_invocation_return_dbus_error (data->invocation, DBUS_ERROR_FAILED,
-                                                    "env-update failed");
-        goto unlock;
-    }
-
     blocaled_locale1_complete_set_locale (locale1, data->invocation);
     blocaled_locale1_set_locale (locale1, (const gchar * const *) locale);
 
