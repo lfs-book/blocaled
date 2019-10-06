@@ -74,8 +74,8 @@ blocaled_SOURCES = \
 	src/localed.c \
 	src/localed.h \
 	src/shellparser.c \
-	src/shellparser.c \
-	src/polkitasync.h \
+	src/shellparser.h \
+	src/polkitasync.c \
 	src/polkitasync.h \
 	src/main.h \
 	src/main.c \
