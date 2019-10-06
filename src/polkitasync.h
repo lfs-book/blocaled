@@ -21,27 +21,11 @@
   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef _SHELL_UTILS_H_
-#define _SHELL_UTILS_H_
+#ifndef _POLKIT_ASYNC_H_
+#define _POLKIT_ASYNC_H_
 
 #include <glib.h>
 #include <gio/gio.h>
-
-typedef struct _ShellParser ShellParser;
-
-struct _ShellParser
-{
-  GFile *file;
-  gchar *filename;
-  GList *entry_list;
-};
-
-/* Always return TRUE */
-gboolean
-_g_match_info_clear (GMatchInfo **match_info);
-
-gchar *
-strstr0 (const char *haystack, const char *needle);
 
 void
 check_polkit_async (const gchar *unique_name,
@@ -53,58 +37,4 @@ check_polkit_async (const gchar *unique_name,
 gboolean
 check_polkit_finish (GAsyncResult *res,
                      GError **error);
-
-gchar *
-shell_source_var (GFile *file,
-                  const gchar *variable,
-                  GError **error);
-
-ShellParser *
-shell_parser_new (GFile *file,
-                  GError **error);
-
-ShellParser *
-shell_parser_new_from_string (GFile *file,
-                              gchar *filebuf,
-                              GError **error);
-
-void
-shell_parser_free (ShellParser *parser);
-
-gboolean
-shell_parser_is_empty (ShellParser *parser);
-
-gboolean
-shell_parser_set_variable (ShellParser *parser,
-                                  const gchar *variable,
-                                  const gchar *value,
-                                  gboolean add_if_unset);
-
-void
-shell_parser_clear_variable (ShellParser *parser,
-                             const gchar *variable);
-
-gboolean
-shell_parser_save (ShellParser *parser,
-                   GError **error);
-
-gboolean
-shell_parser_set_and_save (GFile *file,
-                           GError **error,
-                           const gchar *first_var_name,
-                           const gchar *first_alt_var_name,
-                           const gchar *first_value,
-                           ...);
-
-gchar **
-shell_parser_source_var_list (GFile *file,
-                              const gchar * const *var_names,
-                              GError **error);
-
-void
-utils_init (void);
-
-void
-utils_destroy (void);
-
 #endif

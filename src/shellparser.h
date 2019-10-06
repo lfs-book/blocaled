@@ -21,8 +21,8 @@
   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef _SHELL_UTILS_H_
-#define _SHELL_UTILS_H_
+#ifndef _SHELL_PARSER_H_
+#define _SHELL_PARSER_H_
 
 #include <glib.h>
 #include <gio/gio.h>
@@ -42,17 +42,6 @@ _g_match_info_clear (GMatchInfo **match_info);
 
 gchar *
 strstr0 (const char *haystack, const char *needle);
-
-void
-check_polkit_async (const gchar *unique_name,
-                    const gchar *action_id,
-                    const gboolean user_interaction,
-                    GAsyncReadyCallback callback,
-                    gpointer user_data);
-
-gboolean
-check_polkit_finish (GAsyncResult *res,
-                     GError **error);
 
 gchar *
 shell_source_var (GFile *file,
