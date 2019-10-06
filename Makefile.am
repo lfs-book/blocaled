@@ -73,8 +73,10 @@ localed_built_sources = \
 blocaled_SOURCES = \
 	src/localed.c \
 	src/localed.h \
-	src/utils.c \
-	src/utils.h \
+	src/shellparser.c \
+	src/shellparser.c \
+	src/polkitasync.h \
+	src/polkitasync.h \
 	src/main.h \
 	src/main.c \
 	$(NULL)

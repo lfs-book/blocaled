@@ -27,7 +27,8 @@
 #include "localed.h"
 #include "locale1-generated.h"
 #include "main.h"
-#include "utils.h"
+#include "polkitasync.h"
+#include "shellparser.h"
 
 #include "config.h"
 

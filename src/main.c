@@ -27,7 +27,7 @@
 #include <gio/gio.h>
 
 #include "localed.h"
-#include "utils.h"
+#include "shellparser.h"
 
 #include "config.h"
 
