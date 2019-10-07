@@ -61,17 +61,16 @@ check_polkit_data_free (struct check_polkit_data *data)
     g_free (data);
 }
 
-gboolean
-check_polkit_finish (GAsyncResult *res,
-                     GError **error)
+void
+check_polkit_finish (MyObject     *self,
+		     GAsyncResult *res,
+                     GError      **error)
 {
-    GSimpleAsyncResult *simple;
+    g_return_if_fail (MY_IS_OBJECT (self));
+    g_return_if_fail (g_task_is_valid (reult, self));
+    g_return_if_fail (error == NULL || *error == NULL);
 
-    simple = G_SIMPLE_ASYNC_RESULT (res);
-    if (g_simple_async_result_propagate_error (simple, error))
-        return FALSE;
-
-    return g_simple_async_result_get_op_res_gboolean (simple);
+    g_task_propagate_boolean (G_TASK (reult), error);
 }
 
 static void
