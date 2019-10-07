@@ -63,7 +63,7 @@ check_polkit_data_free (struct check_polkit_data *data)
 
 void
 check_polkit_finish (MyObject     *self,
-		     GAsyncResult *res,
+                     GAsyncResult *res,
                      GError      **error)
 {
     g_return_if_fail (MY_IS_OBJECT (self));
