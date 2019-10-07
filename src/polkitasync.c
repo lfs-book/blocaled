@@ -21,12 +21,17 @@
   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+/*
+  Pierre Labastie 2019: I'm discovering the PolKit interface, and also
+  the glib, gio, etc API's, so it is slightly too steep learning curve.
+  So I'll make detailed comments to tell what I understand, sorry for
+  experimented devs.
+*/
+
 #include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-
-#include <libdaemon/dfork.h>
 
 #include <glib.h>
 #include <gio/gio.h>
@@ -35,6 +40,29 @@
 #include "polkitasync.h"
 
 #include "config.h"
+
+/*
+  We need to check whether a user is authorized to change the config files.
+  For that, we ask the PolKit "Authority". There is something I do not
+  understand in the API: we need a ref to the authority to do the check.
+  But I do not see how there could be more than one authority, so I do not
+  understand why the ref cannot be set implicitely by the API.
+  Anyway, there are two steps: first get the authority, then check the
+  authorization.
+  For checking the authorization, we need to pass:
+  - the ref to the authority (PolkitAuthority *)
+  - the subject (PolkitSubject *): a type describing what is asking
+                                   the authorization
+  - the action id (gchar *): the action for which the authorization is sought
+  - some flags telling whether the user should interact with the system (enter
+    a password for example)
+  - a callback (which is called when the authorization check is complete)
+  - user data (to pass to the callback).
+
+  All the above need to be retrieved after getting the authority, in the
+  callback which is called at the end of the authority seek. So we need to
+  pack it into a struct:
+*/
 
 struct check_polkit_data {
     const gchar *unique_name;
