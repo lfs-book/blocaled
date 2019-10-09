@@ -179,7 +179,6 @@ main (gint argc, gchar *argv[])
     GMainLoop *loop = NULL;
     pid_t pid;
 
-// seems to be done automatically since glib-2.36    g_type_init ();
     g_log_set_default_handler (log_handler, NULL);
 
     option_context = g_option_context_new ("- locale settings D-Bus service");
