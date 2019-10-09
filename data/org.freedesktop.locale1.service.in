@@ -1,4 +1,4 @@
 [D-BUS Service]
 Name=org.freedesktop.locale1
-Exec=@libexecdir@/localed
+Exec=@libexecdir@/blocaled
 User=root
