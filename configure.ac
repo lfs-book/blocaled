@@ -28,6 +28,15 @@ fi
 AC_ARG_WITH([pidfile], AS_HELP_STRING([--with-pidfile=FILENAME], [pid filename @<:@default=/var/run/blocaled.pid@:>@]), [], [with_pidfile=/var/run/blocaled.pid])
 AC_SUBST([pidfile], [$with_pidfile])
 
+AC_ARG_WITH([localeconfig], AS_HELP_STRING([--with-localeconfig=FILENAME], [locale config filename @<:@default=/etc/locale@:>@]), [], [with_localeconfig=/etc/locale])
+AC_SUBST([localeconfig], [$with_localeconfig])
+
+AC_ARG_WITH([keyboardconfig], AS_HELP_STRING([--with-keyboardconfig=FILENAME], [keyboard config filename @<:@default=/etc/sysconfig/console@:>@]), [], [with_keyboardconfig=/etc/sysconfig/console])
+AC_SUBST([keyboardconfig], [$with_keyboardconfig])
+
+AC_ARG_WITH([xkbdconfig], AS_HELP_STRING([--with-xkbdconfig=FILENAME], [X keyboard config filename @<:@default=/etc/X11/xorg.conf.d/30-keyboard.conf@:>@]), [], [with_xkbdconfig=/etc/X11/xorg.conf.d/30-keyboard.conf])
+AC_SUBST([xkbdconfig], [$with_xkbdconfig])
+
 AC_MSG_CHECKING([dbus interfaces directory])
 dbusinterfacesdir=`$PKG_CONFIG --variable=interfaces_dir dbus-1`
 if test "x$dbusinterfacesdir" = "x"; then
@@ -65,11 +74,15 @@ AC_MSG_RESULT([
         $PACKAGE $VERSION
         =====
 
-        prefix:                 ${prefix}
-        sysconfdir:             ${sysconfdir}
-        pid file:               ${with_pidfile}
+        prefix:                   ${prefix}
+        sysconfdir:               ${sysconfdir}
 
-        compiler:               ${CC}
-        cflags:                 ${CFLAGS}
-        ldflags:                ${LDFLAGS}
+        pid file:                 ${with_pidfile}
+        locale config file:       ${with_localeconfig}
+        keyboard config file:     ${with_keyboardconfig}
+        X11 keyboard config file: ${with_xkbdconfig}
+
+        compiler:                 ${CC}
+        cflags:                   ${CFLAGS}
+        ldflags:                  ${LDFLAGS}
 ])
