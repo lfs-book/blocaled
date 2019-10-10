@@ -56,6 +56,9 @@ AM_CPPFLAGS = \
 	-DLIBEXECDIR=\""$(libexecdir)"\" \
 	-DPKGDATADIR=\""$(pkgdatadir)"\" \
 	-DPIDFILE=\""$(pidfile)"\" \
+	-DLOCALECONFIG=\""$(localeconfig)"\" \
+	-DKEYBOARDCONFIG=\""$(keyboardconfig)"\" \
+	-DXKBDCONFIG=\""$(xkbdconfig)"\" \
 	$(BLOCALED_CFLAGS) \
 	-I$(top_srcdir)/src \
 	-I$(top_builddir)/src \
