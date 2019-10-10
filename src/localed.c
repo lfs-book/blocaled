@@ -56,8 +56,7 @@ static gchar *x11_layout = NULL;
 static gchar *x11_model = NULL;
 static gchar *x11_variant = NULL;
 static gchar *x11_options = NULL;
-static GFile *x11_gentoo_file = NULL;
-static GFile *x11_systemd_file = NULL;
+static GFile *x11_file = NULL;
 G_LOCK_DEFINE_STATIC (xorg_conf);
 
 /* keyboard model map file parser */
@@ -982,10 +981,7 @@ on_handle_set_vconsole_keyboard_authorized_cb (GObject *source_object,
             kbd_model_map_entry_matches_x11 (best_entry, x11_layout, x11_model, x11_variant, x11_options, &failure_score);
             if (failure_score > 0) {
                 /* The xkb data has changed, so we want to update it */
-                if (!g_file_query_exists (x11_gentoo_file, NULL) && g_file_query_exists (x11_systemd_file, NULL))
-                    x11_parser = xorg_confd_parser_new (x11_systemd_file, &err);
-                else
-                    x11_parser = xorg_confd_parser_new (x11_gentoo_file, &err);
+                x11_parser = xorg_confd_parser_new (x11_file, &err);
 
                 if (x11_parser == NULL) {
                     g_dbus_method_invocation_return_gerror (data->invocation, err);
@@ -1117,10 +1113,7 @@ on_handle_set_x11_keyboard_authorized_cb (GObject *source_object,
         }
     }
 
-    if (!g_file_query_exists (x11_gentoo_file, NULL) && g_file_query_exists (x11_systemd_file, NULL))
-        x11_parser = xorg_confd_parser_new (x11_systemd_file, &err);
-    else
-        x11_parser = xorg_confd_parser_new (x11_gentoo_file, &err);
+    x11_parser = xorg_confd_parser_new (x11_file, &err);
 
     if (x11_parser == NULL) {
         g_dbus_method_invocation_return_gerror (data->invocation, err);
@@ -1272,12 +1265,10 @@ localed_init (gboolean _read_only)
 
     read_only = _read_only;
     kbd_model_map_file = g_file_new_for_path (PKGDATADIR "/kbd-model-map");
-    locale_file = g_file_new_for_path (SYSCONFDIR "/env.d/02locale");
-    keymaps_file = g_file_new_for_path (SYSCONFDIR "/conf.d/keymaps");
+    locale_file = g_file_new_for_path (LOCALECONFIG);
+    keymaps_file = g_file_new_for_path (KEYBOARDCONFIG);
 
-    /* See http://www.gentoo.org/doc/en/xorg-config.xml */
-    x11_gentoo_file = g_file_new_for_path (SYSCONFDIR "/X11/xorg.conf.d/30-keyboard.conf");
-    x11_systemd_file = g_file_new_for_path (SYSCONFDIR "/X11/xorg.conf.d/00-keyboard.conf");
+    x11_file = g_file_new_for_path (XKBDCONFIG);
 
     locale = g_new0 (gchar *, g_strv_length (locale_variables) + 1);
     locale_values = shell_parser_source_var_list (locale_file, (const gchar * const *)locale_variables, &err);
@@ -1313,10 +1304,7 @@ localed_init (gboolean _read_only)
     kbd_model_map_regex_init ();
     xorg_confd_regex_init ();
 
-    if (!g_file_query_exists (x11_gentoo_file, NULL) && g_file_query_exists (x11_systemd_file, NULL))
-        x11_parser = xorg_confd_parser_new (x11_systemd_file, &err);
-    else
-        x11_parser = xorg_confd_parser_new (x11_gentoo_file, &err);
+    x11_parser = xorg_confd_parser_new (x11_file, &err);
 
     if (x11_parser != NULL) {
         xorg_confd_parser_get_xkb (x11_parser, &x11_layout, &x11_model, &x11_variant, &x11_options);
@@ -1354,7 +1342,6 @@ localed_destroy (void)
 
     g_object_unref (locale_file);
     g_object_unref (keymaps_file);
-    g_object_unref (x11_gentoo_file);
-    g_object_unref (x11_systemd_file);
+    g_object_unref (x11_file);
     g_object_unref (kbd_model_map_file);
 }
