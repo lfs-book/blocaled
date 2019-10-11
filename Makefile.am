@@ -35,10 +35,6 @@ dist_polkitaction_DATA = \
 	data/org.freedesktop.locale1.policy \
 	$(NULL)
 
-confddir = $(sysconfdir)/conf.d
-dist_confd_DATA = data/conf.d/blocaled
-
-
 pidfile = @pidfile@
 do_subst = $(SED) -e 's,[@]libexecdir[@],$(libexecdir),g' \
 	-e 's,[@]pidfile[@],$(pidfile),g' \
