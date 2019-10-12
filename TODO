@@ -1,4 +1,9 @@
 Add a signal handler so that the pidfile is removed when receiving SIGTERM
 or SIGKILL or SIGINT (and also exit the main loop)
 Add a timer so that the daemon exits after a while
-Remove deprecated functions to use newer (and simpler) ones
+
+Change the parser for keymap file, so that KEYMAP or keymap is used, and
+also KEYMAP_TOGGLE or KEYMAP_CORRECTIONS (I think they do the same thing)
+
+Add tests
+Document in gtk-doc format
