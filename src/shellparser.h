@@ -65,9 +65,9 @@ shell_parser_is_empty (ShellParser *parser);
 
 gboolean
 shell_parser_set_variable (ShellParser *parser,
-                                  const gchar *variable,
-                                  const gchar *value,
-                                  gboolean add_if_unset);
+                           const gchar *variable,
+                           const gchar *value,
+                           gboolean     add_if_unset);
 
 void
 shell_parser_clear_variable (ShellParser *parser,
