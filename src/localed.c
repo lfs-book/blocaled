@@ -20,7 +20,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <dbus/dbus-protocol.h>
+#include <dbus/dbus-protocol.h> /* for the error names */
 #include <glib.h>
 #include <gio/gio.h>
 
