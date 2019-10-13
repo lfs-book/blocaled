@@ -1,5 +1,6 @@
 #!/bin/sh
 
+gtkdocize || exit 1
 autoreconf --install --symlink
 
 args="--prefix=/usr \
