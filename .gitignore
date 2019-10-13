@@ -10,18 +10,25 @@
 /config.sub
 /configure
 /depcomp
+/doc/reference/blocaled*
+!/doc/reference/blocaled-docs.xml
+!/doc/reference/blocaled-sections.txt
+/doc/reference/html/
+/doc/reference/xml/
+/gtk-doc.make
 /install-sh
 /libtool
 /ltmain.sh
 /m4/
-/Makefile
-/Makefile.in
 /missing
 /blocaled
 /stamp-h1
 /src/locale1-generated.[ch]
+/test-driver
 
 # Relative rules
+Makefile
+Makefile.in
 *.o
 *.swp
 *~
@@ -29,3 +36,4 @@
 .deps/
 *.service
 .dirstamp
+*.stamp
