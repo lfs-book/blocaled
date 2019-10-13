@@ -2,6 +2,10 @@ ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 
 AUTOMAKE_OPTIONS = subdir-objects
 
+# Put . before doc, because gtk-scangobj needs some compiled objects
+# TODO add a Makefile.am to src, and add it to SUBDIRS
+SUBDIRS = . doc
+
 EXTRA_DIST = \
 	data/org.freedesktop.locale1.service.in \
 	AUTHORS \
