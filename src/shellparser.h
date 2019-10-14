@@ -27,6 +27,35 @@
 #include <glib.h>
 #include <gio/gio.h>
 
+/**
+ * SECTION: shellparser
+ * @short_description: A variable=value shell parser
+ * @title: Shell Parser
+ * @include: shellparser.h
+ *
+ * The shellparser API solves the following problem: given a file containing
+ * various records, including variable assignments in shell syntax, be able to:
+ *
+ * - read the file
+ *
+ * - change a variable value
+ *
+ * - add a new variable and its value
+ *
+ * - write the changes to the file, keeping the other records intact
+ */
+
+/**
+ * ShellParser:
+ * @file: the file that is parsed
+ * @filename: its filename
+ * @entry_list: a list of <structname>struct ShellEntry</structname>
+ *
+ * ShellParser holds the content of the file parsed to a list of
+ * <structname>ShellEntry</structname>. The various set/clear functions
+ * act on this structure, which is otherwise private.
+ */
+
 typedef struct _ShellParser ShellParser;
 
 struct _ShellParser
