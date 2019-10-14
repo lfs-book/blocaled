@@ -23,10 +23,10 @@
 /missing
 /blocaled
 /stamp-h1
-/src/locale1-generated.[ch]
 /test-driver
 
 # Relative rules
+locale1-generated*
 Makefile
 Makefile.in
 *.o
