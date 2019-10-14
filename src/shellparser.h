@@ -91,9 +91,9 @@ shell_parser_source_var_list (GFile *file,
                               GError **error);
 
 void
-utils_init (void);
+shell_parser_init (void);
 
 void
-utils_destroy (void);
+shell_parser_destroy (void);
 
 #endif

@@ -240,7 +240,7 @@ main (gint argc, gchar *argv[])
         daemon_close_all (-1);
     }
 
-    utils_init ();
+    shell_parser_init ();
     localed_init (read_only);
     loop = g_main_loop_new (NULL, FALSE);
     g_main_loop_run (loop);
@@ -248,7 +248,7 @@ main (gint argc, gchar *argv[])
     g_main_loop_unref (loop);
 
     localed_destroy ();
-    utils_destroy ();
+    shell_parser_destroy ();
 
     g_clear_error (&error);
     localed_exit (0);

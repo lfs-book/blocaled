@@ -545,7 +545,7 @@ shell_parser_source_var_list (GFile *file,
 }
 
 void
-utils_destroy (void)
+shell_parser_destroy (void)
 {
     if (indent_regex != NULL) {
         g_regex_unref (indent_regex);
@@ -578,7 +578,7 @@ utils_destroy (void)
 }
 
 void
-utils_init (void)
+shell_parser_init (void)
 {
     if (indent_regex == NULL) {
         indent_regex = g_regex_new ("^[ \\t]+", G_REGEX_ANCHORED, 0, NULL);
