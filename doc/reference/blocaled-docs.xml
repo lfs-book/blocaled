@@ -11,14 +11,14 @@
     <title>&package_name; Reference Manual</title>
     <releaseinfo>
       for &package_string;.
-      The latest version of this documentation can be found on-line at
-      <ulink role="online-location" url="http://[SERVER]/&package_name;/index.html">http://[SERVER]/&package_name;/</ulink>.
+      <!--      The latest version of this documentation can be found on-line at
+      <ulink role="online-location" url="http://[SERVER]/&package_name;/index.html">http://[SERVER]/&package_name;/</ulink>.-->
     </releaseinfo>
   </bookinfo>
 
   <chapter>
-    <title>[Insert title here]</title>
-        <xi:include href="xml/locale1-generated.xml"/>
+    <title>Blocaled API</title>
+    <xi:include href="xml/locale1-generated.xml"/>
     <xi:include href="xml/localed.xml"/>
     <xi:include href="xml/main.xml"/>
     <xi:include href="xml/polkitasync.xml"/>
