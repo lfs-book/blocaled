@@ -171,6 +171,25 @@ localed_component_started ()
     g_free (pidstring);
 }
 
+/**
+ * PROGRAM: blocaled
+ * @short_description: locale settings D-Bus service
+ * @synopsis: blocaled [--debug] [--foreground] [--readonly]
+ * @see_also: dbus-daemon(1), polkit(8)
+ * @--help: Show an help message
+ * @--version: Show version information
+ * @--debug: Enable debug messages. Not recommended unless in foreground mode
+ * @--foreground: Do not detach from the terminal, and log messages to stderr
+ * instead of the system log
+ * @--read-only: Run daemon in read-only mode: the settings files are read,
+ * but cannot be modified
+ *
+ * The blocaled daemon implements the standard org.freedesktop.locale1 D-Bus
+ * interface as a standalone daemon. Users and administrators should not
+ * run the blocaled executable manually. It will be launched on demand
+ * via D-Bus activation.
+ */
+
 gint
 main (gint argc, gchar *argv[])
 {
