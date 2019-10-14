@@ -1,6 +1,6 @@
 <SECTION>
-<FILE>locale1-generated</FILE>
-<TITLE>BLocaledLocale1Skeleton</TITLE>
+<FILE>BLocaledLocale1</FILE>
+<TITLE>BLocaledLocale1</TITLE>
 blocaled_locale1_interface_info
 blocaled_locale1_override_properties
 blocaled_locale1_complete_set_locale
@@ -46,7 +46,9 @@ blocaled_locale1_skeleton_new
 <SUBSECTION Standard>
 BLOCALED_IS_LOCALE1
 BLOCALED_IS_LOCALE1_PROXY
+BLOCALED_IS_LOCALE1_PROXY_CLASS
 BLOCALED_IS_LOCALE1_SKELETON
+BLOCALED_IS_LOCALE1_SKELETON_CLASS
 BLOCALED_LOCALE1
 BLOCALED_LOCALE1_GET_IFACE
 BLOCALED_LOCALE1_PROXY
@@ -103,7 +105,7 @@ shell_parser_clear_variable
 shell_parser_save
 shell_parser_set_and_save
 shell_parser_source_var_list
-utils_init
-utils_destroy
+shell_parser_init
+shell_parser_destroy
 </SECTION>
 

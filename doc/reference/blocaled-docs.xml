@@ -18,13 +18,20 @@
 
   <chapter>
     <title>Blocaled API</title>
-    <xi:include href="xml/locale1-generated.xml"/>
     <xi:include href="xml/localed.xml"/>
     <xi:include href="xml/main.xml"/>
     <xi:include href="xml/polkitasync.xml"/>
     <xi:include href="xml/shellparser.xml"/>
 
   </chapter>
+
+  <chapter>
+    <title>D-Bus service and C interface</title>
+    <xi:include href="locale1-generated-org.freedesktop.locale1.xml"/>
+    <xi:include href="xml/BLocaledLocale1.xml"/>
+
+  </chapter>
+
   <chapter id="object-tree">
     <title>Object Hierarchy</title>
     <xi:include href="xml/tree_index.sgml"/>
