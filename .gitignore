@@ -10,11 +10,10 @@
 /config.sub
 /configure
 /depcomp
-/doc/reference/blocaled*
+/doc/reference/*
 !/doc/reference/blocaled-docs.xml
 !/doc/reference/blocaled-sections.txt
-/doc/reference/html/
-/doc/reference/xml/
+!/doc/reference/Makefile.am
 /gtk-doc.make
 /install-sh
 /libtool
