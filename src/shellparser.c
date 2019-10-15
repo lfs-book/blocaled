@@ -450,12 +450,15 @@ shell_parser_set_variable (ShellParser *parser,
     if (found_entry != NULL) {
         g_free (found_entry->string);
         found_entry->string = g_strdup_printf ("%s=%s", variable, quoted_value);
+	g_free (entry->unquoted_value);
+        found_entry->unquoted_value = g_strdup(value);
         ret = TRUE;
     } else {
         if (add_if_unset) {
             found_entry = g_new0 (struct ShellEntry, 1);
             found_entry->type = SHELL_ENTRY_TYPE_ASSIGNMENT;
             found_entry->variable = g_strdup (variable);
+            found_entry->unquoted_value = g_strdup(value);
             found_entry->string = g_strdup_printf ("%s=%s", variable, quoted_value);
             parser->entry_list = g_list_append (parser->entry_list, found_entry);
             ret = TRUE;
