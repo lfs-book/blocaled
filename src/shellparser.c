@@ -52,6 +52,18 @@ _g_match_info_clear (GMatchInfo **match_info)
     return TRUE;
 }
 
+/**
+ * strstr0:
+ * @haystack: (nullable) string to be searched in
+ * @needle: (nullable) string to search
+ *
+ * Look for the string @needle inside the string @haystack. 
+ *
+ * Returns: a pointer to @needle inside @haystack if found, or %NULL
+ * otherwise; also returns %NULL if any of the pointer to @haystack or
+ * @needle is %NULL.
+ */
+
 gchar *
 strstr0 (const gchar *haystack, const gchar *needle)
 {
@@ -73,6 +85,17 @@ struct ShellEntry {
     gchar *variable; /* only relevant for assignments */
     gchar *unquoted_value; /* only relevant for assignments */
 };
+
+/**
+ * shell_source_var:
+ * @file: the file where the variable assignment is sought
+ * @variable: the variable name: must be preceded by a `$' character
+ * @error: set if an error occurs
+ *
+ * Have the shell source the file and diplay the value of @variable
+ *
+ * Returns: the value of @variable, or %NULL if not found in the file
+ */
 
 gchar *
 shell_source_var (GFile *file,
@@ -135,6 +158,13 @@ shell_entry_free (struct ShellEntry *entry)
     g_free (entry);
 }
 
+/**
+ * shell_parser_free:
+ * @parser: a pointer to the ShellParser to free
+ *
+ * Remove a ShellParser from memory and free the memory
+ */
+
 void
 shell_parser_free (ShellParser *parser)
 {
@@ -149,6 +179,18 @@ shell_parser_free (ShellParser *parser)
         g_list_free_full (parser->entry_list, (GDestroyNotify)shell_entry_free);
     g_free (parser);
 }
+
+/**
+ * shell_parser_new:
+ * @file: the file associated to the new ShellParser
+ * @error: allows returning an error
+ *
+ * Allocate memory for a new ShellParser associated to @file, and
+ * parse the file, or return an empty ShellParser if the file
+ * does not exist.
+ *
+ * Returns: a ShellParser. Free with #shell_parser_free
+ */
 
 ShellParser *
 shell_parser_new (GFile *file,
@@ -187,8 +229,8 @@ shell_parser_new (GFile *file,
 
 ShellParser *
 shell_parser_new_from_string (GFile *file,
-                                     gchar *filebuf,
-                                     GError **error)
+                              gchar *filebuf,
+                              GError **error)
 {
     ShellParser *ret = NULL;
     GError *local_err = NULL;
