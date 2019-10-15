@@ -405,6 +405,16 @@ shell_parser_new_from_string (GFile *file,
     return ret;
 }
 
+/**
+ * shell_parser_is_empty:
+ * @parser: a ShellParser
+ *
+ * Test if a ShellParser is empty (possibly as the result of parsing a
+ * non existent file)
+ *
+ * Returns: %TRUE if the parser is empty, %FALSE otherwise
+ */
+
 gboolean
 shell_parser_is_empty (ShellParser *parser)
 {
