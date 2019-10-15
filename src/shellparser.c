@@ -227,6 +227,29 @@ shell_parser_new (GFile *file,
     return ret;
 }
 
+/**
+ * shell_parser_new_from_string:
+ * @file: the file being parsed
+ * @filebuf: the raw content of the file as a string
+ * @error: set if an error is encountered
+ *
+ * Allocate a new parser, and parse the content of @filebuf to it.
+ * the following type of records are recognized:
+ * - comment: from `#' to end of line
+ * - indent: space at the beginning of a line
+ * - separator: `;' or end of line (possibly surronded by space or
+ *   blank line(s)
+ * - assignments: form variable=value (there may be \`\'end-of-line between
+ *   variable and \`=' and between \`=' and value. Values may be the
+ *   concatenation of single quoted, double quoted, and unquoted strings,
+ *   ending at the first unquoted space, \`|', and other characters. Values
+ *   are stored unquoted, but may contain ${...} constructs (should we
+ *   test?)
+ *
+ * Returns: (nullable) a ShellParser or %NULL in case of error.
+ * Free with #shell_parser_free
+ */
+
 ShellParser *
 shell_parser_new_from_string (GFile *file,
                               gchar *filebuf,
