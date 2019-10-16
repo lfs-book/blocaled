@@ -643,6 +643,21 @@ shell_parser_set_and_save (GFile *file,
     return ret;
 }
 
+/**
+ * shell_parser_source_var_list:
+ * @file: the file where variables assignments are sought
+ * @var_names: list of variables whose values should be returned
+ * @error: set if an error occurs
+ *
+ * Parse a file, and, for each variable in var_names, assign its value
+ * at the same position in the returned vector. Note that if a file
+ * contains twice an asignment to the same variable, only the second
+ * is returned.
+ *
+ * Returns: A %NULL terminated vector of strings of the same size as
+ * @var_names
+ */
+
 gchar **
 shell_parser_source_var_list (GFile *file,
                               const gchar * const *var_names,
@@ -669,9 +684,16 @@ shell_parser_source_var_list (GFile *file,
                 *value = g_strdup (entry->unquoted_value);
         }
     }
+    *value = NULL;
     shell_parser_free (parser);
     return ret;
 }
+
+/**
+ * shell_parser_destroy:
+ *
+ * Free memory from the regexes allocated by shell_parser_init
+ */
 
 void
 shell_parser_destroy (void)
@@ -705,6 +727,12 @@ shell_parser_destroy (void)
         unquoted_regex = NULL;
     }
 }
+
+/**
+ * shell_parser_init:
+ *
+ * Set various regexes used for parsing files
+ */
 
 void
 shell_parser_init (void)
