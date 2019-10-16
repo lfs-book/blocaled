@@ -450,7 +450,7 @@ shell_parser_set_variable (ShellParser *parser,
     if (found_entry != NULL) {
         g_free (found_entry->string);
         found_entry->string = g_strdup_printf ("%s=%s", variable, quoted_value);
-	g_free (entry->unquoted_value);
+	g_free (found_entry->unquoted_value);
         found_entry->unquoted_value = g_strdup(value);
         ret = TRUE;
     } else {
