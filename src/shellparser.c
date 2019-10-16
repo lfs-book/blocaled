@@ -423,6 +423,22 @@ shell_parser_is_empty (ShellParser *parser)
     return FALSE;
 }
 
+/**
+ * shell_parser_set_variable:
+ * @parser: (not nullable): the parser on which to act
+ * @variable: (not nullable): the variable to set
+ * @value: the (unquoted) value to store in variable
+ * @add_if_unset: whether the variable should be added to the parser
+ *
+ * Look for variable in the assignment records of the parser. If found
+ * set the value, and update the corresponding assignment string. If not
+ * found, and @add_if_unset is set, add a new record containing the
+ * variable, the value, and the assignment string.
+ *
+ * Returns:  %FALSE if the variable is not found and @add_if_unset is not set,
+ * %TRUE otherwise
+ */
+
 gboolean
 shell_parser_set_variable (ShellParser *parser,
                            const gchar *variable,
@@ -469,6 +485,14 @@ shell_parser_set_variable (ShellParser *parser,
     return ret;
 }
 
+/**
+ * shell_parser_clear_variable:
+ * @parser: (not nullable): the parser on which to act
+ * @variable: (not nullable): the variable to set
+ *
+ * Remove the assignment record containing @variable in @parser
+ */
+
 void
 shell_parser_clear_variable (ShellParser *parser,
                              const gchar *variable)
@@ -500,6 +524,16 @@ shell_parser_clear_variable (ShellParser *parser,
             curr = curr->next;
     }
 }
+
+/**
+ * shell_parser_save:
+ * @parser: parser to write back to its file
+ * @error: set in case of error
+ *
+ * Saves the parser back to its member file
+ *
+ * Returns: %FALSE in case of error, %TRUE if the operation succeeded.
+ */
 
 gboolean
 shell_parser_save (ShellParser *parser,
@@ -538,6 +572,23 @@ shell_parser_save (ShellParser *parser,
         g_object_unref (os);
     return ret;
 }
+
+/**
+ * shell_parser_set_and_save:
+ * @file: file where the variables should be set
+ * @error: set if an error occurs
+ * @first_var_name: variable to be set, either if found in @parser, or if
+ * not found and @first_alt_var_name is not found either
+ * @first_alt_var_name: (nullable): variable to be set if found,
+ * and @first_var_name is not
+ * @first_value: the value to be stored in variable
+ * @...: a series of triplets var_name, alt_var_name, value
+ *
+ * Parse the @file, Store the values into the associated variables, creating
+ * them if necessary, and saves back the file
+ *
+ * Returns: %FALSE in case of error, %TRUE if the operation succeeded
+ */
 
 gboolean
 shell_parser_set_and_save (GFile *file,
