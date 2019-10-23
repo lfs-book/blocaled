@@ -24,6 +24,19 @@
 #ifndef _MAIN_H_
 #define _MAIN_H_
 
+/**
+ * SECTION: main
+ * @title: Main program
+ * @short_description: blocaled daemon launcher
+ * @see_also: #localed
+ *
+ * This program forks (except if run with --foreground option) and
+ * runs #localed_init to connect to the message bus. It returns an error
+ * if localed_init does not call back #localed_component_started within
+ * 20 s. #localed should call #localed_exit when done (either by normal
+ * exit or on error)
+ */
+
 void
 localed_component_started ();
 

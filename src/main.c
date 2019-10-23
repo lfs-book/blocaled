@@ -128,6 +128,13 @@ log_handler (const gchar *log_domain,
     g_free (result_data);
 }
 
+/**
+ * localed_exit:
+ * @status: exit code
+ *
+ * Removes the PID file, and exit with code @status
+ */
+
 void
 localed_exit (int status)
 {
@@ -143,7 +150,11 @@ localed_exit (int status)
     exit (status);
 }
 
-/* This is called each time we successfully grab a bus name when starting up */
+/**
+ * localed_component_started:
+ *
+ * Returns an exit status of 0 to the parent, and creates the PID file
+ */
 void
 localed_component_started ()
 {
@@ -186,7 +197,7 @@ localed_component_started ()
  *
  * The blocaled daemon implements the standard org.freedesktop.locale1 D-Bus
  * interface as a standalone daemon. Users and administrators should not
- * run the blocaled executable manually. It will be launched on demand
+ * need to run the blocaled executable manually. It will be launched on demand
  * via D-Bus activation.
  */
 

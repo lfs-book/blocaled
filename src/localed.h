@@ -22,8 +22,24 @@
 #include <glib.h>
 #include <gio/gio.h>
 
+/**
+ * SECTION: localed
+ * @short_description: where all the interface to D-Bus is done
+ * @title: Localed functions
+ * @include: localed.h
+ *
+ * This is where all the work is done:
+ * - reading and storing settings
+ * - interaction with D-Bus
+ * - calling polkit for authorization
+ *
+ * Only two functions are public: #localed_init to initiate the connection
+ * with D-Bus and readd the settings from files, and #localed_destoy, for
+ * garbage collection at exit.
+ */
+
 void
-localed_init (gboolean read_only);
+localed_init (gboolean _read_only);
 
 void
 localed_destroy (void);

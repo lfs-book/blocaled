@@ -1256,6 +1256,14 @@ on_name_lost (GDBusConnection *connection,
     localed_exit (1);
 }
 
+/**
+ * localed_init:
+ * @_read_only: if set, settings file cannot be written
+ *
+ * Reads settings from config files (LOCALECONFIG, KEYBOARDCONFIG, and
+ * XKBDCONFIG should be set when compiling), connects to the message bus
+ * and initialize properties
+ */
 void
 localed_init (gboolean _read_only)
 {
@@ -1290,6 +1298,7 @@ localed_init (gboolean _read_only)
         g_clear_error (&err);
     }
 
+/* Others may use KEYMAP: TODO */
     vconsole_keymap = shell_source_var (keymaps_file, "${keymap}", &err);
     if (vconsole_keymap == NULL)
         vconsole_keymap = g_strdup ("");
@@ -1298,7 +1307,7 @@ localed_init (gboolean _read_only)
         g_clear_error (&err);
     }
 
-    /* We don't have a good equivalent for this */
+    /* We don't have a good equivalent for this TODO: we should! */
     vconsole_keymap_toggle = g_strdup ("");
 
     kbd_model_map_regex_init ();
@@ -1323,6 +1332,13 @@ localed_init (gboolean _read_only)
                              NULL,
                              NULL);
 }
+
+/**
+ * localed_destroy:
+ *
+ * Garbage collection: unowns the name on the bus, and free all allocated
+ * storages at init
+ */
 
 void
 localed_destroy (void)
