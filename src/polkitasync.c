@@ -43,13 +43,11 @@
 
 /*
   We need to check whether a user is authorized to change the config files.
-  For that, we ask the PolKit "Authority". There is something I do not
-  understand in the API: we need a ref to the authority to do the check.
-  But I do not see how there could be more than one authority, so I do not
-  understand why the ref cannot be set implicitely by the API.
-  Afterthought: getting the ref will tell us whether polkitd is running.
-  Anyway, there are two steps: first get the authority, then check the
-  authorization.
+  For that, we ask the PolKit "Authority". There are two steps:
+  - get the "ref" to the authority. Note that if the ref is null, it
+    means polkitd is not running.
+  - check the authorization.
+
   For checking the authorization, we need to pass:
   - the ref to the authority (PolkitAuthority *)
   - the subject (PolkitSubject *): a type describing what is asking
@@ -100,7 +98,7 @@ check_polkit_data_free (struct check_polkit_data *data)
   - propagate back the result
   The calling program will get the result through the function
   check_polkit_finish.
-  To follow a clear work flow, we need to make forward references to the
+  To follow a clear workflow, we need to make forward references to the
   callbacks.
 */
 
@@ -114,6 +112,20 @@ check_polkit_authorization_cb (GObject *source_object,
                                GAsyncResult *res,
                                gpointer _data);
 
+/**
+ * check_polkit_async:
+ * @unique_name: the connection who invoked the method for which an
+ * authorization is sought
+ * @action_id: what action (for us, either set-keyboard or set-locale)
+ * @user_interaction: whether the user is allowed to interact for
+ * getting the authorization
+ * @callback: function to call when done
+ * @user_data: a struct passed to the callback
+ *
+ * Check that the user associated with @unique_name is authorized
+ * to perform @action_id. When the result is known, calls @callback
+ * passing @user_data
+ */
 void
 check_polkit_async (const gchar *unique_name,
                     const gchar *action_id,
@@ -200,6 +212,16 @@ check_polkit_authorization_cb (GObject *source_object,
     if (result != NULL)
         g_object_unref (result);
 }
+
+/**
+ * check_polkit_finish:
+ * @res: what has been received by the callback
+ * @error: set if an error occurs
+ *
+ * extract the results of the authorization contained in @res
+ *
+ * returns: %TRUE if authorized, %FALSE otherwise
+ */
 
 gboolean
 check_polkit_finish (GAsyncResult *res,

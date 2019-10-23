@@ -27,6 +27,16 @@
 #include <glib.h>
 #include <gio/gio.h>
 
+/**
+ * SECTION: polkitasync
+ * @short_description: Interface to polkit authorizations
+ * @title: Polkit Interface
+ * @include: polkitasync.h
+ *
+ * Allows to asynchronously check that the user is allowed
+ * to perform an action.
+ */
+
 void
 check_polkit_async (const gchar *unique_name,
                     const gchar *action_id,
