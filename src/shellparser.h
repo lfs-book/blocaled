@@ -70,7 +70,7 @@ gboolean
 _g_match_info_clear (GMatchInfo **match_info);
 
 gchar *
-strstr0 (const char *haystack, const char *needle);
+strstr0 (const gchar *haystack, const gchar *needle);
 
 gchar *
 shell_source_var (GFile *file,
