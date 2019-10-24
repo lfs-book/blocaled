@@ -39,11 +39,6 @@ static gboolean use_syslog = FALSE;
 static gboolean read_only = FALSE;
 static gboolean print_version = FALSE;
 
-static guint components_started = 0;
-G_LOCK_DEFINE_STATIC (components_started);
-
-static gboolean started = FALSE;
-
 static GOptionEntry option_entries[] =
 {
     { "debug", 0, 0, G_OPTION_ARG_NONE, &debug, "Enable debugging messages", NULL },
@@ -133,6 +128,7 @@ log_handler (const gchar *log_domain,
  * @status: exit code
  *
  * Removes the PID file, and exit with code @status
+ * If daemonized, send also @status to the parent.
  */
 
 void
@@ -151,22 +147,18 @@ localed_exit (int status)
 }
 
 /**
- * localed_component_started:
+ * localed_started:
  *
- * Returns an exit status of 0 to the parent, and creates the PID file
+ * Creates the PID file. If all goes well and daemonized, sends a status=0
+ * to the parent
  */
 void
-localed_component_started ()
+localed_started ()
 {
-    gchar *pidstring = NULL;
     GError *err = NULL;
-    GFile *pidfile = NULL;
+    GFile *pidfile = g_file_new_for_path (PIDFILE);
+    gchar *pidstring = g_strdup_printf ("%lu", (gulong)getpid ());
 
-    G_LOCK (components_started);
-
-    components_started++;
-    pidfile = g_file_new_for_path (PIDFILE);
-    pidstring = g_strdup_printf ("%lu", (gulong)getpid ());
     if (!g_file_replace_contents (pidfile, pidstring, strlen(pidstring), NULL, FALSE, G_FILE_CREATE_NONE, NULL, NULL, &err)) {
         g_critical ("Failed to write " PIDFILE ": %s", err->message);
         localed_exit (1);
@@ -175,9 +167,6 @@ localed_component_started ()
     if (!foreground)
         daemon_retval_send (0);
 
-    started = TRUE;
-
-    G_UNLOCK (components_started);
     g_clear_object (&pidfile);
     g_free (pidstring);
 }

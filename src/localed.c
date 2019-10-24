@@ -1241,7 +1241,7 @@ on_name_acquired (GDBusConnection *connection,
                   gpointer         user_data)
 {
     g_debug ("Acquired the name %s", bus_name);
-    localed_component_started ();
+    localed_started ();
 }
 
 static void

@@ -81,7 +81,7 @@ localed_destroy
 
 <SECTION>
 <FILE>main</FILE>
-localed_component_started
+localed_started
 localed_exit
 </SECTION>
 
