@@ -19,4 +19,11 @@ AM_CPPFLAGS = \
         -I$(top_builddir)/src \
         $(NULL)
 
-LDADD = $(BLOCALED_LIBS)
+LDADD = \
+	$(BLOCALED_LIBS) \
+	$(top_builddir)/src/locale1-generated.o \
+	$(top_builddir)/src/localed.o \
+	$(top_builddir)/src/polkitasync.o \
+	$(top_builddir)/src/shellparser.o \
+	$(NULL)
+
