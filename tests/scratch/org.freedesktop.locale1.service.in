@@ -1,0 +1,3 @@
+[D-BUS Service]
+Name=org.freedesktop.locale1
+Exec=@abs_top_builddir@/tests/mylocaled

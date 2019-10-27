@@ -4,7 +4,7 @@ AUTOMAKE_OPTIONS = subdir-objects
 
 # Put . before doc, because gtk-scangobj needs some compiled objects
 # TODO add a Makefile.am to src, and add it to SUBDIRS
-SUBDIRS = . doc
+SUBDIRS = . doc tests
 
 EXTRA_DIST = \
 	data/org.freedesktop.locale1.service.in \
@@ -40,12 +40,12 @@ dist_polkitaction_DATA = \
 	$(NULL)
 
 pidfile = @pidfile@
-do_subst = $(SED) -e 's,[@]libexecdir[@],$(libexecdir),g' \
-	-e 's,[@]pidfile[@],$(pidfile),g' \
-	$(NULL)
+#do_subst = $(SED) -e 's,[@]libexecdir[@],$(libexecdir),g' \
+#	-e 's,[@]pidfile[@],$(pidfile),g' \
+#	$(NULL)
 
-%.service : %.service.in
-	$(do_subst) < $(srcdir)/$< > $(srcdir)/$@
+#%.service : %.service.in
+#	$(do_subst) < $(srcdir)/$< > $(srcdir)/$@
 
 dist_man_MANS = data/blocaled.8
 

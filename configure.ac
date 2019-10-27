@@ -75,6 +75,10 @@ AC_CONFIG_FILES([
     Makefile
     doc/Makefile
     doc/reference/Makefile
+    data/org.freedesktop.locale1.service
+    tests/Makefile
+    tests/scratch/org.freedesktop.locale1.service
+    tests/scratch/test-session.xml
 ])
 
 AC_OUTPUT
