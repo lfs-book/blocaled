@@ -1,9 +1,8 @@
-#AUTOMAKE_OPTIONS = subdir-objects
 check_PROGRAMS = mylocaled
 TESTS = locale-read
 AM_TESTS_ENVIRONMENT = . $(src_dir)/tests-env.sh;
 
-mylocaled_SOURCES = mylocaled.c
+nodist_mylocaled_SOURCES = mylocaled.c
 mylocaled.c: $(top_srcdir)/src/main.c
 	cp $< $@
 
@@ -27,3 +26,8 @@ LDADD = \
 	$(top_builddir)/src/shellparser.o \
 	$(NULL)
 
+CLEANFILES = \
+	     mylocaled.c \
+	     scratch/org.freedesktop.locale1.service \
+	     scratch/test-session.xml \
+	     $(NULL)
