@@ -28,6 +28,8 @@
 locale1-generated*
 Makefile
 Makefile.in
+mylocaled*
+test-session.xml
 *.o
 *.swp
 *~
