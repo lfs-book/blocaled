@@ -1259,24 +1259,33 @@ on_name_lost (GDBusConnection *connection,
 /**
  * localed_init:
  * @_read_only: if set, settings file cannot be written
+ * @kbd_model_map: name of the file containing a mapping between virtual
+ * console keyboard layouts and X11 keyboard configuration
+ * @localeconfig: name of the file containing locale settings
+ * @keyboardconfig: name of the file containing virtual console keyboard layout
+ * @xkbdconfig: name of the file containing X11 keyboard configuration
  *
- * Reads settings from config files (LOCALECONFIG, KEYBOARDCONFIG, and
- * XKBDCONFIG should be set when compiling), connects to the message bus
+ * Reads settings from config files (@localeconfig, @keyboardconfig, and
+ * @xkbdconfig), connects to the message bus
  * and initialize properties
  */
 void
-localed_init (gboolean _read_only)
+localed_init (gboolean _read_only,
+              const gchar *kbd_model_map,
+              const gchar *localeconfig,
+              const gchar *keyboardconfig,
+              const gchar *xkbdconfig)
 {
     GError *err = NULL;
     gchar **locale_values = NULL;
     struct xorg_confd_parser *x11_parser = NULL;
 
     read_only = _read_only;
-    kbd_model_map_file = g_file_new_for_path (PKGDATADIR "/kbd-model-map");
-    locale_file = g_file_new_for_path (LOCALECONFIG);
-    keymaps_file = g_file_new_for_path (KEYBOARDCONFIG);
+    kbd_model_map_file = g_file_new_for_path (kbd_model_map);
+    locale_file = g_file_new_for_path (localeconfig);
+    keymaps_file = g_file_new_for_path (keyboardconfig);
 
-    x11_file = g_file_new_for_path (XKBDCONFIG);
+    x11_file = g_file_new_for_path (xkbdconfig);
 
     locale = g_new0 (gchar *, g_strv_length (locale_variables) + 1);
     locale_values = shell_parser_source_var_list (locale_file, (const gchar * const *)locale_variables, &err);

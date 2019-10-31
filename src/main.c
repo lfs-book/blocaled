@@ -197,6 +197,10 @@ main (gint argc, gchar *argv[])
     GOptionContext *option_context;
     GMainLoop *loop = NULL;
     pid_t pid;
+    gchar *kbd_model_map = PKGDATADIR "/kbd-model-map";
+    gchar *localeconfig = LOCALECONFIG;
+    gchar *keyboardconfig = KEYBOARDCONFIG;
+    gchar *xkbdconfig = XKBDCONFIG;
 
     g_log_set_default_handler (log_handler, NULL);
 
@@ -241,7 +245,11 @@ main (gint argc, gchar *argv[])
     }
 
     shell_parser_init ();
-    localed_init (read_only);
+    localed_init (read_only,
+		  kbd_model_map,
+		  localeconfig,
+		  keyboardconfig,
+		  xkbdconfig);
     loop = g_main_loop_new (NULL, FALSE);
     g_main_loop_run (loop);
 

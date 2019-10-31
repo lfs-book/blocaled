@@ -39,7 +39,11 @@
  */
 
 void
-localed_init (gboolean _read_only);
+localed_init (gboolean _read_only,
+	      const gchar *kbd_model_map,
+	      const gchar *localeconfig,
+	      const gchar *keyboardconfig,
+	      const gchar *xkbdconfig);
 
 void
 localed_destroy (void);
