@@ -8,7 +8,7 @@ mylocaled.c: $(top_srcdir)/src/main.c
 
 AM_CPPFLAGS = \
         -include $(top_builddir)/config.h \
-        -DPKGDATADIR=\""$(abs_top_srcdir)"/data/kbd-model-map\" \
+        -DPKGDATADIR=\""$(abs_top_srcdir)"/data\" \
         -DPIDFILE=\""$(abs_builddir)"/scratch/mylocaled.pid\" \
         -DLOCALECONFIG=\""$(abs_builddir)"/scratch/locale\" \
         -DKEYBOARDCONFIG=\""$(abs_builddir)"/scratch/keyboard\" \
