@@ -1,0 +1,15 @@
+#!/bin/bash
+
+cat > scratch/locale << EOF
+LANG=fr_FR.UTF-8
+LC_COLLATE=C
+EOF
+gdbus introspect \
+      --system \
+      --dest org.freedesktop.locale1 \
+      --object-path /org/freedesktop/locale1 \
+      --only-properties | grep Locale | cmp scratch/locale-read-result1
+RES=$?
+kill $DBUS_PID
+rm scratch/locale
+exit $RES
