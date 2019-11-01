@@ -30,11 +30,13 @@ Makefile
 Makefile.in
 mylocaled*
 test-session.xml
+*.log
 *.o
-*.swp
-*~
 *.py[oc]
-.deps/
 *.service
-.dirstamp
+*.swp
 *.stamp
+*.trs
+*~
+.deps/
+.dirstamp
