@@ -1,8 +1,10 @@
 #!/bin/bash
 
 cat > scratch/locale << EOF
-LANG=fr_FR.UTF-8
-LC_COLLATE=C
+export LANG=fr_FR.UTF-8
+export LC_COLLATE=\
+\
+C
 EOF
 gdbus introspect \
       --system \
