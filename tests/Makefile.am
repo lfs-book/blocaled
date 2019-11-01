@@ -1,6 +1,6 @@
 check_PROGRAMS = mylocaled
 TESTS = locale-read
-AM_TESTS_ENVIRONMENT = . $(src_dir)/tests-env.sh;
+AM_TESTS_ENVIRONMENT = . $(srcdir)/test-env.sh;
 
 nodist_mylocaled_SOURCES = mylocaled.c
 mylocaled.c: $(top_srcdir)/src/main.c
