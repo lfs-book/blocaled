@@ -1,4 +1,4 @@
-check_PROGRAMS = mylocaled
+check_PROGRAMS = mylocaled gdbus-mock-polkit
 TESTS = locale-read
 AM_TESTS_ENVIRONMENT = . $(srcdir)/test-env.sh;
 
@@ -6,7 +6,7 @@ nodist_mylocaled_SOURCES = mylocaled.c
 mylocaled.c: $(top_srcdir)/src/main.c
 	cp $< $@
 
-AM_CPPFLAGS = \
+mylocaled_CPPFLAGS = \
         -include $(top_builddir)/config.h \
         -DPKGDATADIR=\""$(abs_top_srcdir)"/data\" \
         -DPIDFILE=\""$(abs_builddir)"/scratch/mylocaled.pid\" \
@@ -18,12 +18,20 @@ AM_CPPFLAGS = \
         -I$(top_builddir)/src \
         $(NULL)
 
-LDADD = \
+gdbus_mock_polkit_CPPFLAGS = \
+        $(BLOCALED_CFLAGS) \
+        $(NULL)
+
+mylocaled_LDADD = \
 	$(BLOCALED_LIBS) \
 	$(top_builddir)/src/locale1-generated.o \
 	$(top_builddir)/src/localed.o \
 	$(top_builddir)/src/polkitasync.o \
 	$(top_builddir)/src/shellparser.o \
+	$(NULL)
+
+gdbus_mock_polkit_LDADD = \
+	$(BLOCALED_LIBS) \
 	$(NULL)
 
 CLEANFILES = \
