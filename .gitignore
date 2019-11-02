@@ -28,6 +28,7 @@
 locale1-generated*
 Makefile
 Makefile.in
+gdbus-mock-polkit
 mylocaled*
 test-session.xml
 *.log
