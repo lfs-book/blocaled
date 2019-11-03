@@ -10,8 +10,7 @@ gdbus introspect \
       --system \
       --dest org.freedesktop.locale1 \
       --object-path /org/freedesktop/locale1 \
-      --only-properties | grep Locale | cmp scratch/locale-read-result1
+      --only-properties | grep Locale | cmp ${srcdir}/scratch/locale-read-result1
 RES=$?
-kill $DBUS_PID
 rm scratch/locale
 exit $RES
