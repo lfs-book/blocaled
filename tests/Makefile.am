@@ -1,6 +1,6 @@
 check_PROGRAMS = mylocaled gdbus-mock-polkit
 TESTS = locale-read
-AM_TESTS_ENVIRONMENT = . $(srcdir)/test-env.sh;
+##AM_TESTS_ENVIRONMENT = . $(srcdir)/test-env.sh;
 
 nodist_mylocaled_SOURCES = mylocaled.c
 mylocaled.c: $(top_srcdir)/src/main.c
@@ -39,3 +39,4 @@ CLEANFILES = \
 	     scratch/org.freedesktop.locale1.service \
 	     scratch/test-session.xml \
 	     $(NULL)
+
