@@ -94,7 +94,7 @@ $(localed_built_sources) : data/org.freedesktop.locale1.xml
 	--interface-prefix org.freedesktop. \
 	--c-namespace BLocaled \
 	--generate-c-code locale1-generated \
-	--generate-docbook "$(abs_srcdir)/doc/reference/locale1-generated" \
+	--generate-docbook "$(abs_builddir)/doc/reference/locale1-generated" \
 	$(abs_srcdir)/data/org.freedesktop.locale1.xml; \
 	popd > /dev/null )
 
