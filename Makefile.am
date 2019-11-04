@@ -105,4 +105,5 @@ BUILT_SOURCES = \
 CLEANFILES = \
 	$(localed_built_sources) \
 	$(dbusservices_DATA) \
+	$(abs_builddir)/doc/reference/locale1-generated-org.freedesktop.locale1.xml
 	$(NULL)
