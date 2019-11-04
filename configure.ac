@@ -44,7 +44,8 @@ AC_ARG_WITH([xkbdconfig], AS_HELP_STRING([--with-xkbdconfig=FILENAME], [X keyboa
 AC_SUBST([xkbdconfig], [$with_xkbdconfig])
 
 AC_MSG_CHECKING([dbus interfaces directory])
-dbusinterfacesdir=`$PKG_CONFIG --variable=interfaces_dir dbus-1`
+dbusinterfacesdir=`$PKG_CONFIG --variable=interfaces_dir dbus-1 \
+                               --define-variable=prefix=$prefix`
 if test "x$dbusinterfacesdir" = "x"; then
     AC_MSG_ERROR([not found])
 else
@@ -53,7 +54,8 @@ fi
 AC_SUBST([dbusinterfacesdir])
 
 AC_MSG_CHECKING([dbus system services directory])
-dbussystemservicesdir=`$PKG_CONFIG --variable=system_bus_services_dir dbus-1`
+dbussystemservicesdir=`$PKG_CONFIG --variable=system_bus_services_dir dbus-1 \
+                                   --define-variable=prefix=$prefix`
 if test "x$dbussystemservicesdir" = "x"; then
     AC_MSG_ERROR([not found])
 else
@@ -62,7 +64,8 @@ fi
 AC_SUBST([dbussystemservicesdir])
 
 AC_MSG_CHECKING([polkit actions directory])
-polkitactiondir=`$PKG_CONFIG --variable=actiondir polkit-gobject-1`
+polkitactiondir=`$PKG_CONFIG --variable=actiondir polkit-gobject-1 \
+                             --define-variable=prefix=$prefix`
 if test "x$polkitactiondir" = "x"; then
     AC_MSG_ERROR([not found])
 else
