@@ -68,6 +68,14 @@ FIXXREF_OPTIONS=
 HFILE_GLOB=$(top_srcdir)/src/*.h
 CFILE_GLOB=$(top_srcdir)/src/*.c
 
+# locale1-generated.o is needed got gtkdoc-scangobj, so add it to
+# CFILE_GLOB.
+CFILE_GLOB+=$(top_builddir)/src/locale1-generated.o
+# and tell how to rebuild it if make docs is run before make all (case
+# of make dist)
+$(top_builddir)/src/locale1-generated.o:
+	$(MAKE) -C $(top_builddir) src/locale1-generated.o
+
 # Extra header to include when scanning, which are not under DOC_SOURCE_DIR
 # e.g. EXTRA_HFILES=$(top_srcdir}/contrib/extra.h
 EXTRA_HFILES=
