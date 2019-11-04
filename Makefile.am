@@ -89,7 +89,7 @@ nodist_blocaled_SOURCES = \
 	$(NULL)
 
 $(localed_built_sources) : data/org.freedesktop.locale1.xml
-	$(AM_V_GEN)( pushd "$(srcdir)/src" > /dev/null; \
+	$(AM_V_GEN)( pushd "$(builddir)/src" > /dev/null; \
 	$(GDBUS_CODEGEN) \
 	--interface-prefix org.freedesktop. \
 	--c-namespace BLocaled \
