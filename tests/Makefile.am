@@ -40,3 +40,10 @@ CLEANFILES = \
 	     scratch/test-session.xml \
 	     $(NULL)
 
+EXTRA_DIST = $(TESTS) \
+	     test-env.sh \
+	     test-unenv.sh \
+	     scratch/locale-read-result1 \
+	     scratch/system.d/blocaled.conf \
+	     scratch/system.d/polkit-mock.conf \
+	     $(NULL)
