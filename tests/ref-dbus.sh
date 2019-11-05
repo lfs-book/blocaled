@@ -1,9 +1,9 @@
 #!/bin/bash
 
 (
-flock -x 17
+flock -x 9
 if [ -s lock ]; then
-    read -u 17 nb_links
+    read -u 9 nb_links
     echo $((nb_links + 1)) > lock
 else
     coproc dbus-daemon --config-file=scratch/test-session.xml \
@@ -15,8 +15,8 @@ else
     echo $DBUS_PID > dbus_pid
     echo 1 > lock
 fi
-flock -u 17
-) 17>lock
+flock -u 9
+) 9<>lock
 
 export DBUS_SYSTEM_BUS_ADDRESS=$(cat dbus_address)
 export DBUS_PID=$(cat dbus_pid)
