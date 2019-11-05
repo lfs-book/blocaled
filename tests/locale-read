@@ -6,7 +6,7 @@ export LC_COLLATE=\
 \
 C
 EOF
-. ${srcdir}/test-env.sh
+. ${srcdir}/ref-dbus.sh
 gdbus introspect \
       --system \
       --dest org.freedesktop.locale1 \
@@ -14,5 +14,5 @@ gdbus introspect \
       --only-properties | grep Locale | cmp ${srcdir}/scratch/locale-read-result1
 RES=$?
 rm scratch/locale
-. ${srcdir}/test-unenv.sh
+. ${srcdir}/unref-dbus.sh
 exit $RES
