@@ -1,5 +1,7 @@
 check_PROGRAMS = mylocaled gdbus-mock-polkit
-TESTS = locale-read
+TESTS = locale-read \
+	keyboard-read
+
 ##AM_TESTS_ENVIRONMENT = . $(srcdir)/test-env.sh;
 
 nodist_mylocaled_SOURCES = mylocaled.c

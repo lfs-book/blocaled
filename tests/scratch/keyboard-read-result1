@@ -1,0 +1,2 @@
+      readonly s VConsoleKeymap = 'fr-latin9';
+      readonly s VConsoleKeymapToggle = '';

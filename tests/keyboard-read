@@ -1,0 +1,15 @@
+#!/bin/bash
+
+cat > scratch/keyboard << EOF
+keymap=fr-latin9
+EOF
+. ${srcdir}/ref-dbus.sh
+gdbus introspect \
+      --system \
+      --dest org.freedesktop.locale1 \
+      --object-path /org/freedesktop/locale1 \
+      --only-properties | grep VConsoleKeymap | cmp ${srcdir}/scratch/keyboard-read-result1
+RES=$?
+rm scratch/keyboard
+. ${srcdir}/unref-dbus.sh
+exit $RES
