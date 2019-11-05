@@ -1,7 +1,8 @@
 check_PROGRAMS = mylocaled gdbus-mock-polkit
 TESTS = locale-read \
 	keyboard-read \
-	xkbd-read
+	xkbd-read \
+        locale-wite
 
 ##AM_TESTS_ENVIRONMENT = . $(srcdir)/test-env.sh;
 
@@ -47,6 +48,8 @@ EXTRA_DIST = $(TESTS) \
 	     test-env.sh \
 	     test-unenv.sh \
 	     scratch/locale-read-result1 \
+	     scratch/keyboard-read-result1 \
+	     scratch/xkeyboard-read-result1 \
 	     scratch/system.d/blocaled.conf \
 	     scratch/system.d/polkit-mock.conf \
 	     $(NULL)
