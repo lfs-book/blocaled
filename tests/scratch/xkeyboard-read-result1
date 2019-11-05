@@ -1,0 +1,4 @@
+      readonly s X11Layout = 'fr';
+      readonly s X11Model = 'pc105';
+      readonly s X11Variant = 'latin9';
+      readonly s X11Options = 'terminate:ctrl_alt_bksp';
