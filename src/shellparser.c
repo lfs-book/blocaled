@@ -471,6 +471,23 @@ shell_parser_set_variable (ShellParser *parser,
         ret = TRUE;
     } else {
         if (add_if_unset) {
+            GList *last = g_list_last (parser->entry_list);
+            struct ShellEntry *last_entry;
+            last_entry = (struct ShellEntry *)last->data;
+            g_debug ("Adding variable %s. Last entry type is %d.\n"
+                     "Last entry string is %s.",
+                      variable,
+                      last_entry ? last_entry->type : -1,
+                      last_entry ? last_entry->string : "none");
+            if (last_entry != NULL &&
+                last_entry->type != SHELL_ENTRY_TYPE_SEPARATOR &&
+                last_entry->type != SHELL_ENTRY_TYPE_COMMENT) {
+                last_entry = g_new0 (struct ShellEntry, 1);
+                last_entry->type = SHELL_ENTRY_TYPE_SEPARATOR;
+                last_entry->string = g_strdup ("\n");
+                parser->entry_list = g_list_append (parser->entry_list,
+                                                    last_entry);
+            }
             found_entry = g_new0 (struct ShellEntry, 1);
             found_entry->type = SHELL_ENTRY_TYPE_ASSIGNMENT;
             found_entry->variable = g_strdup (variable);
@@ -515,6 +532,40 @@ shell_parser_clear_variable (ShellParser *parser,
             curr->prev = NULL;
             curr->next = NULL;
             g_list_free_full (curr, (GDestroyNotify)shell_entry_free);
+            /* Normally, a variable assignment is between two (separator
+             * or comment). But if the variable assignment is at the
+             * beginning or the end of the file, either prev or next is NULL.
+             * So that we have 9 cases:
+             * prev      next      action
+             *--------------------------------
+             * NULL      NULL      nothing
+             * NULL      separator remove next
+             * NULL      comment   nothing
+             * separator NULL      remove prev (not mandatory, just symmetry :)
+             * separator separator remove next (either one, my choice :)
+             * separator comment   remove prev
+             * comment   NULL      nothing
+             * comment   separator remove next
+             * comment   comment   nothing
+             *--------------------------------
+             * Summary: if next is a separator, remove it, otherwise, if prev
+             * is a separator, remove it.
+             */
+            if (next != NULL &&
+                ((struct ShellEntry *)next->data)->type ==
+                                           SHELL_ENTRY_TYPE_SEPARATOR) {
+                GList *next_next = next->next;
+                next->prev = next->next = NULL;
+                g_list_free_full (next, (GDestroyNotify)shell_entry_free);
+                next = next_next;
+            } else if (prev != NULL &&
+                       ((struct ShellEntry *)prev->data)->type ==
+                                           SHELL_ENTRY_TYPE_SEPARATOR) {
+                GList *prev_prev = prev->prev;
+                prev->prev = prev->next = NULL;
+                g_list_free_full (prev, (GDestroyNotify)shell_entry_free);
+                prev = prev_prev;
+            }
             if (prev != NULL)
                 prev->next = next;
             if (next != NULL)
