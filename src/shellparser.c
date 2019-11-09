@@ -446,6 +446,7 @@ shell_parser_set_variable (ShellParser *parser,
                            gboolean add_if_unset)
 {
     GList *curr = NULL;
+    GList *last = NULL;
     struct ShellEntry *found_entry = NULL;
     gchar *quoted_value = NULL;
     gboolean ret = FALSE;
@@ -453,15 +454,21 @@ shell_parser_set_variable (ShellParser *parser,
     g_assert (parser != NULL);
     g_assert (variable != NULL);
 
-    for (curr = parser->entry_list; curr != NULL; curr = curr->next) {
+    quoted_value = g_shell_quote (value);
+
+    curr = parser->entry_list;
+    while (curr != NULL) {
         struct ShellEntry *entry;
 
         entry = (struct ShellEntry *)(curr->data);
-        if (entry->type == SHELL_ENTRY_TYPE_ASSIGNMENT && g_strcmp0 (variable, entry->variable) == 0)
+        if (entry->type == SHELL_ENTRY_TYPE_ASSIGNMENT &&
+            g_strcmp0 (variable, entry->variable) == 0) {
             found_entry = entry;
+            break;
+        }
+        last = curr;
+        curr = curr->next;
     }
-
-    quoted_value = g_shell_quote (value);
 
     if (found_entry != NULL) {
         g_free (found_entry->string);
@@ -471,9 +478,10 @@ shell_parser_set_variable (ShellParser *parser,
         ret = TRUE;
     } else {
         if (add_if_unset) {
-            GList *last = g_list_last (parser->entry_list);
-            struct ShellEntry *last_entry;
-            last_entry = (struct ShellEntry *)last->data;
+            struct ShellEntry *last_entry = NULL;
+            GList *added = NULL;
+            if (last != NULL)
+                last_entry = (struct ShellEntry *)last->data;
             g_debug ("Adding variable %s. Last entry type is %d.\n"
                      "Last entry string is %s.",
                       variable,
@@ -482,18 +490,39 @@ shell_parser_set_variable (ShellParser *parser,
             if (last_entry != NULL &&
                 last_entry->type != SHELL_ENTRY_TYPE_SEPARATOR &&
                 last_entry->type != SHELL_ENTRY_TYPE_COMMENT) {
+
                 last_entry = g_new0 (struct ShellEntry, 1);
                 last_entry->type = SHELL_ENTRY_TYPE_SEPARATOR;
                 last_entry->string = g_strdup ("\n");
-                parser->entry_list = g_list_append (parser->entry_list,
-                                                    last_entry);
+                added = g_new0 (GList, 1);
+                added->next = NULL;
+                added->prev = last;
+                added->data = (gpointer)last_entry;
+/* Note that last entry is not NULL, so last is not NULL either */
+                last->next = added;
+                last = added;
             }
             found_entry = g_new0 (struct ShellEntry, 1);
             found_entry->type = SHELL_ENTRY_TYPE_ASSIGNMENT;
             found_entry->variable = g_strdup (variable);
             found_entry->unquoted_value = g_strdup(value);
-            found_entry->string = g_strdup_printf ("%s=%s", variable, quoted_value);
-            parser->entry_list = g_list_append (parser->entry_list, found_entry);
+            found_entry->string = g_strdup_printf ("%s=%s", variable,
+                                                            quoted_value);
+            added = g_new0 (GList, 1);
+            added->next = NULL;
+            added->prev = last;
+            added->data = (gpointer)found_entry;
+            last->next = added;
+            last = added;
+/* End the file with a newline char */
+            last_entry = g_new0 (struct ShellEntry, 1);
+            last_entry->type = SHELL_ENTRY_TYPE_SEPARATOR;
+            last_entry->string = g_strdup_printf ("\n");
+            added = g_new0 (GList, 1);
+            added->next = NULL;
+            added->prev = last;
+            added->data = (gpointer)last_entry;
+            last->next = added;
             ret = TRUE;
         }
     }
