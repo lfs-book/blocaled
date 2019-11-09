@@ -1,0 +1,23 @@
+#!/bin/bash
+
+. ${srcdir}/ref-dbus.sh
+. ${srcdir}/ref-polkit.sh
+gdbus call \
+      --system \
+      --dest org.freedesktop.locale1 \
+      --object-path /org/freedesktop/locale1 \
+      --method org.freedesktop.locale1.SetLocale \
+      "['LANG=fr_FR.UTF-8', 'LC_TIME=fr_FR.UTF-8']" \
+      true
+cmp scratch/locale << EOF
+# Configuration file for eselect
+# This file has been automatically generated
+LANG='fr_FR.UTF-8'
+LC_TIME='fr_FR.UTF-8'
+EOF
+
+RES=$?
+rm scratch/locale
+. ${srcdir}/unref-polkit.sh
+. ${srcdir}/unref-dbus.sh
+exit $RES
