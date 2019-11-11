@@ -3,7 +3,8 @@ TESTS = locale-read \
 	keyboard-read \
 	xkbd-read \
         locale-write \
-        locale-write-no-file
+        locale-write-no-file \
+        locale-write-twice
 
 ##AM_TESTS_ENVIRONMENT = . $(srcdir)/test-env.sh;
 
