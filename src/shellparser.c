@@ -21,6 +21,10 @@
   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+/* DEBUG begin: comment out when debugged
+#include <stdio.h>
+DEBUG end */
+
 #include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
@@ -423,6 +427,38 @@ shell_parser_is_empty (ShellParser *parser)
     return FALSE;
 }
 
+/* DEBUG begin: comment out when debugged
+void
+print_parser (ShellParser *parser)
+{
+    GList *curr;
+    int i;
+
+    g_assert (parser != NULL);
+
+    printf ("\nParser associated to %s:\n", parser->filename);
+    printf ("List Pointer: %x\n", parser->entry_list);
+    if (parser->entry_list == NULL)
+        return;
+    printf ("\nEntry List:\n");
+    for (i = 1, curr = parser->entry_list; curr != NULL; curr = curr->next, i++) {
+        struct ShellEntry *curr_entry = (struct ShellEntry *)curr->data;
+        printf ("Entry #%d:\n", i);
+        printf (" -- next: %x\n", curr->next);
+        printf (" -- prev: %x\n", curr->prev);
+        printf (" -- entry: %x\n", curr_entry);
+        if (curr_entry != NULL) {
+            printf (" --    -- type:      %d\n", curr_entry->type);
+            printf (" --    -- string:    %s\n", curr_entry->string);
+            if (curr_entry->type == SHELL_ENTRY_TYPE_ASSIGNMENT) {
+                printf (" --    -- variable: %s\n", curr_entry->variable);
+                printf (" --    -- value:    %s\n", curr_entry->unquoted_value);
+            }
+        }
+    }
+}
+DEBUG end */
+
 /**
  * shell_parser_set_variable:
  * @parser: (not nullable): the parser on which to act
@@ -454,6 +490,11 @@ shell_parser_set_variable (ShellParser *parser,
     g_assert (parser != NULL);
     g_assert (variable != NULL);
 
+/* DEBUG begin: comment out when debugged
+    printf ("\nEntering shell_parser_set_variable\n"
+            "----------------------------------\n");
+    print_parser (parser);
+DEBUG end */
     quoted_value = g_shell_quote (value);
 
     curr = parser->entry_list;
@@ -528,6 +569,11 @@ shell_parser_set_variable (ShellParser *parser,
     }
 
     g_free (quoted_value);
+/* DEBUG begin: comment out when debugged
+    printf ("\nExiting shell_parser_set_variable\n"
+            "----------------------------------\n");
+    print_parser (parser);
+DEBUG end */
     return ret;
 }
 
@@ -548,6 +594,12 @@ shell_parser_clear_variable (ShellParser *parser,
 
     g_assert (parser != NULL);
     g_assert (variable != NULL);
+
+/* DEBUG begin: comment out when debugged
+    printf ("\nEntering shell_parser_clear_variable\n"
+            "-----------------------------------\n");
+    print_parser (parser);
+DEBUG end */
 
     for (curr = parser->entry_list; curr != NULL; ) {
         struct ShellEntry *entry;
@@ -597,12 +649,19 @@ shell_parser_clear_variable (ShellParser *parser,
             }
             if (prev != NULL)
                 prev->next = next;
+	    else
+                parser->entry_list = next;
             if (next != NULL)
                 next->prev = prev;
             curr = next;
         } else
             curr = curr->next;
     }
+/* DEBUG begin: comment out when debugged
+    printf ("\nExiting shell_parser_clear_variable\n"
+            "-----------------------------------\n");
+    print_parser (parser);
+DEBUG end */
 }
 
 /**
