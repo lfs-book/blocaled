@@ -535,11 +535,11 @@ DEBUG end */
                 last_entry = g_new0 (struct ShellEntry, 1);
                 last_entry->type = SHELL_ENTRY_TYPE_SEPARATOR;
                 last_entry->string = g_strdup ("\n");
-                added = g_new0 (GList, 1);
+                added = g_list_alloc();
                 added->next = NULL;
                 added->prev = last;
                 added->data = (gpointer)last_entry;
-/* Note that last entry is not NULL, so last is not NULL either */
+/* Note that last_entry is not NULL, so last is not NULL either */
                 last->next = added;
                 last = added;
             }
@@ -549,7 +549,7 @@ DEBUG end */
             found_entry->unquoted_value = g_strdup(value);
             found_entry->string = g_strdup_printf ("%s=%s", variable,
                                                             quoted_value);
-            added = g_new0 (GList, 1);
+            added = g_list_alloc();
             added->next = NULL;
             added->prev = last;
             added->data = (gpointer)found_entry;
@@ -559,7 +559,7 @@ DEBUG end */
             last_entry = g_new0 (struct ShellEntry, 1);
             last_entry->type = SHELL_ENTRY_TYPE_SEPARATOR;
             last_entry->string = g_strdup_printf ("\n");
-            added = g_new0 (GList, 1);
+            added = g_list_alloc();
             added->next = NULL;
             added->prev = last;
             added->data = (gpointer)last_entry;
