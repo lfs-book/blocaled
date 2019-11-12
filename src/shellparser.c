@@ -553,7 +553,10 @@ DEBUG end */
             added->next = NULL;
             added->prev = last;
             added->data = (gpointer)found_entry;
-            last->next = added;
+            if (last != NULL)
+                last->next = added;
+	    else
+                parser->entry_list = added;
             last = added;
 /* End the file with a newline char */
             last_entry = g_new0 (struct ShellEntry, 1);
