@@ -4,7 +4,8 @@ TESTS = locale-read \
 	xkbd-read \
         locale-write \
         locale-write-no-file \
-        locale-write-twice
+        locale-write-twice \
+        locale-erase-write
 
 ##AM_TESTS_ENVIRONMENT = . $(srcdir)/test-env.sh;
 
