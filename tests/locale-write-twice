@@ -9,7 +9,6 @@ gdbus call \
       --method org.freedesktop.locale1.SetLocale \
       "['LANG=fr_FR.UTF-8', 'LC_TIME=fr_FR.UTF-8', 'LC_COLLATE=fr_FR.UTF-8']" \
       true
-sleep 1
 gdbus call \
       --system \
       --dest org.freedesktop.locale1 \
