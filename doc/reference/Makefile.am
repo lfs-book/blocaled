@@ -28,6 +28,8 @@
 # Copy this to your project's API docs directory and modify the variables to
 # suit your project. See the GTK+ Makefiles in gtk+/docs/reference for examples
 # of using the various options.
+#
+# Modified in 2019 by Pierre Labastie
 
 # The name of the module, e.g. 'glib'.
 DOC_MODULE=blocaled
