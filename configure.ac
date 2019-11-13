@@ -31,7 +31,7 @@ if test "x$GDBUS_CODEGEN" = x; then
     AC_MSG_ERROR([Failed to find gdbus-codegen])
 fi
 
-AC_ARG_WITH([pidfile], AS_HELP_STRING([--with-pidfile=FILENAME], [pid filename @<:@default=/var/run/blocaled.pid@:>@]), [], [with_pidfile=/var/run/blocaled.pid])
+AC_ARG_WITH([pidfile], AS_HELP_STRING([--with-pidfile=FILENAME], [pid filename @<:@default=/run/blocaled.pid@:>@]), [], [with_pidfile=/run/blocaled.pid])
 AC_SUBST([pidfile], [$with_pidfile])
 
 AC_ARG_WITH([localeconfig], AS_HELP_STRING([--with-localeconfig=FILENAME], [locale config filename @<:@default=/etc/locale@:>@]), [], [with_localeconfig=/etc/locale])
