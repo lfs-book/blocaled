@@ -7,8 +7,6 @@ TESTS = locale-read \
         locale-write-twice \
         locale-erase-write
 
-##AM_TESTS_ENVIRONMENT = . $(srcdir)/test-env.sh;
-
 nodist_mylocaled_SOURCES = mylocaled.c
 mylocaled.c: $(top_srcdir)/src/main.c
 	cp $< $@
@@ -48,8 +46,10 @@ CLEANFILES = \
 	     $(NULL)
 
 EXTRA_DIST = $(TESTS) \
-	     test-env.sh \
-	     test-unenv.sh \
+	     ref-dbus.sh \
+	     unref-dbus.sh \
+	     ref-polkit.sh \
+	     unref-polkit.sh \
 	     scratch/locale-read-result1 \
 	     scratch/keyboard-read-result1 \
 	     scratch/xkeyboard-read-result1 \
