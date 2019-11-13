@@ -1,3 +1,19 @@
+blocaled
+--------
+2019-11-13: Unreleased [0.1]
+First release of blocaled, an implementation of the localed D-Bus service
+* Remove: other daemons (timedated and hostnamed)
+* Remove: any reference to openrc
+* add: gtk-doc framework and documentation
+* add: test framework and test cases
+* tests: add a mocked polkit
+* tests: add a framework for running a private system dbus daemon
+* fix: bug when writing several variables in the locale settings file
+  see https://bugs.gentoo.org/699530
+
+----------------
+Openrc-settingsd
+----------------
 2012-09-08: version 1.0.1
 * Run env-update after updating /etc/env.d/02locale
 * Better diagnostics for missing ntp.
