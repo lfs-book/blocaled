@@ -31,7 +31,7 @@ else
         kill $(cat scratch/mylocaled.pid)
         rm scratch/mylocaled.pid
     fi
-    coproc ./mylocaled --config=scratch/myconf
+    ./mylocaled --config=scratch/myconf
     echo 1 > myloc-lock
 fi
 flock -u 9
