@@ -1,5 +1,7 @@
 #!/bin/bash
 
+exec >"$0".log 2>&1
+
 cat > scratch/xkeyboard << EOF
 Section "InputClass"
         Identifier "libinput keyboard catchall"

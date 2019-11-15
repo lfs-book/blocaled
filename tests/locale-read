@@ -1,5 +1,7 @@
 #!/bin/bash
 
+exec >"$0".log 2>&1
+
 cat > scratch/locale << EOF
 export LANG=fr_FR.UTF-8
 export LC_COLLATE=\

@@ -48,6 +48,16 @@ CLEANFILES = \
 	     mylocaled.c \
 	     scratch/org.freedesktop.locale1.service \
 	     scratch/test-session.xml \
+             locale-read.log \
+             keyboard-read.log \
+             xkbd-read.log \
+             locale-write.log \
+             locale-write-no-file.log \
+             locale-write-twice.log \
+             locale-erase-write.log \
+             locale-read-userconf.log \
+             keyboard-read-userconf.log \
+             xkbd-read-userconf.log.log \
 	     $(NULL)
 
 EXTRA_DIST = $(TESTS) \

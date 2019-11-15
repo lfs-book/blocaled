@@ -1,5 +1,7 @@
 #!/bin/bash
 
+exec >"$0".log 2>&1
+
 cat > scratch/keyboard << EOF
 keymap=fr-latin9
 EOF

@@ -1,5 +1,7 @@
 #!/bin/bash
 
+exec >"$0".log 2>&1
+
 . ${srcdir}/ref-dbus.sh
 . ${srcdir}/ref-polkit.sh
 gdbus call \
