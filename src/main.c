@@ -26,6 +26,7 @@
 #include <libdaemon/dfork.h>
 
 #include <glib.h>
+#include <glib/gprintf.h>
 #include <gio/gio.h>
 
 #include "localed.h"
@@ -40,6 +41,7 @@ static gboolean foreground = FALSE;
 static gboolean use_syslog = FALSE;
 static gboolean read_only = FALSE;
 static gboolean print_version = FALSE;
+static gchar *config_file = NULL;
 
 static GOptionEntry option_entries[] =
 {
@@ -47,6 +49,7 @@ static GOptionEntry option_entries[] =
     { "foreground", 0, 0, G_OPTION_ARG_NONE, &foreground, "Do not daemonize", NULL },
     { "read-only", 0, 0, G_OPTION_ARG_NONE, &read_only, "Run in read-only mode", NULL },
     { "version", 0, 0, G_OPTION_ARG_NONE, &print_version, "Show version information", NULL },
+    { "config", 0, 0, G_OPTION_ARG_FILENAME, &config_file, "Use an alternate configuration file", "File" },
     { NULL }
 };
 
@@ -200,9 +203,11 @@ main (gint argc, gchar *argv[])
     GMainLoop *loop = NULL;
     pid_t pid;
     gchar *kbd_model_map = PKGDATADIR "/kbd-model-map";
-    gchar *localeconfig = LOCALECONFIG;
-    gchar *keyboardconfig = KEYBOARDCONFIG;
-    gchar *xkbdconfig = XKBDCONFIG;
+    gchar *localeconfig = NULL;
+    gchar *keyboardconfig = NULL;
+    gchar *xkbdconfig = NULL;
+
+    GKeyFile *key_file = g_key_file_new();
 
     g_log_set_default_handler (log_handler, NULL);
 
@@ -217,6 +222,55 @@ main (gint argc, gchar *argv[])
         g_print ("%s\n", PACKAGE_STRING);
         return 0;
     }
+
+    if (config_file == NULL)
+        config_file = SYSCONFDIR "/blocaled.conf";
+    else if (!g_file_test (config_file,
+                           G_FILE_TEST_EXISTS | G_FILE_TEST_IS_REGULAR)) {
+        g_critical ("Configuration file not found: %s", config_file);
+        return 1;
+    }
+
+    if (!g_key_file_load_from_file(key_file, config_file, G_KEY_FILE_NONE, &error)) {
+        if (error->domain != G_FILE_ERROR || error->code != G_FILE_ERROR_NOENT) {
+            g_critical ("Failed to parse configuration: %s", error->message);
+            return 1;
+        } else
+            g_clear_error (&error);
+    } else {
+        localeconfig = g_key_file_get_value (key_file, "settings", "localefile", &error);
+        if (error != NULL &&
+            error->code != G_KEY_FILE_ERROR_KEY_NOT_FOUND &&
+            error->code != G_KEY_FILE_ERROR_GROUP_NOT_FOUND) {
+
+            g_critical ("Failed to parse configuration: %s", error->message);
+            return 1;
+        } else
+            g_clear_error (&error);
+
+        keyboardconfig = g_key_file_get_value (key_file, "settings", "keymapfile", &error);
+        if (error != NULL &&
+            error->code != G_KEY_FILE_ERROR_KEY_NOT_FOUND &&
+            error->code != G_KEY_FILE_ERROR_GROUP_NOT_FOUND) {
+
+            g_critical ("Failed to parse configuration: %s", error->message);
+            return 1;
+        } else
+            g_clear_error (&error);
+
+        xkbdconfig = g_key_file_get_value (key_file, "settings", "xkbdlayoutfile", &error);
+        if (error != NULL &&
+            error->code != G_KEY_FILE_ERROR_KEY_NOT_FOUND &&
+            error->code != G_KEY_FILE_ERROR_GROUP_NOT_FOUND) {
+
+            g_critical ("Failed to parse configuration: %s", error->message);
+            return 1;
+        } else
+            g_clear_error (&error);
+    }
+    if (localeconfig == NULL) localeconfig = LOCALECONFIG;
+    if (keyboardconfig == NULL) keyboardconfig = KEYBOARDCONFIG;
+    if (xkbdconfig == NULL) xkbdconfig = XKBDCONFIG;
 
     if (!foreground) {
         if (daemon_retval_init () < 0) {
