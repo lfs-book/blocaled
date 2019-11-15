@@ -57,7 +57,7 @@ CLEANFILES = \
              locale-erase-write.log \
              locale-read-userconf.log \
              keyboard-read-userconf.log \
-             xkbd-read-userconf.log.log \
+             xkbd-read-userconf.log \
 	     $(NULL)
 
 EXTRA_DIST = $(TESTS) \
