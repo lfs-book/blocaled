@@ -6,7 +6,7 @@ TESTS = locale-read \
         locale-write \
         locale-write-no-file \
         locale-write-twice \
-        locale-erase-write
+        locale-erase-write \
         locale-read-userconf \
         keyboard-read-userconf \
         xkbd-read-userconf
@@ -33,12 +33,12 @@ gdbus_mock_polkit_CPPFLAGS = \
         $(NULL)
 
 mylocaled_LDADD = \
-	$(BLOCALED_LIBS) \
-	$(top_builddir)/src/locale1-generated.o \
-	$(top_builddir)/src/localed.o \
-	$(top_builddir)/src/polkitasync.o \
-	$(top_builddir)/src/shellparser.o \
-	$(NULL)
+        $(BLOCALED_LIBS) \
+        $(top_builddir)/src/locale1-generated.o \
+        $(top_builddir)/src/localed.o \
+        $(top_builddir)/src/polkitasync.o \
+        $(top_builddir)/src/shellparser.o \
+        $(NULL)
 
 gdbus_mock_polkit_LDADD = \
 	$(BLOCALED_LIBS) \
