@@ -1,11 +1,24 @@
 check_PROGRAMS = mylocaled gdbus-mock-polkit
-TESTS = locale-read \
-	keyboard-read \
-	xkbd-read \
-        locale-write \
-        locale-write-no-file \
-        locale-write-twice \
-        locale-erase-write
+DEFAULT_CONFIG_TESTS = locale-read \
+                       keyboard-read \
+                       xkbd-read \
+                       locale-write \
+                       locale-write-no-file \
+                       locale-write-twice \
+                       locale-erase-write
+
+default_config_tests_log = $(DEFAULT_CONFIG_TESTS:=.log)
+
+USER_CONFIG_TESTS = locale-read-userconf \
+                    keyboard-read-userconf \
+                    xkbd-read-userconf
+
+user_config_tests_log = $(USER_CONFIG_TESTS:=.log)
+
+$(user_config_tests_log): $(default_config_tests_log)
+
+TESTS = $(DEFAULT_CONFIG_TESTS) $(USER_CONFIG_TESTS)
+
 
 nodist_mylocaled_SOURCES = mylocaled.c
 mylocaled.c: $(top_srcdir)/src/main.c
@@ -18,6 +31,7 @@ mylocaled_CPPFLAGS = \
         -DLOCALECONFIG=\""$(abs_builddir)"/scratch/locale\" \
         -DKEYBOARDCONFIG=\""$(abs_builddir)"/scratch/keyboard\" \
         -DXKBDCONFIG=\""$(abs_builddir)"/scratch/xkeyboard\" \
+        -DSYSCONFDIR=\""$(abs_builddir)"/scratch\" \
         $(BLOCALED_CFLAGS) \
         -I$(top_srcdir)/src \
         -I$(top_builddir)/src \
