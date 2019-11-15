@@ -1,0 +1,24 @@
+#!/bin/bash
+
+cat > scratch/mylocale << EOF
+export LANG=fr_FR.UTF-8
+export LC_COLLATE=\
+\
+C
+EOF
+cat > scratch/myconf << EOF
+[settings]
+localefile=$(pwd)/scratch/mylocale
+EOF
+. ${srcdir}/ref-dbus.sh
+. ${srcdir}/ref-localed-myconf.sh
+gdbus introspect \
+      --system \
+      --dest org.freedesktop.locale1 \
+      --object-path /org/freedesktop/locale1 \
+      --only-properties | grep Locale | cmp ${srcdir}/scratch/locale-read-result1
+RES=$?
+rm scratch/mylocale scratch/myconf
+. ${srcdir}/unref-localed-myconf.sh
+. ${srcdir}/unref-dbus.sh
+exit $RES

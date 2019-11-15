@@ -1,0 +1,30 @@
+#!/bin/bash
+
+cat > scratch/myxkeyboard << EOF
+Section "InputClass"
+        Identifier "libinput keyboard catchall"
+        MatchIsKeyboard "on"
+        MatchDevicePath "/dev/input/event*"
+        Driver "libinput"
+        Option "XkbLayout" "fr"
+        Option "Xkbvariant" "latin9"
+        Option "xkbModel" "pc105"
+        Option "xkboptions" "terminate:ctrl_alt_bksp"
+EndSection
+EOF
+cat > scratch/myconf << EOF
+[settings]
+xkbdlayoutfile=$(pwd)/scratch/myxkeyboard
+EOF
+. ${srcdir}/ref-dbus.sh
+. ${srcdir}/ref-localed-myconf.sh
+gdbus introspect \
+      --system \
+      --dest org.freedesktop.locale1 \
+      --object-path /org/freedesktop/locale1 \
+      --only-properties | grep X11 | cmp ${srcdir}/scratch/xkeyboard-read-result1
+RES=$?
+rm scratch/myxkeyboard scratch/myconf
+. ${srcdir}/unref-localed-myconf.sh
+. ${srcdir}/unref-dbus.sh
+exit $RES
