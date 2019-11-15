@@ -55,6 +55,8 @@ EXTRA_DIST = $(TESTS) \
 	     unref-dbus.sh \
 	     ref-polkit.sh \
 	     unref-polkit.sh \
+	     ref-localed-myconf.sh \
+	     unref-localed-myconf.sh \
 	     scratch/locale-read-result1 \
 	     scratch/keyboard-read-result1 \
 	     scratch/xkeyboard-read-result1 \
