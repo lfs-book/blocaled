@@ -5,6 +5,4 @@ Add a timer so that the daemon exits after a while
 Change the parser for keymap file, so that KEYMAP or keymap is used, and
 also KEYMAP_TOGGLE or KEYMAP_CORRECTIONS (I think they do the same thing)
 
-Allow to get the settings file names from a config file
-
 Add more tests, specifically regarding the above
