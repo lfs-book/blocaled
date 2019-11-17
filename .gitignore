@@ -10,6 +10,7 @@
 /config.sub
 /configure
 /depcomp
+/data/blocaled.conf
 /doc/reference/*
 !/doc/reference/blocaled-docs.xml
 !/doc/reference/blocaled-sections.txt
