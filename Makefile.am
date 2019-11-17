@@ -7,6 +7,7 @@ AUTOMAKE_OPTIONS = subdir-objects
 SUBDIRS = . doc tests
 
 EXTRA_DIST = \
+        data/blocaled.conf.in \
 	data/org.freedesktop.locale1.service.in \
 	AUTHORS \
 	COPYING \
@@ -18,6 +19,8 @@ EXTRA_DIST = \
 dist_pkgdata_DATA = \
 	data/kbd-model-map \
 	$(NULL)
+
+sysconf_DATA = data/blocaled.conf
 
 dbusinterfacesdir = @dbusinterfacesdir@
 dist_dbusinterfaces_DATA = \

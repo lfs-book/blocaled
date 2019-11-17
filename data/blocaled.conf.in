@@ -1,0 +1,43 @@
+# This is a sample configuration file for blocaled
+# Edit it to your liking.
+
+[settings]
+
+# localefile: a file in simplified shell syntax, holding the
+#             values of LANG and LC_* variables (except LC_ALL).
+#             This file is /etc/locale for systemd.
+#             This file is /etc/env.d/02locale for gentoo/openrc.
+#             Default chosen at build time: @localeconfig@
+
+# localefile = @localeconfig@
+
+# keymapfile: a file in simplified shell syntax, holding the
+#             values of two variables:
+#             KEYMAP (or keymap for gentoo/openrc):
+#                 passed to loadkeys for setting the keyboard driver's
+#                 translation table.
+#             KEYMAP_TOGGLE (or KEYMAP_EXTENSION for LFS. There is no
+#             equivalent for gentoo/openrc):
+#                 passed to loadkeys for modifying the keyboard driver's
+#                 translation table.
+#             This file is /etc/vconsole for systemd.
+#             This file is /etc/conf.d/keymaps for gentoo/openrc.
+#             This file is /etc/sysconfig/console for LFS.
+#             Default chosen at build time: @keyboardconfig@
+
+# keymapfile = @keyboardconfig@
+
+# xkbdlayoutfile: a file in xorg.conf syntax holding an "InputClass"
+#                 section with one or more of the four Options
+#                 XkbLayout, XkbModel, XkbVariant, XkbOption
+#                 and a "MathIsKeyboard" line.
+#                 This file may be placed in one of the directories
+#                 where the Xorg server looks for its configuration
+#                 files.
+#                 This file is /etc/X11/xorg.conf.d/00-keyboard.conf
+#                 for systemd.
+#                 This file is /etc/X11/xorg.conf.d/30-keyboard.conf
+#                 for gentoo/openrc.
+#                 Default chosen at build time: @xkbdconfig@
+
+# xkbdlayoutfile = @xkbdconfig@
