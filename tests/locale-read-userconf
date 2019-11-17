@@ -9,8 +9,12 @@ export LC_COLLATE=\
 C
 EOF
 cat > scratch/myconf << EOF
+# Config for localefile
+
 [settings]
 localefile=$(pwd)/scratch/mylocale
+# keymapfile = /somedir/console
+
 EOF
 . ${srcdir}/ref-dbus.sh
 . ${srcdir}/ref-localed-myconf.sh

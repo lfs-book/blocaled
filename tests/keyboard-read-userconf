@@ -6,8 +6,10 @@ cat > scratch/mykeyboard << EOF
 keymap=fr-latin9
 EOF
 cat > scratch/myconf << EOF
+# A comment
+
 [settings]
-keymapfile=$(pwd)/scratch/mykeyboard
+keymapfile = $(pwd)/scratch/mykeyboard
 EOF
 . ${srcdir}/ref-dbus.sh
 . ${srcdir}/ref-localed-myconf.sh

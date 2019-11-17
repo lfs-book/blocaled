@@ -16,7 +16,8 @@ EndSection
 EOF
 cat > scratch/myconf << EOF
 [settings]
-xkbdlayoutfile=$(pwd)/scratch/myxkeyboard
+# Let's try spaces around the = sign
+xkbdlayoutfile =     $(pwd)/scratch/myxkeyboard
 EOF
 . ${srcdir}/ref-dbus.sh
 . ${srcdir}/ref-localed-myconf.sh
