@@ -31,7 +31,7 @@ dbusservices_DATA = \
 
 dbusbusconfigdir = $(sysconfdir)/dbus-1/system.d
 dist_dbusbusconfig_DATA = \
-	data/blocaled.conf \
+	data/org.freedesktop.locale1.conf \
 	$(NULL)
 
 polkitactiondir = @polkitactiondir@
