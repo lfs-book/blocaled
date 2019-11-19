@@ -49,6 +49,14 @@ static gchar **locale = NULL; /* Expected format is { "LANG=foo", "LC_TIME=bar",
 static GFile *locale_file = NULL;
 G_LOCK_DEFINE_STATIC (locale);
 
+/* There are a number of conventions used for keymap variables:
+ * - systemd have `KEYMAP' and `KEYMAP_TOGGLE' in /etc/vconsole
+ * - gentoo/openrc have `keymap' in /etc/conf.d/keymaps, and no equivalent for
+ *   KEYMAP_TOGGLE
+ * - blfs have `KEYMAP' and `KEYMAP_CORRECTIONS' in /etc/sysconfig/console
+ */
+static gchar *keymap_variables[] = { "KEYMAP", "keymap", "KEYMAP_TOGGLE",
+                                     "KEYMAP_CORRECTIONS" };
 static gchar *vconsole_keymap = NULL;
 static gchar *vconsole_keymap_toggle = NULL;
 static GFile *keymaps_file = NULL;
@@ -1283,10 +1291,10 @@ localed_init (gboolean _read_only,
     struct xorg_confd_parser *x11_parser = NULL;
 
     read_only = _read_only;
+
     kbd_model_map_file = g_file_new_for_path (kbd_model_map);
     locale_file = g_file_new_for_path (localeconfig);
     keymaps_file = g_file_new_for_path (keyboardconfig);
-
     x11_file = g_file_new_for_path (xkbdconfig);
 
     locale = g_new0 (gchar *, g_strv_length (locale_variables) + 1);
