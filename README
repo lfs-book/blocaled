@@ -11,7 +11,7 @@ Use this project issue tracker for reporting bugs.
 See http://www.freedesktop.org/wiki/Software/systemd/localed for the D-Bus
 protocol description.
 
-The configuration files holding the locale settings may be choosen at compile
+The configuration files holding the locale settings may be chosen at compile
 time or through the /etc/localedrc file (TODO!). See the man page and the
 configure --help output.
 
