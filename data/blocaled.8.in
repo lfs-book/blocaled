@@ -1,0 +1,80 @@
+.TH "BLOCALED" "8" "October 2019" "blocaled" "blocaled"
+.SH "NAME"
+blocaled \- locale settings D-Bus service
+.SH "SYNOPSIS"
+.BR "blocaled" " [" "\-\-debug" "] [" "\-\-foreground" "]"
+.RB "[" "\-\-read\-only" "]"
+[\fB\-\-config\fR \fIFILE\fR]
+.SH "DESCRIPTION"
+.PP
+The \fBblocaled\fR daemon implements the standard localed
+(i.e. \fIorg.freedesktop.locale1\fR) D-Bus interface as a stand-alone daemon.
+Users and administrators should not need to launch the \fBblocaled\fR
+executable manually. It will be launched automatically via D-Bus activation
+when needed.
+.SH "OPTIONS"
+.PP
+\fB\-\-help\fR
+.RS 4
+Show help options.
+.RE
+.PP
+\fB\-\-version\fR
+.RS 4
+Show version information.
+.RE
+.PP
+\fB\-\-debug\fR
+.RS 4
+Enable debugging messages. Not recommended unless in foreground mode.
+.RE
+.PP
+\fB\-\-foreground\fR
+.RS 4
+Run in foreground mode (i.e. not daemonized). Messages will be logged to stderr
+instead of the system log.
+.RE
+.PP
+\fB\-\-read\-only\fR
+.RS 4
+Run daemon in read-only mode. It will read settings files, but will not
+modify them.
+.RE
+.PP
+.B \-\-config
+.I  FILE
+.RS 4
+Use an alternate configuration file (see
+.B CONFIGURATION
+below). The default configuration file is
+.IR "@sysconfdir@/blocaled.conf" "."
+.RE
+
+.SH "CONFIGURATION"
+.PP
+.B blocaled
+reads and writes its informations into three settings files. The location of
+those files varies, depending on the init system and the linux distribution.
+For most flexibily, the location of those files can be set in
+the configuration file. A sample configuration file, with detailed comments
+has been installed in
+.IR "@sysconfdir@" "."
+
+.SH "AUTHORS"
+.PP
+.MT pierre.labastie@neuf.fr
+Pierre Labastie
+.ME .
+The initial version of this page has been written by
+.MT tetromino@gentoo.org
+Alexandre Rostovtsev
+.ME
+for the \fBopenrc-settingsd\fR(8) project.
+.SH "BUGS"
+.PP
+Bug reports should be submitted to
+.UR https://github.com/pierre-labastie/blocaled/issues
+.UE .
+.SH "SEE ALSO"
+.PP
+\fBdbus\-daemon\fR(1), \fBpolkit\fR(8)
