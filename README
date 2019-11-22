@@ -12,8 +12,8 @@ See http://www.freedesktop.org/wiki/Software/systemd/localed for the D-Bus
 protocol description.
 
 The configuration files holding the locale settings may be chosen at compile
-time or through the /etc/localedrc file (TODO!). See the man page and the
-configure --help output.
+time or through the '$sysconfdir'/blocaled.conf file. See the man page and the
+output of configure --help.
 
 Note that blocaled expects any shell-syntax settings files that it
 modifies to be in UTF-8 encoding, and to consist only of comments and simple
