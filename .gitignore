@@ -11,6 +11,7 @@
 /configure
 /depcomp
 /data/blocaled.conf
+/data/blocaled.8
 /doc/reference/*
 !/doc/reference/blocaled-docs.xml
 !/doc/reference/blocaled-sections.txt
