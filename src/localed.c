@@ -54,9 +54,19 @@ G_LOCK_DEFINE_STATIC (locale);
  * - gentoo/openrc have `keymap' in /etc/conf.d/keymaps, and no equivalent for
  *   KEYMAP_TOGGLE
  * - blfs have `KEYMAP' and `KEYMAP_CORRECTIONS' in /etc/sysconfig/console
+ * We need to keep track of what we find in the keymap file, in order
+ * to know what variables are set there. We'll have:
+ *    Init/distro     keymap_var         toggle_var
+ *    systemd/any     "KEYMAP"           "KEYMAP_TOGGLE"
+ *    openrc/gentoo   "keymap"           NULL
+ *    SysV/blfs       "KEYMAP"           "KEYMAP_CORRECTIONS"
+ *  If there is no keymap file, or this file does not contain the above
+ *  variables, we use the systemd defaults.
  */
 static gchar *keymap_variables[] = { "KEYMAP", "keymap", "KEYMAP_TOGGLE",
                                      "KEYMAP_CORRECTIONS" };
+static gchar *keymap_var = "KEYMAP";
+static gchar *toggle_var = "KEYMAP_TOGGLE";
 static gchar *vconsole_keymap = NULL;
 static gchar *vconsole_keymap_toggle = NULL;
 static GFile *keymaps_file = NULL;
@@ -968,15 +978,20 @@ on_handle_set_vconsole_keyboard_authorized_cb (GObject *source_object,
         }
     }
 
-    /* We do not set vconsole_keymap_toggle */
-    if (!shell_parser_set_and_save (keymaps_file, &err, "keymap", NULL, data->vconsole_keymap, NULL)) {
+    if (!shell_parser_set_and_save (keymaps_file, &err,
+          keymap_var, NULL, data->vconsole_keymap,
+          toggle_var, NULL, data->vconsole_keymap_toggle,
+          NULL)) {
         g_dbus_method_invocation_return_gerror (data->invocation, err);
         goto unlock;
     }
 
     g_free (vconsole_keymap);
+    g_free (vconsole_keymap_toggle);
     vconsole_keymap = g_strdup (data->vconsole_keymap);
+    vconsole_keymap_toggle = g_strdup (data->vconsole_keymap_toggle);
     blocaled_locale1_set_vconsole_keymap (locale1, vconsole_keymap);
+    blocaled_locale1_set_vconsole_keymap_toggle (locale1, vconsole_keymap_toggle);
 
     if (data->convert) {
         if (best_entry == NULL) {
@@ -1017,7 +1032,7 @@ on_handle_set_vconsole_keyboard_authorized_cb (GObject *source_object,
             }
         }
     }
-    /* We do not modify vconsole_keymap_toggle */
+
     blocaled_locale1_complete_set_vconsole_keyboard (locale1, data->invocation);
 
   unlock:
@@ -1154,7 +1169,7 @@ on_handle_set_x11_keyboard_authorized_cb (GObject *source_object,
             g_printerr ("Failed to find conversion entry for x11 layout '%s' in '%s'\n", data->x11_layout, filename);
             g_free (filename);
         } else {
-            if (!shell_parser_set_and_save (keymaps_file, &err, "keymap", NULL, best_entry->vconsole_keymap, NULL)) {
+            if (!shell_parser_set_and_save (keymaps_file, &err, "KEYMAP", "keymap", best_entry->vconsole_keymap, NULL)) {
                 g_dbus_method_invocation_return_gerror (data->invocation, err);
                 goto unlock;
             }
@@ -1288,6 +1303,7 @@ localed_init (gboolean _read_only,
 {
     GError *err = NULL;
     gchar **locale_values = NULL;
+    gchar **keymap_values = NULL;
     struct xorg_confd_parser *x11_parser = NULL;
 
     read_only = _read_only;
@@ -1317,17 +1333,49 @@ localed_init (gboolean _read_only,
         g_clear_error (&err);
     }
 
-/* Others may use KEYMAP: TODO */
-    vconsole_keymap = shell_source_var (keymaps_file, "${keymap}", &err);
+    vconsole_keymap = vconsole_keymap_toggle = NULL;
+    keymap_values = shell_parser_source_var_list (
+                               keymaps_file,
+                               (const gchar * const *)keymap_variables,
+			       &err);
+    if (keymap_values != NULL) {
+        if (keymap_values[0] != NULL) {
+            if (keymap_values[1] != NULL) {
+                g_debug("Both KEYMAP and keymap are set in %s; keeping KEYMAP",
+                         keyboardconfig);
+                g_free (keymap_values[1]);
+	    }
+            vconsole_keymap = g_strdup(keymap_values[0]);
+            g_free (keymap_values[0]);
+        } else if (keymap_values[1] != NULL) {
+            vconsole_keymap = g_strdup(keymap_values[1]);
+            keymap_var = "keymap";
+            toggle_var = NULL;
+            g_free (keymap_values[1]);
+        }
+        if (keymap_values[2] != NULL) {
+            if (keymap_values[3] != NULL) {
+                g_debug("Both KEYMAP_TOGGLE and KEYMAP_CORRECTIONS are set in %s; keeping KEYMAP_TOGGLE",
+                         keyboardconfig);
+                g_free (keymap_values[3]);
+	    }
+            vconsole_keymap_toggle = g_strdup(keymap_values[2]);
+            g_free (keymap_values[2]);
+        } else if (keymap_values[3] != NULL) {
+            vconsole_keymap_toggle = g_strdup(keymap_values[3]);
+            toggle_var = "KEYMAP_CORRECTIONS";
+            g_free (keymap_values[3]);
+        }
+        g_free (keymap_values);
+    }
     if (vconsole_keymap == NULL)
         vconsole_keymap = g_strdup ("");
+    if (vconsole_keymap_toggle == NULL)
+        vconsole_keymap_toggle = g_strdup ("");
     if (err != NULL) {
         g_debug ("%s", err->message);
         g_clear_error (&err);
     }
-
-    /* We don't have a good equivalent for this TODO: we should! */
-    vconsole_keymap_toggle = g_strdup ("");
 
     kbd_model_map_regex_init ();
     xorg_confd_regex_init ();

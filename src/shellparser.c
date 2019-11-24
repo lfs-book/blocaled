@@ -756,6 +756,7 @@ shell_parser_set_and_save (GFile *file,
     alt_var_name = first_alt_var_name;
     value = first_value;
     do {
+      if (value != NULL && *value != 0)
         if (alt_var_name == NULL) {
             if (!shell_parser_set_variable (parser, var_name, value, TRUE)) {
                 g_propagate_error (error,

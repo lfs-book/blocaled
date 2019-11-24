@@ -4,6 +4,7 @@ TESTS = locale-read \
         keyboard-read \
         xkbd-read \
         locale-write \
+        keyboard-write \
         locale-write-no-file \
         locale-write-twice \
         locale-erase-write \
@@ -52,6 +53,7 @@ CLEANFILES = \
              keyboard-read.log \
              xkbd-read.log \
              locale-write.log \
+             keyboard-write.log \
              locale-write-no-file.log \
              locale-write-twice.log \
              locale-erase-write.log \
@@ -69,6 +71,7 @@ EXTRA_DIST = $(TESTS) \
 	     unref-localed-myconf.sh \
 	     scratch/locale-read-result1 \
 	     scratch/keyboard-read-result1 \
+	     scratch/keyboard-read-result2 \
 	     scratch/xkeyboard-read-result1 \
 	     scratch/system.d/mylocaled.conf \
 	     scratch/system.d/polkit-mock.conf \

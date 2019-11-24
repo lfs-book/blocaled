@@ -1,0 +1,109 @@
+#!/bin/bash
+
+exec >"$0".log 2>&1
+
+cat > scratch/keyboard << EOF
+KEYMAP="us"
+EOF
+. ${srcdir}/ref-dbus.sh
+. ${srcdir}/ref-polkit.sh
+gdbus call \
+      --system \
+      --dest org.freedesktop.locale1 \
+      --object-path /org/freedesktop/locale1 \
+      --method org.freedesktop.locale1.SetVConsoleKeyboard \
+      "'fr'" "''" false true
+cmp scratch/keyboard << EOF
+KEYMAP='fr'
+EOF
+RES=$?
+
+if [ $RES = 0 ]; then
+    echo PASS: write-KEYMAP
+    kill $(cat scratch/mylocaled.pid)
+    cat > scratch/keyboard <<- EOF
+	keymap="us"
+	EOF
+    gdbus call \
+      --system \
+      --dest org.freedesktop.locale1 \
+      --object-path /org/freedesktop/locale1 \
+      --method org.freedesktop.locale1.SetVConsoleKeyboard \
+      "'de-latin1'" "'euro2'" false true
+    cmp scratch/keyboard <<- EOF
+	keymap='de-latin1'
+	EOF
+    RES=$?
+fi
+
+if [ $RES = 0 ]; then
+    echo PASS: write-keymap
+    kill $(cat scratch/mylocaled.pid)
+    cat > scratch/keyboard <<- EOF
+	KEYMAP="us"
+	EOF
+    gdbus call \
+      --system \
+      --dest org.freedesktop.locale1 \
+      --object-path /org/freedesktop/locale1 \
+      --method org.freedesktop.locale1.SetVConsoleKeyboard \
+      "'de-latin1'" "'euro2'" false true
+    cmp scratch/keyboard <<- EOF
+	KEYMAP='de-latin1'
+	KEYMAP_TOGGLE='euro2'
+	EOF
+    RES=$?
+fi
+
+if [ $RES = 0 ]; then
+    echo PASS: write-KEYMAP+TOGGLE
+    kill $(cat scratch/mylocaled.pid)
+    cat > scratch/keyboard <<- EOF
+	KEYMAP="us"
+	KEYMAP_CORRECTIONS=""
+	EOF
+    gdbus call \
+      --system \
+      --dest org.freedesktop.locale1 \
+      --object-path /org/freedesktop/locale1 \
+      --method org.freedesktop.locale1.SetVConsoleKeyboard \
+      "'de-latin1'" "'euro2'" false true
+    cmp scratch/keyboard <<- EOF
+	KEYMAP='de-latin1'
+	KEYMAP_CORRECTIONS='euro2'
+	EOF
+    RES=$?
+fi
+
+if [ $RES = 0 ]; then
+    echo PASS: write-KEYMAP+KEYMAP_CORRECTIONS
+    kill $(cat scratch/mylocaled.pid)
+    cat > scratch/keyboard <<- EOF
+	KEYMAP="us"
+	KEYMAP_TOGGLE=""
+	keymap="fr"
+	EOF
+    gdbus call \
+      --system \
+      --dest org.freedesktop.locale1 \
+      --object-path /org/freedesktop/locale1 \
+      --method org.freedesktop.locale1.SetVConsoleKeyboard \
+      "'de-latin1'" "'euro2'" false true
+    cmp scratch/keyboard <<- EOF
+	KEYMAP='de-latin1'
+	KEYMAP_TOGGLE='euro2'
+	keymap="fr"
+	EOF
+    RES=$?
+fi
+if [ $RES = 0 ]; then
+    echo PASS: write-KEYMAP+KEYMAP_TOGGLE+keymap
+fi
+if [ $RES != 0 ]; then
+    echo Faulty File:
+    cat scratch/keyboard
+fi
+rm scratch/keyboard
+. ${srcdir}/unref-polkit.sh
+. ${srcdir}/unref-dbus.sh
+exit $RES

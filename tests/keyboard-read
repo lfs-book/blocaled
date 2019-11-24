@@ -2,16 +2,82 @@
 
 exec >"$0".log 2>&1
 
+. ${srcdir}/ref-dbus.sh
 cat > scratch/keyboard << EOF
 keymap=fr-latin9
 EOF
-. ${srcdir}/ref-dbus.sh
 gdbus introspect \
       --system \
       --dest org.freedesktop.locale1 \
       --object-path /org/freedesktop/locale1 \
       --only-properties | grep VConsoleKeymap | cmp ${srcdir}/scratch/keyboard-read-result1
 RES=$?
+if [ $RES = 0 ]; then
+    echo PASS read-keymap
+    kill $(cat scratch/mylocaled.pid)
+    cat > scratch/keyboard <<- EOF
+	KEYMAP=fr-latin9
+	EOF
+    gdbus introspect \
+      --system \
+      --dest org.freedesktop.locale1 \
+      --object-path /org/freedesktop/locale1 \
+      --only-properties | grep VConsoleKeymap | cmp ${srcdir}/scratch/keyboard-read-result1
+    RES=$?
+fi
+if [ $RES = 0 ]; then
+    echo PASS read-KEYMAP
+    kill $(cat scratch/mylocaled.pid)
+    cat > scratch/keyboard <<- EOF
+	KEYMAP=de-latin1
+	KEYMAP_TOGGLE=euro2
+	EOF
+    gdbus introspect \
+      --system \
+      --dest org.freedesktop.locale1 \
+      --object-path /org/freedesktop/locale1 \
+      --only-properties | grep VConsoleKeymap | cmp ${srcdir}/scratch/keyboard-read-result2
+    RES=$?
+fi
+if [ $RES = 0 ]; then
+    echo PASS read-KEYMAP_TOGGLE
+    kill $(cat scratch/mylocaled.pid)
+    cat > scratch/keyboard <<- EOF
+	KEYMAP=de-latin1
+	KEYMAP_CORRECTIONS=euro2
+	EOF
+    gdbus introspect \
+      --system \
+      --dest org.freedesktop.locale1 \
+      --object-path /org/freedesktop/locale1 \
+      --only-properties | grep VConsoleKeymap | cmp ${srcdir}/scratch/keyboard-read-result2
+    RES=$?
+fi
+if [ $RES = 0 ]; then
+    echo PASS read-KEYMAP_CORRECTIONS
+    kill $(cat scratch/mylocaled.pid)
+    cat > scratch/keyboard <<- EOF
+	KEYMAP=fr-latin9
+	keymap=de-latin1
+	EOF
+    gdbus introspect \
+      --system \
+      --dest org.freedesktop.locale1 \
+      --object-path /org/freedesktop/locale1 \
+      --only-properties | grep VConsoleKeymap | cmp ${srcdir}/scratch/keyboard-read-result1
+    RES=$?
+fi
+if [ $RES = 0 ]; then
+    echo PASS read-KEYMAP+keymap
+fi
+if [ $RES != 0 ]; then
+    echo Faulty output:
+    gdbus introspect \
+      --system \
+      --dest org.freedesktop.locale1 \
+      --object-path /org/freedesktop/locale1 \
+      --only-properties | grep VConsoleKeymap
+fi
 rm scratch/keyboard
 . ${srcdir}/unref-dbus.sh
 exit $RES
