@@ -7,6 +7,7 @@ AUTOMAKE_OPTIONS = subdir-objects
 SUBDIRS = . doc tests
 
 EXTRA_DIST = \
+        data/blocaled.8.in \
         data/blocaled.conf.in \
 	data/org.freedesktop.locale1.service.in \
 	AUTHORS \
@@ -50,7 +51,7 @@ pidfile = @pidfile@
 #%.service : %.service.in
 #	$(do_subst) < $(srcdir)/$< > $(srcdir)/$@
 
-dist_man_MANS = data/blocaled.8
+man_MANS = data/blocaled.8
 
 AM_CPPFLAGS = \
 	-include $(top_builddir)/config.h \

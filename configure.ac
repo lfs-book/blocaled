@@ -79,6 +79,7 @@ AC_CONFIG_FILES([
     doc/reference/Makefile
     data/org.freedesktop.locale1.service
     data/blocaled.conf
+    data/blocaled.8
     tests/Makefile
     tests/scratch/org.freedesktop.locale1.service
     tests/scratch/test-session.xml
