@@ -2,7 +2,4 @@ Add a signal handler so that the pidfile is removed when receiving SIGTERM
 or SIGKILL or SIGINT (and also exit the main loop)
 Add a timer so that the daemon exits after a while
 
-When "convert" is true in SetVConsoleKeyboard, and the xlayout settings file
-does not exist, the file is not created! Create one!
-
 Add more tests, specifically regarding the above
