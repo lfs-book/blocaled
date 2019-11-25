@@ -1,0 +1,42 @@
+#!/bin/bash
+
+exec >"$0".log 2>&1
+
+. ${srcdir}/ref-dbus.sh
+. ${srcdir}/ref-polkit.sh
+gdbus call \
+      --system \
+      --dest org.freedesktop.locale1 \
+      --object-path /org/freedesktop/locale1 \
+      --method org.freedesktop.locale1.SetVConsoleKeyboard \
+      "'fr'" "'euro2'" true true
+cmp scratch/keyboard << EOF
+KEYMAP='fr'
+KEYMAP_TOGGLE='euro2'
+EOF
+RES=$?
+
+if [ $RES = 0 ]; then
+    echo PASS: write-KEYMAP
+    cmp scratch/xkeyboard <<- EOF
+Section "InputClass"
+        Identifier "libinput keyboard catchall"
+        MatchIsKeyboard "on"
+        MatchDevicePath "/dev/input/event*"
+        Driver "libinput"
+        Option "XkbLayout" "fr"
+        Option "Xkbvariant" "latin9"
+        Option "xkbModel" "pc105"
+        Option "xkboptions" "terminate:ctrl_alt_bksp"
+EndSection
+EOF
+RES=$?
+fi
+
+if [ $RES = 0 ]; then
+    echo PASS: convert
+fi
+rm scratch/keyboard
+. ${srcdir}/unref-polkit.sh
+. ${srcdir}/unref-dbus.sh
+exit $RES

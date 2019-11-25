@@ -5,6 +5,7 @@ TESTS = locale-read \
         xkbd-read \
         locale-write \
         keyboard-write \
+        keyboard-write-no-file \
         locale-write-no-file \
         locale-write-twice \
         locale-erase-write \
@@ -54,6 +55,7 @@ CLEANFILES = \
              xkbd-read.log \
              locale-write.log \
              keyboard-write.log \
+             keyboard-write-no-file.log \
              locale-write-no-file.log \
              locale-write-twice.log \
              locale-erase-write.log \
