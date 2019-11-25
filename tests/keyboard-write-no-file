@@ -35,6 +35,16 @@ fi
 
 if [ $RES = 0 ]; then
     echo PASS: convert
+    LANG=C gdbus call \
+      --system \
+      --dest org.freedesktop.locale1 \
+      --object-path /org/freedesktop/locale1 \
+      --method org.freedesktop.locale1.SetVConsoleKeyboard \
+      "'de-latin1'" "'euro2'" false false |& cmp scratch/keyboard-write-result1
+    RES=$?
+fi
+if [ $RES = 0 ]; then
+    echo PASS: Not authorized
 fi
 rm scratch/keyboard
 rm scratch/xkeyboard

@@ -1,0 +1,1 @@
+Error: GDBus.Error:org.freedesktop.PolicyKit1.Error.NotAuthorized: Authorizing for 'org.freedesktop.locale1.set-keyboard': not authorized
