@@ -89,8 +89,9 @@ handle_method_call (GDBusConnection       *connection,
   if (g_strcmp0 (method_name, "CheckAuthorization") == 0)
     {
       const gchar *action_id;
+      guint32 flags;
 
-      g_variant_get (parameters, "((sa{sv})&sa{ss}us)", NULL, NULL, &action_id, NULL, NULL, NULL);
+      g_variant_get (parameters, "((sa{sv})&sa{ss}us)", NULL, NULL, &action_id, NULL, &flags, NULL);
 
       if ((g_strcmp0 (action_id, "org.freedesktop.locale1.set-locale") != 0) &&
           (g_strcmp0 (action_id, "org.freedesktop.locale1.set-keyboard") != 0))
@@ -112,8 +113,8 @@ handle_method_call (GDBusConnection       *connection,
 				 "tmpauthz1");
           g_dbus_method_invocation_return_value (invocation,
                                                  g_variant_new ("((bba{ss}))",
-					         TRUE,
-						 FALSE,
+					         flags == 1?TRUE:FALSE,
+						 flags == 0?TRUE:FALSE,
 						 builder));
           g_variant_builder_unref (builder);
         }
