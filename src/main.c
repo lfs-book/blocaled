@@ -27,6 +27,7 @@
 
 #include <glib.h>
 #include <glib/gprintf.h>
+#include <glib-unix.h>
 #include <gio/gio.h>
 
 #include "localed.h"
@@ -42,6 +43,9 @@ static gboolean use_syslog = FALSE;
 static gboolean read_only = FALSE;
 static gboolean print_version = FALSE;
 static gchar *config_file = NULL;
+
+static GMainLoop *loop = NULL;
+static int exit_status = 0;
 
 static GOptionEntry option_entries[] =
 {
@@ -128,6 +132,22 @@ log_handler (const gchar *log_domain,
     g_free (result_data);
 }
 
+/*
+ * on_sigint:
+ * @user_data: data defined when registering the signal (unused)
+ *
+ * Called when a SIGINT signal is received
+ */
+
+static gboolean
+on_signal (gpointer user_data)
+{
+    if (!foreground)
+        daemon_retval_send (0);
+    g_main_loop_quit (loop);
+    return TRUE;
+}
+
 /**
  * localed_exit:
  * @status: exit code
@@ -139,16 +159,10 @@ log_handler (const gchar *log_domain,
 void
 localed_exit (int status)
 {
-    GFile *pidfile = NULL;
-
     if (!foreground)
         daemon_retval_send (status);
-
-    pidfile = g_file_new_for_path (PIDFILE);
-    g_file_delete (pidfile, NULL, NULL);
-
-    g_clear_object (&pidfile);
-    exit (status);
+    exit_status = status;
+    g_main_loop_quit(loop);
 }
 
 /**
@@ -200,12 +214,15 @@ main (gint argc, gchar *argv[])
 {
     GError *error = NULL;
     GOptionContext *option_context;
-    GMainLoop *loop = NULL;
     pid_t pid;
     gchar *kbd_model_map = PKGDATADIR "/kbd-model-map";
     gchar *localeconfig = NULL;
     gchar *keyboardconfig = NULL;
     gchar *xkbdconfig = NULL;
+    GFile *pidfile = NULL;
+    guint sighup_id = 0;
+    guint sigint_id = 0;
+    guint sigterm_id = 0;
 
     GKeyFile *key_file = g_key_file_new();
 
@@ -301,19 +318,36 @@ main (gint argc, gchar *argv[])
     }
 
     shell_parser_init ();
+    loop = g_main_loop_new (NULL, FALSE);
+    sighup_id = g_unix_signal_add (SIGHUP,
+                                   on_signal,
+                                   NULL);
+    sigint_id = g_unix_signal_add (SIGINT,
+                                   on_signal,
+                                   NULL);
+    sigterm_id = g_unix_signal_add (SIGTERM,
+                                   on_signal,
+                                   NULL);
     localed_init (read_only,
 		  kbd_model_map,
 		  localeconfig,
 		  keyboardconfig,
 		  xkbdconfig);
-    loop = g_main_loop_new (NULL, FALSE);
     g_main_loop_run (loop);
 
     g_main_loop_unref (loop);
+
+    pidfile = g_file_new_for_path (PIDFILE);
+    g_file_delete (pidfile, NULL, NULL);
+    g_clear_object (&pidfile);
+
+    g_source_remove (sighup_id);
+    g_source_remove (sigint_id);
+    g_source_remove (sigterm_id);
 
     localed_destroy ();
     shell_parser_destroy ();
 
     g_clear_error (&error);
-    localed_exit (0);
+    return exit_status;
 }
