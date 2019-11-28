@@ -1,0 +1,68 @@
+#!/bin/bash
+
+exec >"$0".log 2>&1
+
+cat > scratch/mylocale << EOF
+export LANG=fr_FR.UTF-8
+export LC_COLLATE=\
+\
+C
+EOF
+cat > scratch/myconf << EOF
+# Config for localefile
+
+[set]
+localefile=$(pwd)/scratch/mylocale
+
+EOF
+. ${srcdir}/ref-dbus.sh
+. ${srcdir}/ref-localed.sh --config scratch/myconf 2>scratch/error
+sleep 0.1
+sed -i 's/[^]]*]//' scratch/error
+cmp -i 17 scratch/error << EOF
+: ERROR: Failed to parse configuration: Key file does not have group ?settings?
+EOF
+RES=$?
+
+if [ $RES = 0 ]; then
+    . ${srcdir}/unref-localed.sh
+    echo PASS: bad group
+    cat > scratch/myconf <<- EOF
+	#Bad config
+
+	localefile=$(pwd)/scratch/mylocale
+
+	EOF
+    . ${srcdir}/ref-localed.sh --config scratch/myconf 2>scratch/error
+    sleep 0.1
+    sed -i 's/[^]]*]//' scratch/error
+    cmp scratch/error << EOF
+: ERROR: Failed to parse configuration: Key file does not start with a group
+EOF
+    RES=$?
+fi
+
+if [ $RES = 0 ]; then
+    . ${srcdir}/unref-localed.sh
+    echo PASS: No group
+    cat > scratch/myconf <<- EOF
+	#Bad config
+
+	[settings]
+	locale=$(pwd)/scratch/mylocale
+
+	EOF
+    . ${srcdir}/ref-localed.sh --config scratch/myconf 2>scratch/error
+    sleep 0.1
+    sed -i 's/[^]]*]//' scratch/error
+    cmp scratch/error << EOF
+: ERROR: Failed to find a settings file in scratch/myconf
+EOF
+    RES=$?
+fi
+
+rm scratch/mylocale scratch/myconf
+. ${srcdir}/unref-localed.sh
+. ${srcdir}/unref-dbus.sh
+if [ $RES = 0 ]; then rm scratch/error; fi
+exit $RES

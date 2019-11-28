@@ -12,7 +12,7 @@ cat > scratch/myconf << EOF
 keymapfile = $(pwd)/scratch/mykeyboard
 EOF
 . ${srcdir}/ref-dbus.sh
-. ${srcdir}/ref-localed-myconf.sh
+. ${srcdir}/ref-localed.sh --config scratch/myconf
 gdbus introspect \
       --system \
       --dest org.freedesktop.locale1 \

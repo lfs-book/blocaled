@@ -21,18 +21,8 @@
 #  TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 #  SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-(
-flock -x 9
-if [ -s myloc-lock ]; then
-    read -u 9 nb_links
-    echo $((nb_links + 1)) > lock
-else
-    if [ -s scratch/mylocaled.pid ]; then
-        kill $(cat scratch/mylocaled.pid)
-        rm scratch/mylocaled.pid
-    fi
-    ./mylocaled --config=scratch/myconf
-    echo 1 > myloc-lock
+if [ -s scratch/mylocaled.pid ]; then
+    kill $(cat scratch/mylocaled.pid)
+    rm scratch/mylocaled.pid
 fi
-flock -u 9
-) 9<>myloc-lock
+./mylocaled $@ &

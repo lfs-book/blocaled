@@ -22,15 +22,7 @@
 #  SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
-(
-flock -x 9
-read -u 9 nb_links
-if ((nb_links == 1)); then
+if [ -s scratch/mylocaled.pid ]; then
     kill $(cat scratch/mylocaled.pid)
-    rm scratch/mylocaled.pid
-    trap "rm myloc-lock" 0
-else
-    echo $((nb_links - 1)) > myloc-lock
-    flock -u  9
+    rm -f scratch/mylocaled.pid
 fi
-) 9<>myloc-lock

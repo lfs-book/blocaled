@@ -20,7 +20,7 @@ cat > scratch/myconf << EOF
 xkbdlayoutfile =     $(pwd)/scratch/myxkeyboard
 EOF
 . ${srcdir}/ref-dbus.sh
-. ${srcdir}/ref-localed-myconf.sh
+. ${srcdir}/ref-localed.sh --config scratch/myconf
 gdbus introspect \
       --system \
       --dest org.freedesktop.locale1 \
