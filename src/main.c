@@ -256,34 +256,25 @@ main (gint argc, gchar *argv[])
             g_clear_error (&error);
     } else {
         localeconfig = g_key_file_get_value (key_file, "settings", "localefile", &error);
-        if (error != NULL &&
-            error->code != G_KEY_FILE_ERROR_KEY_NOT_FOUND &&
-            error->code != G_KEY_FILE_ERROR_GROUP_NOT_FOUND) {
+        if (error != NULL)
+            if (error->code == G_KEY_FILE_ERROR_GROUP_NOT_FOUND) {
 
-            g_critical ("Failed to parse configuration: %s", error->message);
-            return 1;
-        } else
-            g_clear_error (&error);
+                g_critical ("Failed to parse configuration: %s", error->message);
+                return 1;
+            } else
+                g_clear_error (&error);
 
         keyboardconfig = g_key_file_get_value (key_file, "settings", "keymapfile", &error);
-        if (error != NULL &&
-            error->code != G_KEY_FILE_ERROR_KEY_NOT_FOUND &&
-            error->code != G_KEY_FILE_ERROR_GROUP_NOT_FOUND) {
-
-            g_critical ("Failed to parse configuration: %s", error->message);
-            return 1;
-        } else
-            g_clear_error (&error);
+        g_clear_error (&error);
 
         xkbdconfig = g_key_file_get_value (key_file, "settings", "xkbdlayoutfile", &error);
-        if (error != NULL &&
-            error->code != G_KEY_FILE_ERROR_KEY_NOT_FOUND &&
-            error->code != G_KEY_FILE_ERROR_GROUP_NOT_FOUND) {
-
-            g_critical ("Failed to parse configuration: %s", error->message);
-            return 1;
-        } else
-            g_clear_error (&error);
+        g_clear_error (&error);
+        if (localeconfig == NULL &&
+            keyboardconfig == NULL &&
+            xkbdconfig == NULL) {
+            g_critical ("Failed to find a settings file in %s", config_file);
+	    return 1;
+        }
     }
     if (localeconfig == NULL) localeconfig = LOCALECONFIG;
     if (keyboardconfig == NULL) keyboardconfig = KEYBOARDCONFIG;
