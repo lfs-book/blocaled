@@ -11,7 +11,8 @@ TESTS = locale-read \
         locale-erase-write \
         locale-read-userconf \
         keyboard-read-userconf \
-        xkbd-read-userconf
+        xkbd-read-userconf \
+        bad-read-userconf
 
 nodist_mylocaled_SOURCES = mylocaled.c
 mylocaled.c: $(top_srcdir)/src/main.c
@@ -62,6 +63,7 @@ CLEANFILES = \
              locale-read-userconf.log \
              keyboard-read-userconf.log \
              xkbd-read-userconf.log \
+             bad-read-userconf.log \
 	     $(NULL)
 
 EXTRA_DIST = $(TESTS) \
