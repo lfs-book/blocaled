@@ -13,3 +13,10 @@ echo "----------------------------------------------------------------"
 echo
 echo "./configure CFLAGS='-ggdb -O0' $args"
 echo
+echo "----------------------------------------------------------------"
+echo "For code coverage, the configuration is:                        "
+echo "----------------------------------------------------------------"
+echo
+echo "./configure CFLAGS='--coverage -O0 -fprofile-abs-path -std=gnu11' \\"
+echo "            $args"
+echo
