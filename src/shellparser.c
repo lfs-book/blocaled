@@ -344,21 +344,30 @@ shell_parser_new_from_string (GFile *file,
                 gboolean matched2 = FALSE;
 
                 matched2 = g_regex_match (single_quoted_regex, s, 0, &match_info);
-                if (matched2)
+                if (matched2) {
+                    temp1 = g_match_info_fetch (match_info, 0);
+                    g_debug ("Found single quoted: ``%s''", temp1);
+                    g_free (temp1);
                     goto append_value;
-
+                }
                 _g_match_info_clear (&match_info);
 
                 matched2 = g_regex_match (double_quoted_regex, s, 0, &match_info);
-                if (matched2)
+                if (matched2) {
+                    temp1 = g_match_info_fetch (match_info, 0);
+                    g_debug ("Found double quoted: ``%s''", temp1);
+                    g_free (temp1);
                     goto append_value;
-
+                }
                 _g_match_info_clear (&match_info);
 
                 matched2 = g_regex_match (unquoted_regex, s, 0, &match_info);
-                if (matched2)
+                if (matched2) {
+                    temp1 = g_match_info_fetch (match_info, 0);
+                    g_debug ("Found unquoted: ``%s''", temp1);
+                    g_free (temp1);
                     goto append_value;
-
+                }
                 _g_match_info_clear (&match_info);
 
                 break;
@@ -910,7 +919,7 @@ shell_parser_init (void)
         g_assert (double_quoted_regex != NULL);
     }
     if (unquoted_regex == NULL) {
-        unquoted_regex = g_regex_new ("^(?:[^\\s\"'`\\$\\|&<>;]|\\\\[\\s\"'`\\$\\|&<>;]|\\$\\{)+", G_REGEX_ANCHORED|G_REGEX_MULTILINE, 0, NULL);
+        unquoted_regex = g_regex_new ("^(?:[^\\s\"'`\\$\\|\\\\&<>;]|\\\\[\\s\"'`\\$\\|&<>;]|\\$\\{)+", G_REGEX_ANCHORED|G_REGEX_MULTILINE, 0, NULL);
         g_assert (unquoted_regex != NULL);
     }
 }
