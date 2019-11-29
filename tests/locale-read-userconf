@@ -1,6 +1,6 @@
 #!/bin/bash
 
-exec >"$0".log 2>&1
+exec >"$(basename $0)".log 2>&1
 
 cat > scratch/mylocale << EOF
 export LANG=fr_FR.UTF-8

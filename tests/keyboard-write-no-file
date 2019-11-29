@@ -1,6 +1,6 @@
 #!/bin/bash
 
-exec >"$0".log 2>&1
+exec >"$(basename $0)".log 2>&1
 
 . ${srcdir}/ref-dbus.sh
 . ${srcdir}/ref-polkit.sh
@@ -40,7 +40,7 @@ if [ $RES = 0 ]; then
       --dest org.freedesktop.locale1 \
       --object-path /org/freedesktop/locale1 \
       --method org.freedesktop.locale1.SetVConsoleKeyboard \
-      "'de-latin1'" "'euro2'" false false |& cmp scratch/keyboard-write-result1
+      "'de-latin1'" "'euro2'" false false |& cmp ${srcdir}/scratch/keyboard-write-result1
     RES=$?
 fi
 if [ $RES = 0 ]; then
