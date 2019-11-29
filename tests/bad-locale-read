@@ -1,0 +1,21 @@
+#!/bin/bash
+
+exec >"$(basename $0)".log 2>&1
+
+cat > scratch/locale << EOF
+LANG = fr_FR
+EOF
+. ${srcdir}/ref-dbus.sh
+./mylocaled --debug --foreground 2> scratch/error &
+sleep 0.1
+. ${srcdir}/unref-localed.sh
+sed -n '/locale'\''/s/[^]]*]//p' scratch/error > scratch/error1
+cmp scratch/error1 << EOF
+: Debug: Unable to parse '$(pwd)/scratch/locale'
+EOF
+RES=$?
+
+rm scratch/locale
+. ${srcdir}/unref-dbus.sh
+if [ $RES = 0 ]; then rm scratch/error{,1}; fi
+exit $RES

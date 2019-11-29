@@ -14,6 +14,7 @@ TESTS = locale-read \
         keyboard-read-userconf \
         xkbd-read-userconf \
         bad-read-userconf \
+        bad-locale-read \
         try-options
 
 nodist_mylocaled_SOURCES = mylocaled.c
@@ -66,6 +67,7 @@ CLEANFILES = \
              keyboard-read-userconf.log \
              xkbd-read-userconf.log \
              bad-read-userconf.log \
+             bad-locale-read.log \
              try-options.log \
 	     $(NULL)
 
