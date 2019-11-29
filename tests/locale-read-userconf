@@ -4,9 +4,9 @@ exec >"$(basename $0)".log 2>&1
 
 cat > scratch/mylocale << EOF
 export LANG=fr_FR.UTF-8
-export LC_COLLATE=\
-\
-C
+export LC_COLLATE=\\
+\\
+"fr_FR"
 EOF
 cat > scratch/myconf << EOF
 # Config for localefile
