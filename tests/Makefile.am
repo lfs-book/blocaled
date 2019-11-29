@@ -81,6 +81,7 @@ EXTRA_DIST = $(TESTS) \
 	     scratch/locale-read-result1 \
 	     scratch/keyboard-read-result1 \
 	     scratch/keyboard-read-result2 \
+	     scratch/keyboard-write-result1 \
 	     scratch/xkeyboard-read-result1 \
 	     scratch/system.d/mylocaled.conf \
 	     scratch/system.d/polkit-mock.conf \
