@@ -1,1 +1,1 @@
-      readonly as Locale = ['LANG=fr_FR.UTF-8', 'LC_COLLATE=C'];
+      readonly as Locale = ['LANG=fr_FR.UTF-8', 'LC_COLLATE=fr_FR'];
