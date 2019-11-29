@@ -474,6 +474,7 @@ xorg_confd_parser_new (GFile *xorg_confd_file,
                                 "        Identifier \"Blocaled Keyboard\"\n"
                                 "        MatchIsKeyboard \"on\"\n"
                                 "EndSection\n");
+            g_clear_error (error);
 	} else {
             g_prefix_error (error, "Unable to read '%s':", parser->filename);
             goto fail;
