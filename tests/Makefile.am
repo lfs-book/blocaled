@@ -1,4 +1,5 @@
 AUTOMAKE_OPTIONS = serial-tests
+TESTS_ENVIRONMENT = PACKAGE_STRING="$(PACKAGE_STRING)"
 check_PROGRAMS = mylocaled gdbus-mock-polkit
 TESTS = locale-read \
         keyboard-read \
@@ -12,7 +13,8 @@ TESTS = locale-read \
         locale-read-userconf \
         keyboard-read-userconf \
         xkbd-read-userconf \
-        bad-read-userconf
+        bad-read-userconf \
+        try-options
 
 nodist_mylocaled_SOURCES = mylocaled.c
 mylocaled.c: $(top_srcdir)/src/main.c
@@ -64,6 +66,7 @@ CLEANFILES = \
              keyboard-read-userconf.log \
              xkbd-read-userconf.log \
              bad-read-userconf.log \
+             try-options.log \
 	     $(NULL)
 
 EXTRA_DIST = $(TESTS) \
@@ -71,8 +74,8 @@ EXTRA_DIST = $(TESTS) \
 	     unref-dbus.sh \
 	     ref-polkit.sh \
 	     unref-polkit.sh \
-	     ref-localed-myconf.sh \
-	     unref-localed-myconf.sh \
+	     ref-localed.sh \
+	     unref-localed.sh \
 	     scratch/locale-read-result1 \
 	     scratch/keyboard-read-result1 \
 	     scratch/keyboard-read-result2 \

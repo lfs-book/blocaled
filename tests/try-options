@@ -1,0 +1,79 @@
+#!/bin/bash
+
+exec >"$(basename $0)".log 2>&1
+
+cat > scratch/mylocale << EOF
+export LANG=fr_FR.UTF-8
+export LC_COLLATE=\
+\
+C
+EOF
+cat > scratch/blocaled.conf << EOF
+# Config for localefile
+
+[setings]
+localefile=$(pwd)/scratch/mylocale
+
+EOF
+. ${srcdir}/ref-dbus.sh
+. ${srcdir}/ref-localed.sh --config scratch/myconf 2>scratch/error
+sleep 0.1
+sed -i 's/[^]]*]//' scratch/error
+cmp scratch/error << EOF
+: ERROR: Configuration file not found: scratch/myconf
+EOF
+RES=$?
+
+if [ $RES = 0 ]; then
+    . ${srcdir}/unref-localed.sh
+    echo PASS: No config
+    . ${srcdir}/ref-localed.sh --version >scratch/version
+    sleep 0.1
+    cmp scratch/version << EOF
+$PACKAGE_STRING
+EOF
+    RES=$?
+fi
+
+if [ $RES = 0 ]; then
+    . ${srcdir}/unref-localed.sh
+    echo PASS: version
+    rm scratch/version
+    . ${srcdir}/ref-localed.sh --help >scratch/help
+    sleep 0.1
+    cmp scratch/help << EOF
+Usage:
+  mylocaled [OPTION?] - locale settings D-Bus service
+
+Help Options:
+  -h, --help        Show help options
+
+Application Options:
+  --debug           Enable debugging messages
+  --foreground      Do not daemonize
+  --read-only       Run in read-only mode
+  --version         Show version information
+  --config=File     Use an alternate configuration file
+
+EOF
+    RES=$?
+fi
+
+if [ $RES = 0 ]; then
+    . ${srcdir}/unref-localed.sh
+    echo PASS: help
+    rm scratch/help
+    . ${srcdir}/ref-localed.sh --bogus 2>scratch/error
+    sleep 0.1
+    sed -i 's/[^]]*]//' scratch/error
+    cmp scratch/error << EOF
+: ERROR: Failed to parse options: Unknown option --bogus
+EOF
+    RES=$?
+fi
+
+rm scratch/mylocale scratch/blocaled.conf
+. ${srcdir}/unref-localed.sh
+. ${srcdir}/unref-dbus.sh
+if [ $RES = 0 ]; then rm scratch/error; fi
+exit $RES
