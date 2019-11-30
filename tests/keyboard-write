@@ -3,6 +3,7 @@
 exec >"$(basename $0)".log 2>&1
 
 cp ${srcdir}/../data/kbd-model-map scratch
+chmod u+w scratch/kbd-model-map
 cat > scratch/keyboard << EOF
 KEYMAP="us"
 EOF
