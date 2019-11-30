@@ -8,10 +8,13 @@ TESTS = locale-read \
         keyboard-write \
         keyboard-write-no-file \
         locale-write-no-file \
+        locale-write-no-cr \
+        locale-write-bogus-var \
         locale-write-twice \
         locale-write-comment \
         locale-erase-write \
         locale-read-userconf \
+        locale-read-unreadable \
         keyboard-read-userconf \
         xkbd-read-userconf \
         bad-read-userconf \
@@ -62,10 +65,13 @@ CLEANFILES = \
              keyboard-write.log \
              keyboard-write-no-file.log \
              locale-write-no-file.log \
+             locale-write-no-cr.log \
+             locale-write-bogus-var.log \
              locale-write-twice.log \
              locale-write-comment.log \
              locale-erase-write.log \
              locale-read-userconf.log \
+             locale-read-unreadable.log \
              keyboard-read-userconf.log \
              xkbd-read-userconf.log \
              bad-read-userconf.log \

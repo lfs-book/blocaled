@@ -1,0 +1,23 @@
+#!/bin/bash
+
+exec >"$(basename $0)".log 2>&1
+
+. ${srcdir}/ref-dbus.sh
+. ${srcdir}/ref-polkit.sh
+LANG=C gdbus call \
+      --system \
+      --dest org.freedesktop.locale1 \
+      --object-path /org/freedesktop/locale1 \
+      --method org.freedesktop.locale1.SetLocale \
+      "['LANG=fr_FR.UTF-8', 'BOGUS=fr_FR.UTF-8']" \
+      true > scratch/error 2>&1
+cmp scratch/error << EOF
+Error: GDBus.Error:org.freedesktop.DBus.Error.InvalidArgs: Invalid locale variable name or value
+(According to introspection data, you need to pass 'asb')
+EOF
+
+RES=$?
+if [ $RES = 0 ]; then rm scratch/error; fi
+. ${srcdir}/unref-polkit.sh
+. ${srcdir}/unref-dbus.sh
+exit $RES

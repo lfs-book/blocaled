@@ -1,0 +1,25 @@
+#!/bin/bash
+
+exec >"$(basename $0)".log 2>&1
+
+cat > scratch/locale << EOF
+export LANG=fr_FR.UTF-8
+export LC_COLLATE=\\
+\\
+'fr'_"FR"
+EOF
+chmod a-r scratch/locale
+. ${srcdir}/ref-dbus.sh
+. ${srcdir}/ref-localed.sh --foreground --debug 2>scratch/error
+sleep 0.1
+sed -i -n '/denied/s/[^]]*]//p' scratch/error
+cmp scratch/error << EOF
+: Debug: Unable to read '$(pwd)/scratch/locale':Error opening file $(pwd)/scratch/locale: Permission denied
+EOF
+RES=$?
+chmod a+r scratch/locale
+rm scratch/locale
+if [ $RES = 0 ]; then rm scratch/error; fi
+. ${srcdir}/unref-localed.sh
+. ${srcdir}/unref-dbus.sh
+exit $RES
