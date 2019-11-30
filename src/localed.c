@@ -1011,7 +1011,7 @@ on_handle_set_vconsole_keyboard_authorized_cb (GObject *source_object,
             filename = g_file_get_path (kbd_model_map_file);
             g_printerr ("Failed to find conversion entry for console keymap '%s' in '%s'\n", data->vconsole_keymap, filename);
             g_free (filename);
-            G_UNLOCK (xorg_conf);
+            goto unlock;
         } else {
             unsigned int failure_score = 0;
 
@@ -1045,12 +1045,12 @@ on_handle_set_vconsole_keyboard_authorized_cb (GObject *source_object,
         }
     }
 
-    blocaled_locale1_complete_set_vconsole_keyboard (locale1, data->invocation);
-
   unlock:
     if (data->convert)
         G_UNLOCK (xorg_conf);
     G_UNLOCK (keymaps);
+
+    blocaled_locale1_complete_set_vconsole_keyboard (locale1, data->invocation);
 
   out:
     if (kbd_model_map != NULL)
