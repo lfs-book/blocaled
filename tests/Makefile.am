@@ -27,7 +27,7 @@ mylocaled.c: $(top_srcdir)/src/main.c
 
 mylocaled_CPPFLAGS = \
         -include $(top_builddir)/config.h \
-        -DPKGDATADIR=\""$(abs_top_srcdir)"/data\" \
+        -DPKGDATADIR=\""$(abs_builddir)"/scratch\" \
         -DPIDFILE=\""$(abs_builddir)"/scratch/mylocaled.pid\" \
         -DLOCALECONFIG=\""$(abs_builddir)"/scratch/locale\" \
         -DKEYBOARDCONFIG=\""$(abs_builddir)"/scratch/keyboard\" \

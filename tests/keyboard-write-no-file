@@ -2,6 +2,7 @@
 
 exec >"$(basename $0)".log 2>&1
 
+cp ${srcdir}/../data/kbd-model-map scratch
 . ${srcdir}/ref-dbus.sh
 . ${srcdir}/ref-polkit.sh
 gdbus call \
@@ -48,6 +49,7 @@ if [ $RES = 0 ]; then
 fi
 rm scratch/keyboard
 rm scratch/xkeyboard
+rm scratch/kbd-model-map
 . ${srcdir}/unref-polkit.sh
 . ${srcdir}/unref-dbus.sh
 exit $RES

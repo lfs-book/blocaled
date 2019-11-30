@@ -2,6 +2,7 @@
 
 exec >"$(basename $0)".log 2>&1
 
+cp ${srcdir}/../data/kbd-model-map scratch
 cat > scratch/keyboard << EOF
 KEYMAP="us"
 EOF
@@ -103,7 +104,7 @@ if [ $RES != 0 ]; then
     echo Faulty File:
     cat scratch/keyboard
 fi
-rm scratch/keyboard
+rm scratch/keyboard scratch/kbd-model-map
 . ${srcdir}/unref-polkit.sh
 . ${srcdir}/unref-dbus.sh
 exit $RES
