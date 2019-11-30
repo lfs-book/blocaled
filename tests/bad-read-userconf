@@ -19,7 +19,7 @@ EOF
 . ${srcdir}/ref-localed.sh --config scratch/myconf 2>scratch/error
 sleep 0.1
 sed -i 's/[^]]*]//' scratch/error
-cmp -i 17 scratch/error << EOF
+cmp scratch/error << EOF
 : ERROR: Failed to parse configuration: Key file does not have group ?settings?
 EOF
 RES=$?
