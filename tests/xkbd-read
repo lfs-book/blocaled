@@ -21,6 +21,41 @@ gdbus introspect \
       --object-path /org/freedesktop/locale1 \
       --only-properties | grep X11 | cmp ${srcdir}/scratch/xkeyboard-read-result1
 RES=$?
-rm scratch/xkeyboard
+
+if [ $RES = 0 ]; then
+    echo PASS read-xkeyboard
+    sleep 0.1
+    cat > scratch/xkeyboard <<- EOF
+	Section "InputClass"
+	        Option "XkbLayout" "fr"
+	EOF
+    . ${srcdir}/ref-localed.sh --foreground --debug 2>scratch/error
+    sleep 0.1
+    sed -i -n '/parse/s/[^]]*]//p' scratch/error
+    cmp scratch/error << EOF
+: Debug: Unable to parse '$(pwd)/scratch/xkeyboard'
+EOF
+    RES=$?
+fi
+
+if [ $RES = 0 ]; then
+    echo PASS No End Section
+    sleep 0.1
+    cat > scratch/xkeyboard <<- EOF
+	Section "Screen"
+	        Option "XkbLayout" "fr"
+	EndSection
+	EOF
+    . ${srcdir}/ref-localed.sh --foreground --debug 2>scratch/error
+    sleep 0.1
+#    sed -i -n '/parse/s/[^]]*]//p' scratch/error
+    cmp scratch/error << EOF
+: Debug: Unable to parse '$(pwd)/scratch/xkeyboard'
+EOF
+    RES=$?
+fi
+
+if [ $RES = 0 ]; then rm scratch/{xkeyboard,error}; fi
+. ${srcdir}/unref-localed.sh
 . ${srcdir}/unref-dbus.sh
 exit $RES
