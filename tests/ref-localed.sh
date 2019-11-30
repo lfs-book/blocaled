@@ -23,6 +23,5 @@
 
 if [ -s scratch/mylocaled.pid ]; then
     kill $(cat scratch/mylocaled.pid)
-    rm scratch/mylocaled.pid
 fi
 ./mylocaled $@ &
