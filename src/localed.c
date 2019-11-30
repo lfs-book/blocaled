@@ -896,11 +896,12 @@ on_handle_set_locale_authorized_cb (GObject *source_object,
         }
     }
 
-    blocaled_locale1_complete_set_locale (locale1, data->invocation);
     blocaled_locale1_set_locale (locale1, (const gchar * const *) locale);
 
   unlock:
     G_UNLOCK (locale);
+
+    blocaled_locale1_complete_set_locale (locale1, data->invocation);
 
   out:
     shell_parser_free (locale_file_parsed);
@@ -1191,12 +1192,12 @@ on_handle_set_x11_keyboard_authorized_cb (GObject *source_object,
         }
     }
 
-    blocaled_locale1_complete_set_x11_keyboard (locale1, data->invocation);
-
   unlock:
     if (data->convert)
         G_UNLOCK (keymaps);
     G_UNLOCK (xorg_conf);
+
+    blocaled_locale1_complete_set_x11_keyboard (locale1, data->invocation);
 
   out:
     if (kbd_model_map != NULL)
