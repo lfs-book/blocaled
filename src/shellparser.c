@@ -912,7 +912,7 @@ shell_parser_init (void)
         g_assert (double_quoted_regex != NULL);
     }
     if (unquoted_regex == NULL) {
-        unquoted_regex = g_regex_new ("^(?:[^\\s\"'`\\$\\|\\\\&<>;]|\\\\[\\s\"'`\\$\\|&<>;]|\\$\\{)+", G_REGEX_ANCHORED|G_REGEX_MULTILINE, 0, NULL);
+        unquoted_regex = g_regex_new ("^(?:[^\\s\"'`\\$\\|\\\\&<>;#]|\\\\[\\s\"'`\\$\\|&<>;#]|\\$\\{)+", G_REGEX_ANCHORED|G_REGEX_MULTILINE, 0, NULL);
         g_assert (unquoted_regex != NULL);
     }
 }
