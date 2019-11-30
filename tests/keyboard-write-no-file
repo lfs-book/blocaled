@@ -46,10 +46,27 @@ if [ $RES = 0 ]; then
 fi
 if [ $RES = 0 ]; then
     echo PASS: Not authorized
+    rm scratch/keyboard
+    rm scratch/xkeyboard
+    . ${srcdir}/unref-localed.sh
+    sleep 0.1
+    . ${srcdir}/ref-localed.sh --foreground 2>scratch/error
+    gdbus call \
+      --system \
+      --dest org.freedesktop.locale1 \
+      --object-path /org/freedesktop/locale1 \
+      --method org.freedesktop.locale1.SetVConsoleKeyboard \
+      "'oh-mg'" "''" true true
+    sleep 0.1
+    cmp scratch/error << EOF
+Failed to find conversion entry for console keymap 'oh-mg' in '$(pwd)/scratch/kbd-model-map'
+EOF
+    RES=$?
 fi
-rm scratch/keyboard
-rm scratch/xkeyboard
+rm -f scratch/keyboard
+rm -f scratch/xkeyboard
 rm scratch/kbd-model-map
+. ${srcdir}/unref-localed.sh
 . ${srcdir}/unref-polkit.sh
 . ${srcdir}/unref-dbus.sh
 exit $RES
