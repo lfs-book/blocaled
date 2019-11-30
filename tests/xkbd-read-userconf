@@ -28,6 +28,6 @@ gdbus introspect \
       --only-properties | grep X11 | cmp ${srcdir}/scratch/xkeyboard-read-result1
 RES=$?
 rm scratch/myxkeyboard scratch/myconf
-. ${srcdir}/unref-localed-myconf.sh
+. ${srcdir}/unref-localed.sh
 . ${srcdir}/unref-dbus.sh
 exit $RES

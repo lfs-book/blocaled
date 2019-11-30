@@ -20,6 +20,6 @@ gdbus introspect \
       --only-properties | grep VConsoleKeymap | cmp ${srcdir}/scratch/keyboard-read-result1
 RES=$?
 rm scratch/mykeyboard scratch/myconf
-. ${srcdir}/unref-localed-myconf.sh
+. ${srcdir}/unref-localed.sh
 . ${srcdir}/unref-dbus.sh
 exit $RES

@@ -25,6 +25,6 @@ gdbus introspect \
       --only-properties | grep Locale | cmp ${srcdir}/scratch/locale-read-result1
 RES=$?
 rm scratch/mylocale scratch/myconf
-. ${srcdir}/unref-localed-myconf.sh
+. ${srcdir}/unref-localed.sh
 . ${srcdir}/unref-dbus.sh
 exit $RES
