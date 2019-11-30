@@ -631,36 +631,29 @@ DEBUG end */
             /* Normally, a variable assignment is between two (separator
              * or comment). But if the variable assignment is at the
              * beginning or the end of the file, either prev or next is NULL.
-             * So that we have 9 cases:
+             * Note that if a comment is after the removed variable,
+             * it is on the same line as that variable. So, we'd rather
+             * remove it too. We have 9 cases:
              * prev      next      action
              *--------------------------------
              * NULL      NULL      nothing
              * NULL      separator remove next
-             * NULL      comment   nothing
-             * separator NULL      remove prev (not mandatory, just symmetry :)
+             * NULL      comment   remove next
+             * separator NULL      nothing
              * separator separator remove next (either one, my choice :)
-             * separator comment   remove prev
+             * separator comment   remove next
              * comment   NULL      nothing
              * comment   separator remove next
-             * comment   comment   nothing
+             * comment   comment   remove next
              *--------------------------------
-             * Summary: if next is a separator, remove it, otherwise, if prev
-             * is a separator, remove it.
+             * Summary: if next is a separator or a comment, remove it,
+             * otherwise, do nothing.
              */
-            if (next != NULL &&
-                ((struct ShellEntry *)next->data)->type ==
-                                           SHELL_ENTRY_TYPE_SEPARATOR) {
+            if (next != NULL) {
                 GList *next_next = next->next;
                 next->prev = next->next = NULL;
                 g_list_free_full (next, (GDestroyNotify)shell_entry_free);
                 next = next_next;
-            } else if (prev != NULL &&
-                       ((struct ShellEntry *)prev->data)->type ==
-                                           SHELL_ENTRY_TYPE_SEPARATOR) {
-                GList *prev_prev = prev->prev;
-                prev->prev = prev->next = NULL;
-                g_list_free_full (prev, (GDestroyNotify)shell_entry_free);
-                prev = prev_prev;
             }
             if (prev != NULL)
                 prev->next = next;
