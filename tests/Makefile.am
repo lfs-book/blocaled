@@ -9,6 +9,7 @@ TESTS = locale-read \
         keyboard-write-no-file \
         locale-write-no-file \
         locale-write-twice \
+        locale-write-comment \
         locale-erase-write \
         locale-read-userconf \
         keyboard-read-userconf \
@@ -62,6 +63,7 @@ CLEANFILES = \
              keyboard-write-no-file.log \
              locale-write-no-file.log \
              locale-write-twice.log \
+             locale-write-comment.log \
              locale-erase-write.log \
              locale-read-userconf.log \
              keyboard-read-userconf.log \
