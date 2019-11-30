@@ -19,6 +19,7 @@ TESTS = locale-read \
         xkbd-read-userconf \
         bad-read-userconf \
         bad-locale-read \
+        bad-model-map \
         try-options
 
 nodist_mylocaled_SOURCES = mylocaled.c
@@ -76,6 +77,7 @@ CLEANFILES = \
              xkbd-read-userconf.log \
              bad-read-userconf.log \
              bad-locale-read.log \
+             bad-model-map.log \
              try-options.log \
 	     $(NULL)
 

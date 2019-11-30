@@ -1,0 +1,73 @@
+#!/bin/bash
+
+exec >"$(basename $0)".log 2>&1
+
+cat > scratch/kbd-model-map << EOF
+# Shamelessly stolen from systemd-243 source (src/locale/kbd-model-map)
+# Generated from system-config-keyboard's model list
+# consolelayout		xlayout	xmodel		xvariant	xoptions
+fr_CH			ch	pc105		fr		terminate:ctrl_alt_bksp
+fr			fr	pc105		-		terminate:ctrl_alt_bksp
+fr-latin1		fr	pc105		-		terminate:ctrl_alt_bksp
+fr-pc			fr	pc105		-
+fr-latin9		fr	pc105		latin9		terminate:ctrl_alt_bksp
+fr_CH-latin1		ch	pc105		fr		terminate:ctrl_alt_bksp
+EOF
+. ${srcdir}/ref-dbus.sh
+. ${srcdir}/ref-polkit.sh
+#. ${srcdir}/ref-localed.sh --foreground 2>scratch/error
+LANG=C gdbus call \
+      --system \
+      --dest org.freedesktop.locale1 \
+      --object-path /org/freedesktop/locale1 \
+      --method org.freedesktop.locale1.SetVConsoleKeyboard \
+      "'fr'" "''" true true 2>scratch/error
+sleep 0.1
+cmp scratch/error << EOF
+Error: GDBus.Error:org.gtk.GDBus.UnmappedGError.Quark._g_2dfile_2derror_2dquark.Code24: Failed to parse line 'fr-pc			fr	pc105		-' in '$(pwd)/scratch/kbd-model-map'
+EOF
+RES=$?
+
+if false; then
+if [ $RES = 0 ]; then
+    echo PASS: bad group
+    cat > scratch/myconf <<- EOF
+	#Bad config
+
+	localefile=$(pwd)/scratch/mylocale
+
+	EOF
+    . ${srcdir}/ref-localed.sh --config scratch/myconf 2>scratch/error
+    sleep 0.1
+    sed -i 's/[^]]*]//' scratch/error
+    cmp scratch/error << EOF
+: ERROR: Failed to parse configuration: Key file does not start with a group
+EOF
+    RES=$?
+fi
+
+if [ $RES = 0 ]; then
+    . ${srcdir}/unref-localed.sh
+    echo PASS: No group
+    cat > scratch/myconf <<- EOF
+	#Bad config
+
+	[settings]
+	locale=$(pwd)/scratch/mylocale
+
+	EOF
+    . ${srcdir}/ref-localed.sh --config scratch/myconf 2>scratch/error
+    sleep 0.1
+    sed -i 's/[^]]*]//' scratch/error
+    cmp scratch/error << EOF
+: ERROR: Failed to find a settings file in scratch/myconf
+EOF
+    RES=$?
+fi
+fi
+
+rm scratch/kbd-model-map
+. ${srcdir}/unref-polkit.sh
+. ${srcdir}/unref-dbus.sh
+if [ $RES = 0 ]; then rm scratch/error; fi
+exit $RES
