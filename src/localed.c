@@ -376,7 +376,7 @@ xorg_confd_regex_init ()
         g_assert (xorg_confd_line_section_input_class_re != NULL);
     }
     if (xorg_confd_line_section_re == NULL) {
-        xorg_confd_line_section_re = g_regex_new ("^\\s*Section\\s+\"([^\"])\"", G_REGEX_ANCHORED|G_REGEX_CASELESS, 0, NULL);
+        xorg_confd_line_section_re = g_regex_new ("^\\s*Section\\s+\"([^\"]*)\"", G_REGEX_ANCHORED|G_REGEX_CASELESS, 0, NULL);
         g_assert (xorg_confd_line_section_re != NULL);
     }
     if (xorg_confd_line_end_section_re == NULL) {
