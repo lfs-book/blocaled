@@ -1,0 +1,4 @@
+      readonly s X11Layout = '';
+      readonly s X11Model = '';
+      readonly s X11Variant = '';
+      readonly s X11Options = '';
