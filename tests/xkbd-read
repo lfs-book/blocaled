@@ -24,38 +24,150 @@ RES=$?
 
 if [ $RES = 0 ]; then
     echo PASS read-xkeyboard
+    cat > scratch/xkeyboard <<- EOF
+	Section "InputClass"
+	        Driver "libinput"
+	Section "InputClass"
+	        Identifier "libinput keyboard catchall"
+	        MatchIsKeyboard "on"
+	        MatchDevicePath "/dev/input/event*"
+	# Section "InputClass"
+	        Option "XkbLayout" "fr"
+	        Option "Xkbvariant" "latin9"
+	# EndSection
+	        Option "xkbModel" "pc105"
+	        Option "xkboptions" "terminate:ctrl_alt_bksp"
+	EndSection
+	EOF
+    . ${srcdir}/ref-localed.sh
     sleep 0.1
+    gdbus introspect \
+      --system \
+      --dest org.freedesktop.locale1 \
+      --object-path /org/freedesktop/locale1 \
+      --only-properties | grep X11 | cmp ${srcdir}/scratch/xkeyboard-read-result1
+    RES=$?
+fi
+
+if [ $RES = 0 ]; then
+    echo PASS Comments
     cat > scratch/xkeyboard <<- EOF
 	Section "InputClass"
 	        Option "XkbLayout" "fr"
 	EOF
-    . ${srcdir}/ref-localed.sh --foreground --debug 2>scratch/error
+    . ${srcdir}/ref-localed.sh
     sleep 0.1
-    sed -i -n '/parse/s/[^]]*]//p' scratch/error
-    cmp scratch/error << EOF
-: Debug: Unable to parse '$(pwd)/scratch/xkeyboard'
-EOF
+    gdbus introspect \
+      --system \
+      --dest org.freedesktop.locale1 \
+      --object-path /org/freedesktop/locale1 \
+      --only-properties | grep X11 | cmp ${srcdir}/scratch/xkeyboard-read-result2
     RES=$?
 fi
 
 if [ $RES = 0 ]; then
     echo PASS No End Section
-    sleep 0.1
     cat > scratch/xkeyboard <<- EOF
 	Section "Screen"
+	        MatchIsKeyboard "on"
 	        Option "XkbLayout" "fr"
 	EndSection
 	EOF
-    . ${srcdir}/ref-localed.sh --foreground --debug 2>scratch/error
+    . ${srcdir}/ref-localed.sh
     sleep 0.1
-#    sed -i -n '/parse/s/[^]]*]//p' scratch/error
-    cmp scratch/error << EOF
-: Debug: Unable to parse '$(pwd)/scratch/xkeyboard'
-EOF
+    gdbus introspect \
+      --system \
+      --dest org.freedesktop.locale1 \
+      --object-path /org/freedesktop/locale1 \
+      --only-properties | grep X11 | cmp ${srcdir}/scratch/xkeyboard-read-result2
     RES=$?
 fi
 
-if [ $RES = 0 ]; then rm scratch/{xkeyboard,error}; fi
+if [ $RES = 0 ]; then
+    echo PASS No InputClassSection
+    cat > scratch/xkeyboard <<- EOF
+	Section "InputClass"
+	        Option "XkbLayout" "fr"
+	EndSection
+	EOF
+    . ${srcdir}/ref-localed.sh
+    sleep 0.1
+    gdbus introspect \
+      --system \
+      --dest org.freedesktop.locale1 \
+      --object-path /org/freedesktop/locale1 \
+      --only-properties | grep X11 | cmp ${srcdir}/scratch/xkeyboard-read-result2
+    RES=$?
+fi
+
+if [ $RES = 0 ]; then
+    echo PASS No MatchIsKeyboard
+    cat > scratch/xkeyboard <<- EOF
+	Section "InputClass"
+	        Option "XkbLayout" "fr"
+	        MatchIsKeyboard "on"
+	EndSection
+	EOF
+    . ${srcdir}/ref-localed.sh
+    sleep 0.1
+    gdbus introspect \
+      --system \
+      --dest org.freedesktop.locale1 \
+      --object-path /org/freedesktop/locale1 \
+      --only-properties | grep X11 | cmp ${srcdir}/scratch/xkeyboard-read-result2
+    RES=$?
+fi
+
+if [ $RES = 0 ]; then
+    echo PASS MatchIsKeyboard after XkbLayout
+    cat > scratch/xkeyboard <<- EOF
+	Section "InputClass"
+	        MatchIsKeyboard "on"
+	Section "InputClass"
+	EndSection
+	EOF
+    . ${srcdir}/ref-localed.sh --foreground --debug 2> scratch/error
+    sleep 0.1
+    gdbus introspect \
+      --system \
+      --dest org.freedesktop.locale1 \
+      --object-path /org/freedesktop/locale1 \
+      --only-properties | grep X11 | cmp ${srcdir}/scratch/xkeyboard-read-result2
+    RES=$?
+    if [ $RES = 0 ]; then
+        sed -i -n '/parse/s/[^]]*]//p' scratch/error
+        cmp scratch/error << EOF
+: Debug: Unable to parse '$(pwd)/scratch/xkeyboard'
+EOF
+    fi
+    RES=$?
+fi
+
+if [ $RES = 0 ]; then
+    echo PASS InputClass after MatchIsKeyboard
+    cat > scratch/xkeyboard <<- EOF
+	Section "InputClass"
+	        MatchIsKeyboard "on"
+	        Option "XkbLayout" "fr"
+	EOF
+    . ${srcdir}/ref-localed.sh --foreground --debug 2> scratch/error
+    sleep 0.1
+    gdbus introspect \
+      --system \
+      --dest org.freedesktop.locale1 \
+      --object-path /org/freedesktop/locale1 \
+      --only-properties | grep X11 | cmp ${srcdir}/scratch/xkeyboard-read-result2
+    RES=$?
+    if [ $RES = 0 ]; then
+        sed -i -n '/parse/s/[^]]*]//p' scratch/error
+        cmp scratch/error << EOF
+: Debug: Unable to parse '$(pwd)/scratch/xkeyboard'
+EOF
+    fi
+    RES=$?
+fi
+
+if [ $RES = 0 ]; then rm -f scratch/{xkeyboard,error}; fi
 . ${srcdir}/unref-localed.sh
 . ${srcdir}/unref-dbus.sh
 exit $RES
