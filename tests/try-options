@@ -11,7 +11,7 @@ EOF
 cat > scratch/blocaled.conf << EOF
 # Config for localefile
 
-[setings]
+[settings]
 localefile=$(pwd)/scratch/mylocale
 
 EOF
@@ -70,6 +70,27 @@ if [ $RES = 0 ]; then
 : ERROR: Failed to parse options: Unknown option --bogus
 EOF
     RES=$?
+fi
+
+if [ $RES = 0 ]; then
+    . ${srcdir}/unref-localed.sh
+    echo PASS: unknown option
+    rm scratch/error
+    . ${srcdir}/ref-localed.sh --read-only
+    sleep 0.1
+    . ${srcdir}/ref-polkit.sh
+    LANG=C gdbus call \
+      --system \
+      --dest org.freedesktop.locale1 \
+      --object-path /org/freedesktop/locale1 \
+      --method org.freedesktop.locale1.SetLocale \
+      "['LANG=fr_FR.UTF-8', 'LC_TIME=fr_FR.UTF-8']" \
+      true 2>scratch/error
+    cmp scratch/error << EOF
+Error: GDBus.Error:org.freedesktop.DBus.Error.NotSupported: localed is in read-only mode
+EOF
+    RES=$?
+    . ${srcdir}/unref-polkit.sh
 fi
 
 rm scratch/mylocale scratch/blocaled.conf
