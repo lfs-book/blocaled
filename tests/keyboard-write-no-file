@@ -4,6 +4,8 @@ exec >"$(basename $0)".log 2>&1
 
 cp ${srcdir}/../data/kbd-model-map scratch
 chmod u+w scratch/kbd-model-map
+rm -r scratch/keyboard
+rm -r scratch/xkeyboard
 . ${srcdir}/ref-dbus.sh
 . ${srcdir}/ref-polkit.sh
 gdbus call \
