@@ -17,6 +17,7 @@ TESTS = locale-read \
         locale-read-unreadable \
         keyboard-read-userconf \
         xkbd-read-userconf \
+        xkbd-write-no-file \
         bad-read-userconf \
         bad-locale-read \
         bad-model-map \
@@ -75,6 +76,7 @@ CLEANFILES = \
              locale-read-unreadable.log \
              keyboard-read-userconf.log \
              xkbd-read-userconf.log \
+             xkbd-write-no-file.log \
              bad-read-userconf.log \
              bad-locale-read.log \
              bad-model-map.log \
