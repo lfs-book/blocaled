@@ -285,13 +285,68 @@ kbd_model_map_load (GError **error)
     return ret;
 }
 
-/* Trivial /etc/X11/xorg.conf.d/30-keyboard.conf parser */
+/* Trivial /etc/X11/xorg.conf.d/30-keyboard.conf parser:
+ * We do not want to check the syntax of the file, it's Xorg/Wayland's job.
+ * So we have to define what an acceptable file is.
+ * In systemd-localed, it seems they just check that `Option "XkbLayout"'
+ * and similar occur between a `Section "InputClass"' line and an `EndSection'
+ * line.
+ * But what happens if we have:
+ * ---
+ * Section "InputClass"
+ * MatchIsKeyboard "on"
+ * Option XkbLayout "fr"
+ * EndSection
+ * Section "InputClass"
+ * MatchIsPointer "on"
+ * Option XkbLayout "de"
+ * EndSection
+ * ---
+ * (I know, that would be silly, but all bugs are silly, aren't they?)
+ * systemd-localed would end up using a German layout, while a
+ * casual inspection of the file would lead to think that a French layout
+ * should be used.
+ * So we impose that a MatchIsKeyboard occurs inside the section to
+ * read the Options.
+ * Note that we do not check that any section begun before is properly
+ * ended. We accept any file of the form:
+ * ----
+ * <any number of lines not Section "InputClass">
+ * <any number of sequences:
+ * Section "InputClass"
+ * <any number of lines not MatchIsKeyboard or EndSection>
+ * EndSection>
+ * Section "InputClass"
+ * <any number of lines not: MatchIsKeyboard or EndSection>
+ * MatchIsKeyboard "on" (or "1" or "yes" or "true" or nothing)
+ * <any number of lines not: Option or EndSection>
+ * <Option lines, possibly spearated by non Option non EndSection lines>
+ * EndSection
+ * <any number of lines, which we do not parse>
+ * Notes:
+ * - We can have for example seventeen Section "InputClass" lines
+ *   before MatchIsKeyboard, but none after
+ * - We cannot recover if there are no MatchIsKeyboard line _before_
+ *   the Option lines
+ * - But we can have any number of MatchIsKeyboard lines before the Option
+ *   ones, or in between them or even after. We do not care whether
+ *   there are other MatchIsSomething lines, provided there is a
+ *   MatchIsKeyboard one
+ * - If several Option lines with the same option occur, the last
+ *   one wins:
+ *   Option "XkbLayout" "de"
+ *   Option "XkbLayout" "fr"
+ *   will use a French Layout.
+ * - We stop parsing at the first EndSection after a Section
+ *   "InputClass" containing a MatchIsKeyboard.
+ * - One EndSection can close several Section lines (syntax error
+ *   not catched by us)
+ */
 
 enum XORG_CONFD_LINE_TYPE {
     XORG_CONFD_LINE_TYPE_UNKNOWN,
     XORG_CONFD_LINE_TYPE_COMMENT,
     XORG_CONFD_LINE_TYPE_SECTION_INPUT_CLASS,
-    XORG_CONFD_LINE_TYPE_SECTION_OTHER,
     XORG_CONFD_LINE_TYPE_END_SECTION,
     XORG_CONFD_LINE_TYPE_MATCH_IS_KEYBOARD,
     XORG_CONFD_LINE_TYPE_XKB_LAYOUT,
@@ -334,10 +389,6 @@ xorg_confd_regex_destroy ()
         g_regex_unref (xorg_confd_line_section_input_class_re);
         xorg_confd_line_section_input_class_re = NULL;
     }
-    if (xorg_confd_line_section_re != NULL) {
-        g_regex_unref (xorg_confd_line_section_re);
-        xorg_confd_line_section_re = NULL;
-    }
     if (xorg_confd_line_end_section_re != NULL) {
         g_regex_unref (xorg_confd_line_end_section_re);
         xorg_confd_line_end_section_re = NULL;
@@ -374,10 +425,6 @@ xorg_confd_regex_init ()
     if (xorg_confd_line_section_input_class_re == NULL) {
         xorg_confd_line_section_input_class_re = g_regex_new ("^\\s*Section\\s+\"InputClass\"", G_REGEX_ANCHORED|G_REGEX_CASELESS, 0, NULL);
         g_assert (xorg_confd_line_section_input_class_re != NULL);
-    }
-    if (xorg_confd_line_section_re == NULL) {
-        xorg_confd_line_section_re = g_regex_new ("^\\s*Section\\s+\"([^\"]*)\"", G_REGEX_ANCHORED|G_REGEX_CASELESS, 0, NULL);
-        g_assert (xorg_confd_line_section_re != NULL);
     }
     if (xorg_confd_line_end_section_re == NULL) {
         xorg_confd_line_end_section_re = g_regex_new ("^\\s*EndSection", G_REGEX_ANCHORED|G_REGEX_CASELESS, 0, NULL);
@@ -456,7 +503,7 @@ xorg_confd_parser_new (GFile *xorg_confd_file,
     struct xorg_confd_parser *parser = NULL;
     gchar *filebuf = NULL, *line = NULL, *newline = NULL;
     GList *input_class_section_start = NULL;
-    gboolean in_section = FALSE, in_xkb_section = FALSE;
+    gboolean in_section = FALSE, in_xkb_section = FALSE, finished = FALSE;
 
     if (xorg_confd_file == NULL)
         return NULL;
@@ -484,8 +531,6 @@ xorg_confd_parser_new (GFile *xorg_confd_file,
     for (line = filebuf; *line != 0; line = newline + 1) {
         struct xorg_confd_line_entry *entry = NULL;
         GMatchInfo *match_info = NULL;
-        gboolean matched = FALSE;
-        gboolean m = FALSE;
 
         if ((newline = strstr (line, "\n")) != NULL)
             *newline = 0;
@@ -494,92 +539,71 @@ xorg_confd_parser_new (GFile *xorg_confd_file,
 
         entry = xorg_confd_line_entry_new (line, NULL, XORG_CONFD_LINE_TYPE_UNKNOWN);
 
-        if (g_regex_match (xorg_confd_line_comment_re, line, 0, &match_info)) {
+	if (!finished)
+	  if (g_regex_match (xorg_confd_line_comment_re, line, 0, &match_info)) {
             g_debug ("Parsed line '%s' as comment", line);
             entry->type = XORG_CONFD_LINE_TYPE_COMMENT;
-        } else if (_g_match_info_clear (&match_info) && g_regex_match (xorg_confd_line_section_input_class_re, line, 0, &match_info)) {
+          } else if (_g_match_info_clear (&match_info) && g_regex_match (xorg_confd_line_section_input_class_re, line, 0, &match_info)) {
             g_debug ("Parsed line '%s' as InputClass section", line);
-            if (in_section)
-                goto no_match;
+	    if (in_xkb_section) goto parse_stop; // no way to recover
             in_section = TRUE;
             entry->type = XORG_CONFD_LINE_TYPE_SECTION_INPUT_CLASS;
-        } else if (_g_match_info_clear (&match_info) && g_regex_match (xorg_confd_line_section_re, line, 0, &match_info)) {
-            g_debug ("Parsed line '%s' as non-InputClass section", line);
-            if (in_section)
-                goto no_match;
-            in_section = TRUE;
-            entry->type = XORG_CONFD_LINE_TYPE_SECTION_OTHER;
-        } else if (_g_match_info_clear (&match_info) && g_regex_match (xorg_confd_line_end_section_re, line, 0, &match_info)) {
+          } else if (_g_match_info_clear (&match_info) && g_regex_match (xorg_confd_line_end_section_re, line, 0, &match_info)) {
             g_debug ("Parsed line '%s' as end of section", line);
-            if (!in_section)
-                goto no_match;
+	    in_section = FALSE;
+	    finished = in_xkb_section;
+	    in_xkb_section=FALSE;
             entry->type = XORG_CONFD_LINE_TYPE_END_SECTION;
-        } else if (_g_match_info_clear (&match_info) && g_regex_match (xorg_confd_line_match_is_keyboard_re, line, 0, &match_info)) {
+          } else if (_g_match_info_clear (&match_info) && g_regex_match (xorg_confd_line_match_is_keyboard_re, line, 0, &match_info) && in_section) {
             g_debug ("Parsed line '%s' as MatchIsKeyboard declaration", line);
-            if (!in_section)
-                goto no_match;
             entry->type = XORG_CONFD_LINE_TYPE_MATCH_IS_KEYBOARD;
             in_xkb_section = TRUE;
-        } else if (_g_match_info_clear (&match_info) && g_regex_match (xorg_confd_line_xkb_layout_re, line, 0, &match_info)) {
+          } else if (_g_match_info_clear (&match_info) && g_regex_match (xorg_confd_line_xkb_layout_re, line, 0, &match_info) && in_xkb_section) {
             g_debug ("Parsed line '%s' as XkbLayout option", line);
-            if (!in_section)
-                goto no_match;
             entry->type = XORG_CONFD_LINE_TYPE_XKB_LAYOUT;
             entry->value = g_match_info_fetch (match_info, 2);
-        } else if (_g_match_info_clear (&match_info) && g_regex_match (xorg_confd_line_xkb_model_re, line, 0, &match_info)) {
+          } else if (_g_match_info_clear (&match_info) && g_regex_match (xorg_confd_line_xkb_model_re, line, 0, &match_info) && in_xkb_section) {
             g_debug ("Parsed line '%s' as XkbModel option", line);
-            if (!in_section)
-                goto no_match;
             entry->type = XORG_CONFD_LINE_TYPE_XKB_MODEL;
             entry->value = g_match_info_fetch (match_info, 2);
-        } else if (_g_match_info_clear (&match_info) && g_regex_match (xorg_confd_line_xkb_variant_re, line, 0, &match_info)) {
+          } else if (_g_match_info_clear (&match_info) && g_regex_match (xorg_confd_line_xkb_variant_re, line, 0, &match_info) && in_xkb_section) {
             g_debug ("Parsed line '%s' as XkbVariant option", line);
-            if (!in_section)
-                goto no_match;
             entry->type = XORG_CONFD_LINE_TYPE_XKB_VARIANT;
             entry->value = g_match_info_fetch (match_info, 2);
-        } else if (_g_match_info_clear (&match_info) && g_regex_match (xorg_confd_line_xkb_options_re, line, 0, &match_info)) {
+          } else if (_g_match_info_clear (&match_info) && g_regex_match (xorg_confd_line_xkb_options_re, line, 0, &match_info) && in_xkb_section) {
             g_debug ("Parsed line '%s' as XkbOptions option", line);
-            if (!in_section)
-                goto no_match;
             entry->type = XORG_CONFD_LINE_TYPE_XKB_OPTIONS;
             entry->value = g_match_info_fetch (match_info, 2);
-        }
+          }
 
         if (entry->type == XORG_CONFD_LINE_TYPE_UNKNOWN)
             g_debug ("Parsing line '%s' as unknown", line);
 
         _g_match_info_clear (&match_info);
-        parser->line_list = g_list_prepend (parser->line_list, entry);
-        if (in_section) {
-            if (entry->type == XORG_CONFD_LINE_TYPE_SECTION_INPUT_CLASS)
-                input_class_section_start = parser->line_list;
-            else if (entry->type == XORG_CONFD_LINE_TYPE_END_SECTION) {
-                if (in_xkb_section)
-                    parser->section = input_class_section_start;
 
-                input_class_section_start = NULL;
-                in_section = FALSE;
-                in_xkb_section = FALSE;
-            }
-        }
+        parser->line_list = g_list_prepend (parser->line_list, entry);
+
+        if (entry->type == XORG_CONFD_LINE_TYPE_SECTION_INPUT_CLASS)
+            input_class_section_start = parser->line_list;
+
+        if (entry->type == XORG_CONFD_LINE_TYPE_END_SECTION && finished)
+            parser->section = input_class_section_start;
+
         continue;
 
-  no_match:
-        /* Nothing matched... */
+  parse_stop:
+        /* we stop parsing here */
         g_free (entry);
         _g_match_info_clear (&match_info);
         goto parse_fail;
     }
 
-    if (in_section) {
+    if (in_xkb_section) {
         /* Unterminated section */
         goto parse_fail;
     }
 
     parser->line_list = g_list_reverse (parser->line_list);
-
-  out:
     g_free (filebuf);
     return parser;
 
@@ -606,7 +630,6 @@ xorg_confd_parser_get_xkb (const struct xorg_confd_parser *parser,
     if (parser == NULL)
         return;
     for (curr = parser->section; curr != NULL; curr = curr->next) {
-        GMatchInfo *match_info = NULL;
         struct xorg_confd_line_entry *entry = (struct xorg_confd_line_entry *) curr->data;
 
         if (entry->type == XORG_CONFD_LINE_TYPE_END_SECTION)

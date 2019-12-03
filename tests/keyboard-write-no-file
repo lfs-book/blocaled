@@ -66,8 +66,10 @@ Failed to find conversion entry for console keymap 'oh-mg' in '$(pwd)/scratch/kb
 EOF
     RES=$?
 fi
-rm -f scratch/keyboard
-rm -f scratch/xkeyboard
+if [ $RES = 0 ]; then
+    rm -f scratch/keyboard
+    rm -f scratch/xkeyboard
+fi
 rm scratch/kbd-model-map
 . ${srcdir}/unref-localed.sh
 . ${srcdir}/unref-polkit.sh
