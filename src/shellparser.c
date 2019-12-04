@@ -93,66 +93,6 @@ struct ShellEntry {
     gchar *unquoted_value; /* only relevant for assignments */
 };
 
-/**
- * shell_source_var:
- * @file: the file where the variable assignment is sought
- * @variable: the variable name: must be preceded by a `$' character
- * @error: set if an error occurs
- *
- * Have the shell source the file and diplay the value of @variable
- *
- * Returns: the value of @variable, or %NULL if not found in the file
- */
-
-gchar *
-shell_source_var (GFile *file,
-                  const gchar *variable,
-                  GError **error)
-{
-    gchar *argv[4] = { "sh", "-c", NULL, NULL };
-    gchar *filename = NULL, *quoted_filename = NULL;
-    gchar *output = NULL;
-    GFileInfo *info;
-    const GFileAttributeInfo *attribute_info;
-
-    filename = g_file_get_path (file);
-    if ((info = g_file_query_info (file, G_FILE_ATTRIBUTE_STANDARD_TYPE "," G_FILE_ATTRIBUTE_ACCESS_CAN_READ, G_FILE_QUERY_INFO_NONE, NULL, error)) == NULL) {
-        g_prefix_error (error, "Unable to source '%s': ", filename);
-        goto out;
-    }
-
-    if (g_file_info_get_file_type (info) != G_FILE_TYPE_REGULAR &&
-        g_file_info_get_file_type (info) != G_FILE_TYPE_SYMBOLIC_LINK) {
-        g_propagate_error (error,
-                           g_error_new (G_FILE_ERROR, G_FILE_ERROR_FAILED,
-                                        "Unable to source '%s': not a regular file", filename));
-        goto out;
-    }
-
-    if (!g_file_info_get_attribute_boolean (info, G_FILE_ATTRIBUTE_ACCESS_CAN_READ)) {
-        g_propagate_error (error,
-                           g_error_new (G_FILE_ERROR, G_FILE_ERROR_ACCES,
-                                        "Unable to source '%s': permission denied", filename));
-        goto out;
-    }
-
-    quoted_filename = g_shell_quote (filename);
-    argv[2] = g_strdup_printf (". %s; echo -n %s", quoted_filename, variable);
-
-    if (!g_spawn_sync (NULL, argv, NULL, G_SPAWN_SEARCH_PATH, NULL, NULL, &output, NULL, NULL, error)) {
-        g_prefix_error (error, "Unable to source '%s': ", filename);
-    }
-
-  out:
-    g_free (filename);
-    g_free (quoted_filename);
-    if (info != NULL)
-        g_object_unref (info);
-    if (argv[2] != NULL)
-        g_free (argv[2]);
-    return output;
-}
-
 static void
 shell_entry_free (struct ShellEntry *entry)
 {
