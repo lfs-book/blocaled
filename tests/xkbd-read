@@ -105,6 +105,7 @@ if [ $RES = 0 ]; then
     cat > scratch/xkeyboard <<- EOF
 	Section "InputClass"
 	        Option "XkbLayout" "fr"
+	Section "InputClass"
 	        MatchIsKeyboard "on"
 	EndSection
 	EOF
@@ -115,6 +116,27 @@ if [ $RES = 0 ]; then
       --dest org.freedesktop.locale1 \
       --object-path /org/freedesktop/locale1 \
       --only-properties | grep X11 | cmp ${srcdir}/scratch/xkeyboard-read-result2
+    RES=$?
+fi
+
+if [ $RES = 0 ]; then
+    echo PASS InputClass after xkblayout
+    cat > scratch/xkeyboard <<- EOF
+	Section "InputClass"
+	        Option "XkbLayout" "fr"
+	        Option "XkbModel" "pc105"
+	        MatchIsKeyboard "on"
+	        Option "XkbVariant" "latin9"
+	        Option "xkbOptions" "terminate:ctrl_alt_bksp"
+	EndSection
+	EOF
+    . ${srcdir}/ref-localed.sh
+    sleep 0.1
+    gdbus introspect \
+      --system \
+      --dest org.freedesktop.locale1 \
+      --object-path /org/freedesktop/locale1 \
+      --only-properties | grep X11 | cmp ${srcdir}/scratch/xkeyboard-read-result1
     RES=$?
 fi
 
