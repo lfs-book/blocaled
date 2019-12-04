@@ -898,7 +898,7 @@ shell_parser_init (void)
         g_assert (separator_regex != NULL);
     }
     if (var_equals_regex == NULL) {
-        var_equals_regex = g_regex_new ("^(?:(?:export|local)[ \\t]+)?([a-zA-Z_][a-zA-Z0-9_]*)(?:(?:\\\\\\n)*)=(?:(?:\\\\\\n)*)", G_REGEX_ANCHORED|G_REGEX_MULTILINE, 0, NULL);
+        var_equals_regex = g_regex_new ("^([a-zA-Z_][a-zA-Z0-9_]*)(?:(?:\\\\\\n)*)=(?:(?:\\\\\\n)*)", G_REGEX_ANCHORED|G_REGEX_MULTILINE, 0, NULL);
         g_assert (var_equals_regex != NULL);
     }
     if (single_quoted_regex == NULL) {
