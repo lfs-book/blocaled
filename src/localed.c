@@ -326,9 +326,7 @@ kbd_model_map_load (GError **error)
  * Notes:
  * - We can have for example seventeen Section "InputClass" lines
  *   before MatchIsKeyboard, but none after
- * - We cannot recover if there are no MatchIsKeyboard line _before_
- *   the Option lines
- * - But we can have any number of MatchIsKeyboard lines before the Option
+ * - We can have any number of MatchIsKeyboard lines before the Option
  *   ones, or in between them or even after. We do not care whether
  *   there are other MatchIsSomething lines, provided there is a
  *   MatchIsKeyboard one
@@ -558,19 +556,19 @@ xorg_confd_parser_new (GFile *xorg_confd_file,
             g_debug ("Parsed line '%s' as MatchIsKeyboard declaration", line);
             entry->type = XORG_CONFD_LINE_TYPE_MATCH_IS_KEYBOARD;
             in_xkb_section = TRUE;
-          } else if (_g_match_info_clear (&match_info) && g_regex_match (xorg_confd_line_xkb_layout_re, line, 0, &match_info) && in_xkb_section) {
+          } else if (_g_match_info_clear (&match_info) && g_regex_match (xorg_confd_line_xkb_layout_re, line, 0, &match_info) && in_section) {
             g_debug ("Parsed line '%s' as XkbLayout option", line);
             entry->type = XORG_CONFD_LINE_TYPE_XKB_LAYOUT;
             entry->value = g_match_info_fetch (match_info, 2);
-          } else if (_g_match_info_clear (&match_info) && g_regex_match (xorg_confd_line_xkb_model_re, line, 0, &match_info) && in_xkb_section) {
+          } else if (_g_match_info_clear (&match_info) && g_regex_match (xorg_confd_line_xkb_model_re, line, 0, &match_info) && in_section) {
             g_debug ("Parsed line '%s' as XkbModel option", line);
             entry->type = XORG_CONFD_LINE_TYPE_XKB_MODEL;
             entry->value = g_match_info_fetch (match_info, 2);
-          } else if (_g_match_info_clear (&match_info) && g_regex_match (xorg_confd_line_xkb_variant_re, line, 0, &match_info) && in_xkb_section) {
+          } else if (_g_match_info_clear (&match_info) && g_regex_match (xorg_confd_line_xkb_variant_re, line, 0, &match_info) && in_section) {
             g_debug ("Parsed line '%s' as XkbVariant option", line);
             entry->type = XORG_CONFD_LINE_TYPE_XKB_VARIANT;
             entry->value = g_match_info_fetch (match_info, 2);
-          } else if (_g_match_info_clear (&match_info) && g_regex_match (xorg_confd_line_xkb_options_re, line, 0, &match_info) && in_xkb_section) {
+          } else if (_g_match_info_clear (&match_info) && g_regex_match (xorg_confd_line_xkb_options_re, line, 0, &match_info) && in_section) {
             g_debug ("Parsed line '%s' as XkbOptions option", line);
             entry->type = XORG_CONFD_LINE_TYPE_XKB_OPTIONS;
             entry->value = g_match_info_fetch (match_info, 2);
@@ -712,10 +710,10 @@ xorg_confd_parser_set_xkb (struct xorg_confd_parser *parser,
         entry = xorg_confd_line_entry_new ("        Identifier \"keyboard-all\"", NULL, XORG_CONFD_LINE_TYPE_UNKNOWN);
         section = g_list_prepend (section, entry);
 
-        entry = entry = xorg_confd_line_entry_new ("        MatchIsKeyboard \"on\"", NULL, XORG_CONFD_LINE_TYPE_MATCH_IS_KEYBOARD);
+        entry = xorg_confd_line_entry_new ("        MatchIsKeyboard \"on\"", NULL, XORG_CONFD_LINE_TYPE_MATCH_IS_KEYBOARD);
         section = g_list_prepend (section, entry);
 
-        entry = entry = xorg_confd_line_entry_new ("EndSection", NULL, XORG_CONFD_LINE_TYPE_END_SECTION);
+        entry = xorg_confd_line_entry_new ("EndSection", NULL, XORG_CONFD_LINE_TYPE_END_SECTION);
         section = g_list_prepend (section, entry);
 
         section = g_list_reverse (section);
