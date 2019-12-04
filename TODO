@@ -1,4 +1,3 @@
-(blocker) do not ship the doc, since we do not ship a library
 Make scripts that replace localectl using gdbus.
 
 (Maybe not) Add a timer so that the daemon exits after a while
