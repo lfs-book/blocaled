@@ -70,7 +70,7 @@ FIXXREF_OPTIONS=
 HFILE_GLOB=$(top_srcdir)/src/*.h
 CFILE_GLOB=$(top_srcdir)/src/*.c
 
-# locale1-generated.o is needed got gtkdoc-scangobj, so add it to
+# locale1-generated.o is needed for gtkdoc-scangobj, so add it to
 # CFILE_GLOB.
 CFILE_GLOB+=$(top_builddir)/src/locale1-generated.o
 # and tell how to rebuild it if make docs is run before make all (case
