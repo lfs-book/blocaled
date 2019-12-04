@@ -24,3 +24,9 @@ foo="bar"
 baz='Let'\''s go!'
 
 If blocaled fails to parse a settings file, it will refuse to modify it.
+
+For the X11 keyboard settings, the file is in Xorg.conf format. It must have
+an "InputClass" Section, containing a "MatchIsKeyboard" line, to be
+able to parse Options "XkbLayout", "XkbModel", "XkbVariant", "XkbOptions"
+directives. Such a section may be added by the program if it
+does not exist.
