@@ -95,7 +95,6 @@ check_polkit_finish
 <FILE>shellparser</FILE>
 ShellParser
 strstr0
-shell_source_var
 shell_parser_new
 shell_parser_new_from_string
 shell_parser_free
