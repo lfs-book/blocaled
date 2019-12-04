@@ -1,0 +1,238 @@
+#!/bin/bash
+
+exec >"$(basename $0)".log 2>&1
+
+cat > scratch/xkeyboard << EOF
+Section "InputClass"
+        Identifier "libinput keyboard catchall"
+        MatchIsKeyboard "on"
+        MatchDevicePath "/dev/input/event*"
+        Driver "libinput"
+        Option "XkbLayout" "fr"
+        Option "Xkbvariant" "latin9"
+        Option "xkbModel" "pc105"
+        Option "xkboptions" "terminate:ctrl_alt_bksp"
+EndSection
+EOF
+. ${srcdir}/ref-dbus.sh
+. ${srcdir}/ref-polkit.sh
+gdbus call \
+      --system \
+      --dest org.freedesktop.locale1 \
+      --object-path /org/freedesktop/locale1 \
+      --method org.freedesktop.locale1.SetX11Keyboard \
+      "'de'" "''" "''" "''" false true
+cmp scratch/xkeyboard << EOF
+Section "InputClass"
+        Identifier "libinput keyboard catchall"
+        MatchIsKeyboard "on"
+        MatchDevicePath "/dev/input/event*"
+        Driver "libinput"
+        Option "XkbLayout" "de"
+EndSection
+EOF
+RES=$?
+
+if [ $RES = 0 ]; then
+    echo PASS write-normal-xkeyboard
+    cat > scratch/xkeyboard <<- EOF
+	Section "InputClass"
+	        Driver "libinput"
+	Section "InputClass"
+	        Identifier "libinput keyboard catchall"
+	        MatchIsKeyboard "on"
+	        MatchDevicePath "/dev/input/event*"
+	# Section "InputClass"
+	        Option "XkbLayout" "fr"
+	        Option "Xkbvariant" "latin9"
+	# EndSection
+	        Option "xkbModel" "pc105"
+	        Option "xkboptions" "terminate:ctrl_alt_bksp"
+	EndSection
+	EOF
+    . ${srcdir}/ref-localed.sh
+    sleep 0.1
+    gdbus call \
+      --system \
+      --dest org.freedesktop.locale1 \
+      --object-path /org/freedesktop/locale1 \
+      --method org.freedesktop.locale1.SetX11Keyboard \
+      "'de'" "''" "''" "''" false true
+    cmp scratch/xkeyboard <<- EOF
+	Section "InputClass"
+	        Driver "libinput"
+	Section "InputClass"
+	        Identifier "libinput keyboard catchall"
+	        MatchIsKeyboard "on"
+	        MatchDevicePath "/dev/input/event*"
+	# Section "InputClass"
+	        Option "XkbLayout" "de"
+	# EndSection
+	EndSection
+	EOF
+    RES=$?
+fi
+
+if [ $RES = 0 ]; then
+    echo PASS Write with comments
+    cat > scratch/xkeyboard <<- EOF
+	Section "InputClass"
+	        Option "XkbLayout" "fr"
+	EOF
+    . ${srcdir}/ref-localed.sh
+    sleep 0.1
+    gdbus call \
+      --system \
+      --dest org.freedesktop.locale1 \
+      --object-path /org/freedesktop/locale1 \
+      --method org.freedesktop.locale1.SetX11Keyboard \
+      "'de'" "''" "'euro2'" "''" false true
+    cmp scratch/xkeyboard <<- EOF
+	Section "InputClass"
+	        Option "XkbLayout" "fr"
+	Section "InputClass"
+	        Identifier "keyboard-all"
+	        MatchIsKeyboard "on"
+	        Option "XkbLayout" "de"
+	        Option "XkbVariant" "euro2"
+	EndSection
+	EOF
+    RES=$?
+fi
+
+if [ $RES = 0 ]; then
+    echo PASS Write without EndSection
+    cat > scratch/xkeyboard <<- EOF
+	Section "Screen"
+	        MatchIsKeyboard "on"
+	        Option "XkbLayout" "fr"
+	EndSection
+	EOF
+    . ${srcdir}/ref-localed.sh
+    sleep 0.1
+    gdbus call \
+      --system \
+      --dest org.freedesktop.locale1 \
+      --object-path /org/freedesktop/locale1 \
+      --method org.freedesktop.locale1.SetX11Keyboard \
+      "'de'" "''" "'euro2'" "''" false true
+    cmp scratch/xkeyboard <<- EOF
+	Section "Screen"
+	        MatchIsKeyboard "on"
+	        Option "XkbLayout" "fr"
+	EndSection
+	Section "InputClass"
+	        Identifier "keyboard-all"
+	        MatchIsKeyboard "on"
+	        Option "XkbLayout" "de"
+	        Option "XkbVariant" "euro2"
+	EndSection
+	EOF
+    RES=$?
+fi
+
+if [ $RES = 0 ]; then
+    echo PASS Write with a non InputClass Section
+    cat > scratch/xkeyboard <<- EOF
+	Section "InputClass"
+	        Option "XkbLayout" "fr"
+	EndSection
+	EOF
+    . ${srcdir}/ref-localed.sh
+    sleep 0.1
+    gdbus call \
+      --system \
+      --dest org.freedesktop.locale1 \
+      --object-path /org/freedesktop/locale1 \
+      --method org.freedesktop.locale1.SetX11Keyboard \
+      "'de'" "''" "'euro2'" "''" false true
+    cmp scratch/xkeyboard <<- EOF
+	Section "InputClass"
+	        Option "XkbLayout" "fr"
+	EndSection
+	Section "InputClass"
+	        Identifier "keyboard-all"
+	        MatchIsKeyboard "on"
+	        Option "XkbLayout" "de"
+	        Option "XkbVariant" "euro2"
+	EndSection
+	EOF
+    RES=$?
+fi
+
+if [ $RES = 0 ]; then
+    echo PASS Write after section without MatchIsKeyboard
+    cat > scratch/xkeyboard <<- EOF
+	Section "InputClass"
+	        Option "XkbLayout" "fr"
+	        MatchIsKeyboard "on"
+	EndSection
+	EOF
+    . ${srcdir}/ref-localed.sh
+    sleep 0.1
+    gdbus call \
+      --system \
+      --dest org.freedesktop.locale1 \
+      --object-path /org/freedesktop/locale1 \
+      --method org.freedesktop.locale1.SetX11Keyboard \
+      "'de'" "''" "'euro2'" "''" false true
+    cmp scratch/xkeyboard <<- EOF
+	Section "InputClass"
+	        Option "XkbLayout" "de"
+	        MatchIsKeyboard "on"
+	        Option "XkbVariant" "euro2"
+	EndSection
+	EOF
+    RES=$?
+fi
+
+if [ $RES = 0 ]; then
+    echo PASS MatchIsKeyboard after XkbLayout
+    cat > scratch/xkeyboard <<- EOF
+	Section "InputClass"
+	        MatchIsKeyboard "on"
+	Section "InputClass"
+	EndSection
+	EOF
+    . ${srcdir}/ref-localed.sh
+    sleep 0.1
+    gdbus call \
+      --system \
+      --dest org.freedesktop.locale1 \
+      --object-path /org/freedesktop/locale1 \
+      --method org.freedesktop.locale1.SetX11Keyboard \
+      "'de'" "''" "'euro2'" "''" false true 2>scratch/error
+    sleep 0.1
+    cmp scratch/error << EOF
+Error: GDBus.Error:org.gtk.GDBus.UnmappedGError.Quark._g_2dfile_2derror_2dquark.Code24: Unable to parse '$(pwd)/scratch/xkeyboard'
+EOF
+    RES=$?
+fi
+
+if [ $RES = 0 ]; then
+    echo PASS InputClass after MatchIsKeyboard
+    cat > scratch/xkeyboard <<- EOF
+	Section "InputClass"
+	        MatchIsKeyboard "on"
+	        Option "XkbLayout" "fr"
+	EOF
+    . ${srcdir}/ref-localed.sh
+    sleep 0.1
+    gdbus call \
+      --system \
+      --dest org.freedesktop.locale1 \
+      --object-path /org/freedesktop/locale1 \
+      --method org.freedesktop.locale1.SetX11Keyboard \
+      "'de'" "''" "'euro2'" "''" false true 2>scratch/error
+    sleep 0.1
+    cmp scratch/error << EOF
+Error: GDBus.Error:org.gtk.GDBus.UnmappedGError.Quark._g_2dfile_2derror_2dquark.Code24: Unable to parse '$(pwd)/scratch/xkeyboard'
+EOF
+    RES=$?
+fi
+
+if [ $RES = 0 ]; then rm -f scratch/{xkeyboard,error}; fi
+. ${srcdir}/unref-localed.sh
+. ${srcdir}/unref-polkit.sh
+. ${srcdir}/unref-dbus.sh
+exit $RES
