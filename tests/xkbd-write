@@ -196,7 +196,7 @@ if [ $RES = 0 ]; then
 	EOF
     . ${srcdir}/ref-localed.sh
     sleep 0.1
-    gdbus call \
+    LANG=C gdbus call \
       --system \
       --dest org.freedesktop.locale1 \
       --object-path /org/freedesktop/locale1 \
@@ -218,7 +218,7 @@ if [ $RES = 0 ]; then
 	EOF
     . ${srcdir}/ref-localed.sh
     sleep 0.1
-    gdbus call \
+    LANG=C gdbus call \
       --system \
       --dest org.freedesktop.locale1 \
       --object-path /org/freedesktop/locale1 \
