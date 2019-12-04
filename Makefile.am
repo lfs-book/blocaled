@@ -2,9 +2,8 @@ ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 
 AUTOMAKE_OPTIONS = subdir-objects
 
-# Put . before doc, because gtk-scangobj needs some compiled objects
 # TODO add a Makefile.am to src, and add it to SUBDIRS
-SUBDIRS = . doc tests
+SUBDIRS = . tests
 
 EXTRA_DIST = \
         data/blocaled.8.in \
@@ -98,7 +97,6 @@ $(localed_built_sources) : data/org.freedesktop.locale1.xml
 	--interface-prefix org.freedesktop. \
 	--c-namespace BLocaled \
 	--generate-c-code locale1-generated \
-	--generate-docbook "$(abs_builddir)/doc/reference/locale1-generated" \
 	$(abs_srcdir)/data/org.freedesktop.locale1.xml; \
 	popd > /dev/null )
 
@@ -109,5 +107,4 @@ BUILT_SOURCES = \
 CLEANFILES = \
 	$(localed_built_sources) \
 	$(dbusservices_DATA) \
-	$(abs_builddir)/doc/reference/locale1-generated-org.freedesktop.locale1.xml
 	$(NULL)
