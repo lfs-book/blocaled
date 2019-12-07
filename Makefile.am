@@ -43,12 +43,13 @@ dist_polkitaction_DATA = \
 	$(NULL)
 
 pidfile = @pidfile@
-#do_subst = $(SED) -e 's,[@]libexecdir[@],$(libexecdir),g' \
-#	-e 's,[@]pidfile[@],$(pidfile),g' \
-#	$(NULL)
+do_subst = $(SED) -e 's,[@]libexecdir[@],$(libexecdir),g' \
+	-e 's,[@]pidfile[@],$(pidfile),g' \
+	$(NULL)
 
-#%.service : %.service.in
-#	$(do_subst) < $(srcdir)/$< > $(srcdir)/$@
+%.service : %.service.in
+#	$(do_subst) < $(srcdir)/$< > $(builddir)/$@
+	$(do_subst) < $< > $@
 
 man_MANS = data/blocaled.8
 
