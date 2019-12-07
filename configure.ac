@@ -27,7 +27,7 @@ fi
 AC_ARG_WITH([pidfile], AS_HELP_STRING([--with-pidfile=FILENAME], [pid filename @<:@default=/run/blocaled.pid@:>@]), [], [with_pidfile=/run/blocaled.pid])
 AC_SUBST([pidfile], [$with_pidfile])
 
-AC_ARG_WITH([localeconfig], AS_HELP_STRING([--with-localeconfig=FILENAME], [locale config filename @<:@default=/etc/locale@:>@]), [], [with_localeconfig=/etc/locale])
+AC_ARG_WITH([localeconfig], AS_HELP_STRING([--with-localeconfig=FILENAME], [locale config filename @<:@default=/etc/locale.conf@:>@]), [], [with_localeconfig=/etc/locale.conf])
 AC_SUBST([localeconfig], [$with_localeconfig])
 
 AC_ARG_WITH([keyboardconfig], AS_HELP_STRING([--with-keyboardconfig=FILENAME], [keyboard config filename @<:@default=/etc/sysconfig/console@:>@]), [], [with_keyboardconfig=/etc/sysconfig/console])

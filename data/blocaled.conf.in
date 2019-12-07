@@ -5,7 +5,7 @@
 
 # localefile: a file in simplified shell syntax, holding the
 #             values of LANG and LC_* variables (except LC_ALL).
-#             This file is /etc/locale for systemd.
+#             This file is /etc/locale.conf for systemd.
 #             This file is /etc/env.d/02locale for gentoo/openrc.
 #             Default chosen at build time: @localeconfig@
 
@@ -20,7 +20,7 @@ localefile = @localeconfig@
 #             equivalent for gentoo/openrc):
 #                 passed to loadkeys for modifying the keyboard driver's
 #                 translation table.
-#             This file is /etc/vconsole for systemd.
+#             This file is /etc/vconsole.conf for systemd.
 #             This file is /etc/conf.d/keymaps for gentoo/openrc.
 #             This file is /etc/sysconfig/console for LFS.
 #             Default chosen at build time: @keyboardconfig@
@@ -37,7 +37,7 @@ keymapfile = @keyboardconfig@
 #                 This file is /etc/X11/xorg.conf.d/00-keyboard.conf
 #                 for systemd.
 #                 This file is /etc/X11/xorg.conf.d/30-keyboard.conf
-#                 for gentoo/openrc.
+#                 for gentoo/openrc and LFS.
 #                 Default chosen at build time: @xkbdconfig@
 
 xkbdlayoutfile = @xkbdconfig@
