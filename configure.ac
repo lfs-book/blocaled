@@ -19,12 +19,6 @@ PKG_CHECK_MODULES(BLOCALED,
 AC_SUBST(BLOCALED_CFLAGS)
 AC_SUBST(BLOCALED_LIBS)
 
-m4_ifdef([GTK_DOC_CHECK], [
-GTK_DOC_CHECK([1.26],[--flavour no-tmpl])
-],[
-AM_CONDITIONAL([ENABLE_GTK_DOC], false)
-])
-
 AC_PATH_PROG(GDBUS_CODEGEN, gdbus-codegen)
 if test "x$GDBUS_CODEGEN" = x; then
     AC_MSG_ERROR([Failed to find gdbus-codegen])
@@ -75,9 +69,6 @@ AC_SUBST([polkitactiondir])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([
     Makefile
-    doc/Makefile
-    doc/reference/Makefile
-    data/org.freedesktop.locale1.service
     data/blocaled.conf
     data/blocaled.8
     tests/Makefile
@@ -101,6 +92,4 @@ AC_MSG_RESULT([
         compiler:                 ${CC}
         cflags:                   ${CFLAGS}
         ldflags:                  ${LDFLAGS}
-
-	generate documentation:   ${enable_gtk_doc}
 ])
