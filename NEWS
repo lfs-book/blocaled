@@ -1,15 +1,18 @@
 blocaled
 --------
-2019-11-13: Unreleased [0.1]
+2019-12-08: version 0.1
 First release of blocaled, an implementation of the localed D-Bus service
 * Remove: other daemons (timedated and hostnamed)
 * Remove: any reference to openrc
-* add: gtk-doc framework and documentation
 * add: test framework and test cases
 * tests: add a mocked polkit
 * tests: add a framework for running a private system dbus daemon
 * fix: bug when writing several variables in the locale settings file
   see https://bugs.gentoo.org/699530
+* add: possibility to define the settings files at build time
+  and also from a config file
+* fix: now SIGTERM, SIGINT and SIGHUP are captured, which allows a clean
+  exit, in particular removing the pid file.
 
 ----------------
 Openrc-settingsd
