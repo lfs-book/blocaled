@@ -1,5 +1,10 @@
 blocaled
 --------
+2019-12-20: version 0.2
+Bug fix release
+* fix: created settings file are now readable by all when created by
+  the daemon
+
 2019-12-08: version 0.1
 First release of blocaled, an implementation of the localed D-Bus service
 * Remove: other daemons (timedated and hostnamed)
