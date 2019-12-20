@@ -1,3 +1,7 @@
+Watch settings files, so that when a file is manually modified,
+the properties are updated. This may be achieved by exiting after a
+while (see below), so that properties are read again when restarting.
+
 Make scripts that replace localectl using gdbus.
 
 (Maybe not) Add a timer so that the daemon exits after a while
