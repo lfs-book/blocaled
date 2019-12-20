@@ -37,6 +37,16 @@ fi
 
 if [ $RES = 0 ]; then
     echo PASS: convert
+    ls -l scratch/xkeyboard >scratch/error
+    sed -i 's/ .*//' scratch/error
+    cmp scratch/error << EOF
+-rw-r--r--
+EOF
+RES=$?
+fi
+
+if [ $RES = 0 ]; then
+    echo PASS: permissions
     LANG=C gdbus call \
       --system \
       --dest org.freedesktop.locale1 \

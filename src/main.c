@@ -23,6 +23,9 @@
 #include <string.h>
 #include <syslog.h>
 
+#include <sys/types.h>
+#include <sys/stat.h>
+
 #include <libdaemon/dfork.h>
 
 #include <glib.h>
@@ -307,6 +310,11 @@ main (gint argc, gchar *argv[])
         use_syslog = TRUE;
         daemon_close_all (-1);
     }
+/*
+ * If daemonizing, dfork sets umask to 077, and if foreground, we do
+ * not know the umask. SO we have to set a sane one now.
+ */
+    umask (022);
 
     shell_parser_init ();
     loop = g_main_loop_new (NULL, FALSE);
