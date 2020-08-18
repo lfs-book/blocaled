@@ -15,7 +15,7 @@
   along with this program; if not, write to the Free Software
   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-  Modified in 2019 by Pierre Labastie. See git log
+  Modified in 2019, 2020 by Pierre Labastie. See git log
 */
 
 #include <limits.h>
@@ -927,9 +927,11 @@ on_handle_set_locale_authorized_cb (GObject *source_object,
   out:
     shell_parser_free (locale_file_parsed);
     /* g_strfreev (locale_values) will leak, since it stops at first NULL value */
-    for (val = locale_values, var = locale_variables; *var != NULL; val++, var++)
-        g_free (*val);
-    g_free (locale_values);
+    if ( locale_values != NULL ) {
+        for (val = locale_values, var = locale_variables; *var != NULL; val++, var++)
+            g_free (*val);
+        g_free (locale_values);
+    }
     invoked_locale_free (data);
     if (err != NULL)
         g_error_free (err);
