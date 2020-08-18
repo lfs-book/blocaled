@@ -93,6 +93,7 @@ EXTRA_DIST = $(TESTS) \
 	     ref-localed.sh \
 	     unref-localed.sh \
 	     scratch/locale-read-result1 \
+	     scratch/locale-write-result1 \
 	     scratch/keyboard-read-result1 \
 	     scratch/keyboard-read-result2 \
 	     scratch/keyboard-write-result1 \

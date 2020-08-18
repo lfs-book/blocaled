@@ -17,9 +17,23 @@ cmp scratch/locale << EOF
 LANG='fr_FR.UTF-8'
 LC_TIME='fr_FR.UTF-8'
 EOF
-
 RES=$?
-rm scratch/locale
+
+if [ $RES = 0 ]; then
+    echo PASS: write-locale-no-file
+    rm scratch/locale
+    gdbus call \
+      --system \
+      --dest org.freedesktop.locale1 \
+      --object-path /org/freedesktop/locale1 \
+      --method org.freedesktop.locale1.SetLocale \
+      "['LANG=fr_FR.UTF-8', 'LC_TIME=fr_FR.UTF-8']" \
+      false |& cmp ${srcdir}/scratch/locale-write-result1
+    RES=$?
+fi
+
+#rm -f scratch/error
+. ${srcdir}/unref-localed.sh
 . ${srcdir}/unref-polkit.sh
 . ${srcdir}/unref-dbus.sh
 exit $RES
