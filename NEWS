@@ -1,5 +1,10 @@
 blocaled
 --------
+2020-08-18: version 0.3
+Bug fix release
+* fix: bug when polkit does not authorize the set-locale action. see issue #3
+* tests: add a test for non-authorized set-locale
+
 2019-12-20: version 0.2
 Bug fix release
 * fix: created settings files are now readable by all when created by
