@@ -4,7 +4,7 @@ It is maintained by BLFS editor Pierre Labastie, for the specific needs of
 the BLFS project, but may be used on any system implementing the libgio
 library.
 
-The project is hosted on https://github.com/pierre-labastie/blocaled
+The project is hosted on https://github.com/lfs-book/blocaled
 
 Use this project issue tracker for reporting bugs.
 
