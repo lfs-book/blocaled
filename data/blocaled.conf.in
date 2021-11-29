@@ -30,7 +30,7 @@ keymapfile = @keyboardconfig@
 # xkbdlayoutfile: a file in xorg.conf syntax holding an "InputClass"
 #                 section with one or more of the four Options
 #                 XkbLayout, XkbModel, XkbVariant, XkbOption
-#                 and a "MathIsKeyboard" line.
+#                 and a "MatchIsKeyboard" line.
 #                 This file may be placed in one of the directories
 #                 where the Xorg server looks for its configuration
 #                 files.
