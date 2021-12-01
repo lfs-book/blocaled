@@ -778,9 +778,22 @@ xorg_confd_parser_save (const struct xorg_confd_parser *parser,
 {
     gboolean ret = FALSE;
     GList *curr = NULL;
-    GFileOutputStream *os;
+    GFileOutputStream *os = NULL;
+    gchar *dirname = NULL;
 
     g_assert (parser != NULL && parser->file != NULL && parser->filename != NULL);
+    dirname = g_path_get_dirname (parser->filename);
+    if (g_mkdir_with_parents (dirname, 0755) == -1) {
+        g_set_error (error,
+                     G_FILE_ERROR,
+                     g_file_error_from_errno (errno),
+                     "Could not create directory '%s': %s",
+                     dirname,
+                     strerror (errno)
+                    );
+        goto out;
+        }
+
     if ((os = g_file_replace (parser->file, NULL, FALSE, G_FILE_CREATE_NONE, NULL, error)) == NULL) {
         g_prefix_error (error, "Unable to save '%s': ", parser->filename);
         goto out;
@@ -808,6 +821,7 @@ xorg_confd_parser_save (const struct xorg_confd_parser *parser,
     ret = TRUE;
 
   out:
+    g_free (dirname);
     if (os)
         g_object_unref (os);
     return ret;
