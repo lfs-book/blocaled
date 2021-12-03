@@ -1,0 +1,84 @@
+#!/bin/bash
+
+exec >"$(basename $0)".log 2>&1
+
+. ${srcdir}/ref-dbus.sh
+. ${srcdir}/ref-polkit.sh
+cat >scratch/blocaled.conf << EOF
+[settings]
+localefile = $(pwd)/scratch/subdir/subsubdir/locale.conf
+EOF
+rm -rf scratch/subdir
+gdbus call \
+      --system \
+      --dest org.freedesktop.locale1 \
+      --object-path /org/freedesktop/locale1 \
+      --method org.freedesktop.locale1.SetLocale \
+      "['LANG=fr_FR.UTF-8', 'LC_TIME=fr_FR.UTF-8']" \
+      true
+cmp scratch/subdir/subsubdir/locale.conf << EOF
+# Configuration file for eselect
+# This file has been automatically generated
+LANG='fr_FR.UTF-8'
+LC_TIME='fr_FR.UTF-8'
+EOF
+RES=$?
+
+if [ $RES = 0 ]; then
+    echo PASS: write-locale-no-dir
+    rm -r scratch/subdir
+    gdbus call \
+      --system \
+      --dest org.freedesktop.locale1 \
+      --object-path /org/freedesktop/locale1 \
+      --method org.freedesktop.locale1.SetLocale \
+      "['LANG=fr_FR.UTF-8', 'LC_TIME=fr_FR.UTF-8']" \
+      false |& cmp ${srcdir}/scratch/locale-write-result1
+    RES=$?
+fi
+
+if [ $RES = 0 ]; then
+    echo PASS: unauthorized write locale no dir
+    rm -rf scratch/subdir
+    install -dm 555 scratch/subdir
+    gdbus call \
+      --system \
+      --dest org.freedesktop.locale1 \
+      --object-path /org/freedesktop/locale1 \
+      --method org.freedesktop.locale1.SetLocale \
+      "['LANG=fr_FR.UTF-8', 'LC_TIME=fr_FR.UTF-8']" \
+      true 2>scratch/error
+    cmp scratch/error <<EOF
+Error: GDBus.Error:org.gtk.GDBus.UnmappedGError.Quark._g_2dfile_2derror_2dquark.Code2: Could not create directory '$(pwd)/scratch/subdir/subsubdir': Permission denied
+EOF
+    RES=$?
+fi
+
+if [ $RES = 0 ]; then
+    echo PASS: locale create dir unwritable
+    rm -rf scratch/subdir
+    install -dm 555 scratch/subdir/subsubdir
+    gdbus call \
+      --system \
+      --dest org.freedesktop.locale1 \
+      --object-path /org/freedesktop/locale1 \
+      --method org.freedesktop.locale1.SetLocale \
+      "['LANG=fr_FR.UTF-8', 'LC_TIME=fr_FR.UTF-8']" \
+      true 2>scratch/error
+    cmp scratch/error <<EOF
+Error: GDBus.Error:org.gtk.GDBus.UnmappedGError.Quark._g_2dio_2derror_2dquark.Code14: Unable to save '$(pwd)/scratch/subdir/subsubdir/locale.conf': Error opening file “$(pwd)/scratch/subdir/subsubdir/locale.conf”: Permission denied
+EOF
+    RES=$?
+fi
+
+
+. ${srcdir}/unref-localed.sh
+. ${srcdir}/unref-polkit.sh
+. ${srcdir}/unref-dbus.sh
+if [ "$RES" = 0 ]; then
+    echo PASS: locale create file non writable
+    rm -rf scratch/subdir
+    rm -f scratch/error
+fi
+rm scratch/blocaled.conf
+exit $RES

@@ -7,7 +7,9 @@ TESTS = locale-read \
         locale-write \
         keyboard-write \
         keyboard-write-no-file \
+        keyboard-write-no-dir \
         locale-write-no-file \
+        locale-write-no-dir \
         locale-write-no-cr \
         locale-write-bogus-var \
         locale-write-twice \
@@ -18,6 +20,7 @@ TESTS = locale-read \
         keyboard-read-userconf \
         xkbd-read-userconf \
         xkbd-write-no-file \
+        xkbd-write-no-dir \
         xkbd-write \
         bad-read-userconf \
         bad-locale-read \
@@ -67,7 +70,9 @@ CLEANFILES = \
              locale-write.log \
              keyboard-write.log \
              keyboard-write-no-file.log \
+             keyboard-write-no-dir.log \
              locale-write-no-file.log \
+             locale-write-no-dir.log \
              locale-write-no-cr.log \
              locale-write-bogus-var.log \
              locale-write-twice.log \
@@ -78,6 +83,7 @@ CLEANFILES = \
              keyboard-read-userconf.log \
              xkbd-read-userconf.log \
              xkbd-write-no-file.log \
+             xkbd-write-no-dir.log \
              xkbd-write.log \
              bad-read-userconf.log \
              bad-locale-read.log \
