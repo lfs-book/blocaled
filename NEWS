@@ -1,5 +1,11 @@
 blocaled
 --------
+2021-12-03: version 0.4
+Feature release
+* feature: create directory of a settings file if it does not exist
+* documentation: adapt to new location of the sources
+* tests: three tests for testing the new feature
+
 2020-08-18: version 0.3
 Bug fix release
 * fix: bug when polkit does not authorize the set-locale action. see issue #3
