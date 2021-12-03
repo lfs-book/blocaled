@@ -3,7 +3,7 @@
 
 <policyconfig>
     <vendor>blocaled</vendor>
-    <vendor_url>https://github.com/pierre-labastie/blocaled</vendor_url>
+    <vendor_url>https://github.com/lfs-book/blocaled</vendor_url>
 
     <action id="org.freedesktop.locale1.set-locale">
         <description>Set system locale environment variables</description>

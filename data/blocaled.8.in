@@ -73,7 +73,7 @@ for the \fBopenrc-settingsd\fR(8) project.
 .SH "BUGS"
 .PP
 Bug reports should be submitted to
-.UR https://github.com/pierre-labastie/blocaled/issues
+.UR https://github.com/lfs-book/blocaled/issues
 .UE .
 .SH "SEE ALSO"
 .PP
