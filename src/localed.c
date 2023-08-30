@@ -15,7 +15,7 @@
   along with this program; if not, write to the Free Software
   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-  Modified in 2019, 2020 by Pierre Labastie. See git log
+  Modified in 2019, 2020, 2023 by Pierre Labastie. See git log
 */
 
 #include <limits.h>
@@ -932,6 +932,7 @@ on_handle_set_locale_authorized_cb (GObject *source_object,
     }
 
     blocaled_locale1_set_locale (locale1, (const gchar * const *) locale);
+  finish:
     blocaled_locale1_complete_set_locale (locale1, data->invocation);
 
   unlock:
@@ -1048,8 +1049,7 @@ on_handle_set_vconsole_keyboard_authorized_cb (GObject *source_object,
             filename = g_file_get_path (kbd_model_map_file);
             g_printerr ("Failed to find conversion entry for console keymap '%s' in '%s'\n", data->vconsole_keymap, filename);
             g_free (filename);
-            blocaled_locale1_complete_set_vconsole_keyboard (locale1, data->invocation);
-            goto unlock;
+            goto finish;
         } else {
             unsigned int failure_score = 0;
 
@@ -1083,6 +1083,7 @@ on_handle_set_vconsole_keyboard_authorized_cb (GObject *source_object,
         }
     }
 
+  finish:
     blocaled_locale1_complete_set_vconsole_keyboard (locale1, data->invocation);
 
   unlock:
@@ -1229,6 +1230,7 @@ on_handle_set_x11_keyboard_authorized_cb (GObject *source_object,
         }
     }
 
+  finish:
     blocaled_locale1_complete_set_x11_keyboard (locale1, data->invocation);
 
   unlock:
