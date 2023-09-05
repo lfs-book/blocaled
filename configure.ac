@@ -72,6 +72,7 @@ AC_CONFIG_FILES([
     data/blocaled.conf
     data/blocaled.8
     tests/Makefile
+    tests/scratch/keyboard-write-result2
     tests/scratch/org.freedesktop.locale1.service
     tests/scratch/test-session.xml
 ])

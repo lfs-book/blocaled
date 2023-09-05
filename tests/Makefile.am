@@ -62,6 +62,7 @@ gdbus_mock_polkit_LDADD = \
 
 CLEANFILES = \
 	     mylocaled.c \
+	     scratch/keyboard-write-result2 \
 	     scratch/org.freedesktop.locale1.service \
 	     scratch/test-session.xml \
              locale-read.log \
