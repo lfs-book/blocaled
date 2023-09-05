@@ -52,18 +52,13 @@ if [ $RES = 0 ]; then
     rm scratch/keyboard
     rm scratch/xkeyboard
     . ${srcdir}/unref-localed.sh
-    sleep 0.1
-    . ${srcdir}/ref-localed.sh --foreground 2>scratch/error
     gdbus call \
       --system \
       --dest org.freedesktop.locale1 \
       --object-path /org/freedesktop/locale1 \
       --method org.freedesktop.locale1.SetVConsoleKeyboard \
-      "'oh-mg'" "''" true true
-    sleep 0.1
-    cmp scratch/error << EOF
-Failed to find conversion entry for console keymap 'oh-mg' in '$(pwd)/scratch/kbd-model-map'
-EOF
+      "'oh-mg'" "''" true true 2> scratch/error
+    cmp scratch/error scratch/keyboard-write-result2
     RES=$?
 fi
 if [ $RES = 0 ]; then
