@@ -1045,11 +1045,16 @@ on_handle_set_vconsole_keyboard_authorized_cb (GObject *source_object,
 
     if (data->convert) {
         if (best_entry == NULL) {
-            gchar *filename;
+            gchar *filename, *message;
             filename = g_file_get_path (kbd_model_map_file);
-            g_printerr ("Failed to find conversion entry for console keymap '%s' in '%s'\n", data->vconsole_keymap, filename);
+            message = g_strdup_printf ("Failed to find conversion entry for console keymap '%s' in '%s'", data->vconsole_keymap, filename);
+	    g_dbus_method_invocation_return_dbus_error (
+			    data->invocation,
+			    DBUS_ERROR_FAILED,
+			    message);
             g_free (filename);
-            goto finish;
+            g_free (message);
+            goto unlock;
         } else {
             unsigned int failure_score = 0;
 
