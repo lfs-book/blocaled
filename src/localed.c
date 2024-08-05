@@ -932,7 +932,7 @@ on_handle_set_locale_authorized_cb (GObject *source_object,
     }
 
     blocaled_locale1_set_locale (locale1, (const gchar * const *) locale);
-  finish:
+  //finish: (not used right now, but keep in case we add other codepaths)
     blocaled_locale1_complete_set_locale (locale1, data->invocation);
 
   unlock:
@@ -1088,7 +1088,7 @@ on_handle_set_vconsole_keyboard_authorized_cb (GObject *source_object,
         }
     }
 
-  finish:
+  //finish: (not used right now, but keep in case we add other codepaths)
     blocaled_locale1_complete_set_vconsole_keyboard (locale1, data->invocation);
 
   unlock:
@@ -1235,7 +1235,7 @@ on_handle_set_x11_keyboard_authorized_cb (GObject *source_object,
         }
     }
 
-  finish:
+  //finish: (not used right now, but keep in case we add other codepaths)
     blocaled_locale1_complete_set_x11_keyboard (locale1, data->invocation);
 
   unlock:
