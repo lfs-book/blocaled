@@ -222,7 +222,6 @@ kbd_model_map_load (GError **error)
 {
     GList *ret = NULL;
     gchar *filename = NULL, *filebuf = NULL, *line = NULL, *newline = NULL;
-    struct kbd_model_map_entry *entry = NULL;
 
     filename = g_file_get_path (kbd_model_map_file);
     g_debug ("Parsing keyboard model map file file: '%s'", filename);
@@ -858,7 +857,6 @@ on_handle_set_locale_authorized_cb (GObject *source_object,
     struct invoked_locale *data;
     gchar **loc, **var, **val, **locale_values = NULL;
     ShellParser *locale_file_parsed = NULL;
-    gint status = 0;
 
     data = (struct invoked_locale *) user_data;
     if (!check_polkit_finish (res, &err)) {
@@ -1287,7 +1285,6 @@ on_bus_acquired (GDBusConnection *connection,
                  const gchar     *bus_name,
                  gpointer         user_data)
 {
-    gchar *name;
     GError *err = NULL;
 
     g_debug ("Acquired a message bus connection");

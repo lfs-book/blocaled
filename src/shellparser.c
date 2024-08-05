@@ -545,7 +545,6 @@ shell_parser_clear_variable (ShellParser *parser,
                              const gchar *variable)
 {
     GList *curr = NULL;
-    gboolean ret = FALSE;
 
     g_assert (parser != NULL);
     g_assert (variable != NULL);
