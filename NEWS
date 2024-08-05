@@ -1,6 +1,6 @@
 blocaled
 --------
-xxxx-xx-xx: version 0.6
+2024-08-05: version 0.6
 Feature release
 * fix: Fix compiler warnings regarding dangling elses
 * fix: Fix compiler warnings regarding unused variables
