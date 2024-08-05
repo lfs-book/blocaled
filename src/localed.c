@@ -536,7 +536,7 @@ xorg_confd_parser_new (GFile *xorg_confd_file,
 
         entry = xorg_confd_line_entry_new (line, NULL, XORG_CONFD_LINE_TYPE_UNKNOWN);
 
-	if (!finished)
+   if (!finished) {
 	  if (g_regex_match (xorg_confd_line_comment_re, line, 0, &match_info)) {
             g_debug ("Parsed line '%s' as comment", line);
             entry->type = XORG_CONFD_LINE_TYPE_COMMENT;
@@ -585,6 +585,7 @@ xorg_confd_parser_new (GFile *xorg_confd_file,
 
         if (entry->type == XORG_CONFD_LINE_TYPE_END_SECTION && finished)
             parser->section = input_class_section_start;
+   }
 
         continue;
 

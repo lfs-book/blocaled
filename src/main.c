@@ -259,13 +259,14 @@ main (gint argc, gchar *argv[])
             g_clear_error (&error);
     } else {
         localeconfig = g_key_file_get_value (key_file, "settings", "localefile", &error);
-        if (error != NULL)
+        if (error != NULL) {
             if (error->code == G_KEY_FILE_ERROR_GROUP_NOT_FOUND) {
 
                 g_critical ("Failed to parse configuration: %s", error->message);
                 return 1;
             } else
                 g_clear_error (&error);
+        }
 
         keyboardconfig = g_key_file_get_value (key_file, "settings", "keymapfile", &error);
         g_clear_error (&error);
