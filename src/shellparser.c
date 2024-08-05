@@ -545,7 +545,6 @@ shell_parser_clear_variable (ShellParser *parser,
                              const gchar *variable)
 {
     GList *curr = NULL;
-    gboolean ret = FALSE;
 
     g_assert (parser != NULL);
     g_assert (variable != NULL);
@@ -712,7 +711,7 @@ shell_parser_set_and_save (GFile *file,
     alt_var_name = first_alt_var_name;
     value = first_value;
     do {
-      if (value != NULL && *value != 0)
+      if (value != NULL && *value != 0) {
         if (alt_var_name == NULL) {
             if (!shell_parser_set_variable (parser, var_name, value, TRUE)) {
                 g_propagate_error (error,
@@ -730,6 +729,7 @@ shell_parser_set_and_save (GFile *file,
                     goto out;
             }
         }
+      }
     } while ((var_name = va_arg (ap, const gchar*)) != NULL ?
                  alt_var_name = va_arg (ap, const gchar*), value = va_arg (ap, const gchar*), 1 : 0);
 

@@ -2,8 +2,12 @@ blocaled
 --------
 xxxx-xx-xx: version 0.6
 Feature release
+* fix: Fix compiler warnings regarding dangling elses
+* fix: Fix compiler warnings regarding unused variables
+* fix: Fix compiler warnings regarding labels definied but not used
 * feature: have all the error messages from dbus method sent to caller
 * build: update an obsolete macro in configure.ac
+
 2023-08-30: version 0.5
 Bug fix release
 * fix: double free when there are errors

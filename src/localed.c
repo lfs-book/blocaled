@@ -222,7 +222,6 @@ kbd_model_map_load (GError **error)
 {
     GList *ret = NULL;
     gchar *filename = NULL, *filebuf = NULL, *line = NULL, *newline = NULL;
-    struct kbd_model_map_entry *entry = NULL;
 
     filename = g_file_get_path (kbd_model_map_file);
     g_debug ("Parsing keyboard model map file file: '%s'", filename);
@@ -537,7 +536,7 @@ xorg_confd_parser_new (GFile *xorg_confd_file,
 
         entry = xorg_confd_line_entry_new (line, NULL, XORG_CONFD_LINE_TYPE_UNKNOWN);
 
-	if (!finished)
+   if (!finished) {
 	  if (g_regex_match (xorg_confd_line_comment_re, line, 0, &match_info)) {
             g_debug ("Parsed line '%s' as comment", line);
             entry->type = XORG_CONFD_LINE_TYPE_COMMENT;
@@ -586,6 +585,7 @@ xorg_confd_parser_new (GFile *xorg_confd_file,
 
         if (entry->type == XORG_CONFD_LINE_TYPE_END_SECTION && finished)
             parser->section = input_class_section_start;
+   }
 
         continue;
 
@@ -858,7 +858,6 @@ on_handle_set_locale_authorized_cb (GObject *source_object,
     struct invoked_locale *data;
     gchar **loc, **var, **val, **locale_values = NULL;
     ShellParser *locale_file_parsed = NULL;
-    gint status = 0;
 
     data = (struct invoked_locale *) user_data;
     if (!check_polkit_finish (res, &err)) {
@@ -932,7 +931,7 @@ on_handle_set_locale_authorized_cb (GObject *source_object,
     }
 
     blocaled_locale1_set_locale (locale1, (const gchar * const *) locale);
-  finish:
+  //finish: (not used right now, but keep in case we add other codepaths)
     blocaled_locale1_complete_set_locale (locale1, data->invocation);
 
   unlock:
@@ -1088,7 +1087,7 @@ on_handle_set_vconsole_keyboard_authorized_cb (GObject *source_object,
         }
     }
 
-  finish:
+  //finish: (not used right now, but keep in case we add other codepaths)
     blocaled_locale1_complete_set_vconsole_keyboard (locale1, data->invocation);
 
   unlock:
@@ -1235,7 +1234,7 @@ on_handle_set_x11_keyboard_authorized_cb (GObject *source_object,
         }
     }
 
-  finish:
+  //finish: (not used right now, but keep in case we add other codepaths)
     blocaled_locale1_complete_set_x11_keyboard (locale1, data->invocation);
 
   unlock:
@@ -1287,7 +1286,6 @@ on_bus_acquired (GDBusConnection *connection,
                  const gchar     *bus_name,
                  gpointer         user_data)
 {
-    gchar *name;
     GError *err = NULL;
 
     g_debug ("Acquired a message bus connection");
