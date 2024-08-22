@@ -19,6 +19,7 @@
 */
 
 #include <errno.h>
+#include <locale.h>
 #include <stdlib.h>
 #include <string.h>
 #include <syslog.h>
@@ -215,6 +216,8 @@ localed_started ()
 gint
 main (gint argc, gchar *argv[])
 {
+	setlocale(LC_CTYPE, "");
+	
     GError *error = NULL;
     GOptionContext *option_context;
     pid_t pid;

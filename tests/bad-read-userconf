@@ -20,7 +20,7 @@ EOF
 sleep 0.1
 sed -i 's/[^]]*]//' scratch/error
 cmp scratch/error << EOF
-: ERROR: Failed to parse configuration: Key file does not have group ?settings?
+: ERROR: Failed to parse configuration: Key file does not have group “settings”
 EOF
 RES=$?
 

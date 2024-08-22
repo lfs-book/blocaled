@@ -41,7 +41,7 @@ if [ $RES = 0 ]; then
     sleep 0.1
     cmp scratch/help << EOF
 Usage:
-  mylocaled [OPTION?] - locale settings D-Bus service
+  mylocaled [OPTION…] - locale settings D-Bus service
 
 Help Options:
   -h, --help        Show help options
