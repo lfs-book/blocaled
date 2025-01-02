@@ -1,5 +1,5 @@
 AUTOMAKE_OPTIONS = serial-tests
-TESTS_ENVIRONMENT = PACKAGE_STRING="$(PACKAGE_STRING)"
+TESTS_ENVIRONMENT = PACKAGE_STRING="$(PACKAGE_STRING)" LANG="en_US.UTF-8"
 check_PROGRAMS = mylocaled gdbus-mock-polkit
 TESTS = locale-read \
         keyboard-read \
