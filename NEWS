@@ -1,5 +1,9 @@
 blocaled
 --------
+xxxx-xx-xx: version 0.7
+Bug fix release
+* fix: Fix running tests under the musl library
+
 2024-08-05: version 0.6
 Feature release
 * fix: Fix compiler warnings regarding dangling elses
