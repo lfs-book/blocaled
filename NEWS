@@ -1,17 +1,17 @@
 blocaled
 --------
-xxxx-xx-xx: version 0.7
+2025-01-03: version 0.7
 Bug fix release
 * fix: Allow running the tests when LANG is set to a non English locale
        (Pierre Labastie)
-* fix: Fix running tests under the musl library (Sebastien Pondichy)
+* fix: Fix running tests under the musl library (Sébastien Pondichy)
 
 2024-08-05: version 0.6
 Feature release
-* fix: Fix compiler warnings regarding dangling elses (Douglas Reno)
-* fix: Fix compiler warnings regarding unused variables (Douglas Reno)
+* fix: Fix compiler warnings regarding dangling elses (Douglas R. Reno)
+* fix: Fix compiler warnings regarding unused variables (Douglas R. Reno)
 * fix: Fix compiler warnings regarding labels defined but not used
-       (Douglas Reno)
+       (Douglas R. Reno)
 * feature: have all the error messages from dbus method sent to caller
            (Pierre Labastie)
 * build: update an obsolete macro in configure.ac (Pierre Labastie)

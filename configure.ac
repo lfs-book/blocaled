@@ -1,5 +1,5 @@
 AC_PREREQ([2.60])
-AC_INIT([blocaled], [0.6], [https://github.com/lfs-book/blocaled/issues], [blocaled], [https://github.com/lfs-book/blocaled])
+AC_INIT([blocaled], [0.7], [https://github.com/lfs-book/blocaled/issues], [blocaled], [https://github.com/lfs-book/blocaled])
 AC_CONFIG_SRCDIR([src/main.c])
 AM_INIT_AUTOMAKE([check-news foreign 1.11 -Wall -Wno-portability silent-rules tar-pax no-dist-gzip dist-xz])
 AC_PROG_CC
