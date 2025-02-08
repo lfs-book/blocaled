@@ -1,0 +1,12 @@
+option('pidfile', type : 'string',
+                  value: '/run/blocaled.pid',
+                  description: 'pid filename')
+option('localeconfig', type : 'string',
+                       value: '/etc/locale.conf',
+                       description: 'locale configuration filename')
+option('keyboardconfig', type : 'string',
+                         value: '/etc/sysconfig/console',
+                         description: 'keyboard configuration filename')
+option('xkbdconfig', type : 'string',
+                     value: '/etc/X11/xorg.conf.d/30-keyboard.conf',
+                     description: 'X keyboard configuration filename')
