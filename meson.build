@@ -14,10 +14,6 @@ deps= [
   dependency('libdaemon'),
 ]
 
-codegen_prog=find_program('gdbus-codegen')
-if not codegen_prog.found()
-  error('Failed to find gdbus-codegen')
-endif
 gnome=import('gnome')
 
 #Options
@@ -27,7 +23,7 @@ pidfile=get_option('pidfile')
 localeconfig=get_option('localeconfig')
 keyboardconfig=get_option('keyboardconfig')
 xkbdconfig=get_option('xkbdconfig')
-pkgdatadir=prefix+'/'+get_option('datadir')+'/'+meson.project_name()
+pkgdatadir=prefix / get_option('datadir') / meson.project_name()
 
 #dbus and polkit directories
 dbusinterfacesdir=dbus_dep.get_variable(pkgconfig: 'interfaces_dir',

@@ -19,7 +19,7 @@ blocaled_conf = configure_file(
 install_data(blocaled_conf, install_dir: sysconfdir)
 
 serv_cfg=configuration_data()
-serv_cfg.set('libexecdir', prefix + '/' + get_option('libexecdir'))
+serv_cfg.set('libexecdir', prefix / get_option('libexecdir'))
 service = configure_file(
   input: 'org.freedesktop.locale1.service.in',
   output: 'org.freedesktop.locale1.service',
