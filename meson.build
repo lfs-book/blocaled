@@ -47,7 +47,7 @@ top_inc=include_directories('.')
 
 subdir('src')
 subdir('data')
-#subdir('tests')
+subdir('tests')
 
 summary('prefix',prefix,section:package_str)
 summary('sysconfdir',sysconfdir,section:package_str)

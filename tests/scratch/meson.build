@@ -1,0 +1,18 @@
+test_cfg=configuration_data()
+test_cfg.set('abs_top_builddir',meson.project_build_root())
+test_cfg.set('abs_top_srcdir',meson.project_source_root())
+configure_file(
+  input:'keyboard-write-result2.in',
+  output:'keyboard-write-result2',
+  configuration:test_cfg
+)
+configure_file(
+  input:'org.freedesktop.locale1.service.in',
+  output:'org.freedesktop.locale1.service',
+  configuration:test_cfg
+)
+configure_file(
+  input:'test-session.xml.in',
+  output:'test-session.xml',
+  configuration:test_cfg
+)
