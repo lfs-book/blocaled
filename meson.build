@@ -2,7 +2,7 @@ project('blocaled', 'c', version: '0.7')
 package_str=meson.project_name()+' '+meson.project_version()
 cc=meson.get_compiler('c')
 
-glib_ver='>=2.44' # TODO: Check this
+glib_ver='>=2.61'
 dbus_dep=dependency('dbus-1')
 polkit_dep=dependency('polkit-gobject-1')
 deps= [
