@@ -1,5 +1,9 @@
 blocaled
 --------
+xxxx-xx-xx: version 0.8
+* Fix: Bump minimal version of glib to 2.61. Previous versions didn't
+       define errno (P. Labastie)
+
 2025-01-03: version 0.7
 Bug fix release
 * fix: Allow running the tests when LANG is set to a non English locale

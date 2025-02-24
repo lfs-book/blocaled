@@ -10,9 +10,9 @@ LT_INIT([disable-static pic-only])
 
 AC_PROG_MKDIR_P
 PKG_CHECK_MODULES(BLOCALED,
-                  [gio-unix-2.0 >= 2.44
-                   gio-2.0 >= 2.44
-                   glib-2.0 >= 2.44
+                  [gio-unix-2.0 >= 2.61
+                   gio-2.0 >= 2.61
+                   glib-2.0 >= 2.61
                    dbus-1
                    polkit-gobject-1
                    libdaemon])
