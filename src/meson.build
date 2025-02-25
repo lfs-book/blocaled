@@ -1,8 +1,11 @@
+# main_src is used in test directory
+main_src = files('main.c')
+# The other sources are only used here
 localed_src = [
   'localed.c',
   'shellparser.c',
   'polkitasync.c',
-  'main.c',
+  main_src,
 ]
 gdbus_src = gnome.gdbus_codegen('locale1-generated',
   interface_prefix: 'org.freedesktop.',

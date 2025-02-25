@@ -41,7 +41,7 @@ configure_file(configuration:test_config_h, output:'config.h')
 
 mylocaled_exe = executable(
   'mylocaled',
-  meson.project_source_root() / 'src/main.c',
+  main_src,
   dependencies: deps,
   include_directories: src_inc,
   install: false,
